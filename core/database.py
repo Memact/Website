@@ -927,7 +927,7 @@ def count_unassigned_events() -> int:
     return int(row["count"]) if row else 0
 
 
-def clear_network_tables() -> None:
+def clear_episodic_graph_tables() -> None:
     with get_connection() as connection:
         connection.execute("DELETE FROM session_links")
         connection.execute("DELETE FROM event_sessions")

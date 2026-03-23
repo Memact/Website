@@ -38,6 +38,7 @@ from core.browser_bridge import BrowserBridgeServer, BrowserStateStore
 from core.browser_setup import detect_browsers, extension_manual_url, launch_extension_setup
 from core.database import init_db
 from core.monitor import WindowMonitor
+from core.ollama_client import ensure_model_pulled, get_ollama_setup_state
 from core.query_engine import (
     ActivitySpan,
     QueryAnswer,
@@ -45,6 +46,8 @@ from core.query_engine import (
     answer_query,
     autocomplete_suggestions,
     dynamic_suggestions,
+    get_query_engine_warmup_state,
+    warmup_query_engine,
 )
 from core.search_history import add_history, clear_history, load_history, remove_history
 from core.settings import load_settings, save_settings
@@ -755,6 +758,9 @@ class MainWindow(QMainWindow):
         self._cached_empty_suggestions: list[SearchSuggestion] | None = None
         self._active_time_filter: str | None = None
         self._results_mode = False
+        self._local_ai_ready = False
+        self._query_engine_ready = False
+        self._ollama_notice_shown = False
 
         self._suggestion_timer = QTimer(self)
         self._suggestion_timer.setSingleShot(True)
@@ -775,6 +781,10 @@ class MainWindow(QMainWindow):
         self._tray_hide_timer.setSingleShot(True)
         self._tray_hide_timer.setInterval(250)
         self._tray_hide_timer.timeout.connect(self._hide_tray_menu_if_idle)
+
+        self._ollama_timer = QTimer(self)
+        self._ollama_timer.setInterval(1500)
+        self._ollama_timer.timeout.connect(self._poll_local_ai_status)
 
         self._build_ui()
         self._build_tray()
@@ -1017,6 +1027,17 @@ class MainWindow(QMainWindow):
             QLabel#AnswerSummary {
                 color: rgba(255, 255, 255, 0.74);
                 font-size: 15px;
+            }
+            QLabel#SessionHeading {
+                color: rgba(255, 255, 255, 0.62);
+                font-size: 12px;
+                font-weight: 700;
+                letter-spacing: 1px;
+            }
+            QLabel#SessionSummary {
+                color: rgba(170, 194, 230, 0.92);
+                font-size: 13px;
+                font-weight: 600;
             }
             QPushButton#DetailsButton {
                 background: transparent;
@@ -1417,6 +1438,19 @@ class MainWindow(QMainWindow):
         self.answer_summary = QLabel("")
         self.answer_summary.setObjectName("AnswerSummary")
         self.answer_summary.setWordWrap(True)
+        self.session_heading = QLabel("EPISODIC GRAPH")
+        self.session_heading.setObjectName("SessionHeading")
+        self.session_heading.setVisible(False)
+        self.session_summary = QLabel("")
+        self.session_summary.setObjectName("SessionSummary")
+        self.session_summary.setWordWrap(True)
+        self.session_summary.setVisible(False)
+        self.session_action_row = QHBoxLayout()
+        self.session_action_row.setSpacing(8)
+        self.session_action_row.setContentsMargins(0, 0, 0, 0)
+        self.session_action_host = QWidget()
+        self.session_action_host.setLayout(self.session_action_row)
+        self.session_action_host.setVisible(False)
         self.details_button = QPushButton("View details")
         self.details_button.setObjectName("DetailsButton")
         self.details_button.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -1445,6 +1479,9 @@ class MainWindow(QMainWindow):
         answer_layout.addWidget(self.answer_eyebrow)
         answer_layout.addWidget(self.answer_text)
         answer_layout.addWidget(self.answer_summary)
+        answer_layout.addWidget(self.session_heading)
+        answer_layout.addWidget(self.session_summary)
+        answer_layout.addWidget(self.session_action_host)
         answer_layout.addWidget(self.refine_heading)
         answer_layout.addWidget(self.refine_host)
         answer_layout.addWidget(self.details_button, 0, Qt.AlignmentFlag.AlignLeft)
@@ -1504,7 +1541,7 @@ class MainWindow(QMainWindow):
             self.tray = None
             return
         self.tray = QSystemTrayIcon(app_icon(64), self)
-        self.tray.setToolTip("Memact is privately recording local activity")
+        self.tray.setToolTip("Memact — Query the Past")
         tray_menu = QMenu(self)
         tray_menu.setFont(body_font(12))
         tray_menu.setStyleSheet(self._menu_stylesheet())
@@ -1560,9 +1597,13 @@ class MainWindow(QMainWindow):
         if self._db_ready:
             return
         self._db_ready = True
-        self.status_text.setText("Ready. Ask about your past activity.")
         QTimer.singleShot(150, self._start_background_services)
         QTimer.singleShot(900, self._maybe_show_browser_setup)
+        ensure_model_pulled()
+        warmup_query_engine()
+        self._poll_local_ai_status()
+        if not self._ollama_timer.isActive():
+            self._ollama_timer.start()
 
     def _handle_runtime_failed(self, message: str) -> None:
         self.status_text.setText("Memact could not start the local database.")
@@ -1584,6 +1625,40 @@ class MainWindow(QMainWindow):
         if self.browser_bridge.error:
             self.status_text.setText(
                 "Browser bridge could not start. The extension may not connect."
+            )
+
+    def _poll_local_ai_status(self) -> None:
+        state = get_ollama_setup_state()
+        self._local_ai_ready = bool(state.get("installed")) and bool(state.get("running")) and bool(state.get("model_ready"))
+        self._query_engine_ready = bool(get_query_engine_warmup_state().get("ready"))
+        all_ready = self._local_ai_ready and self._query_engine_ready
+        self.search_button.setEnabled(self._db_ready and all_ready)
+        if all_ready:
+            if self._ollama_timer.isActive():
+                self._ollama_timer.stop()
+            if self._db_ready and not self.answer_card.isVisible():
+                self.status_text.setText("Ready. Query the Past.")
+            return
+
+        ensure_model_pulled()
+        warmup_query_engine()
+        if self._db_ready and not self.answer_card.isVisible():
+            if not self._local_ai_ready:
+                self.status_text.setText(str(state.get("message") or "Preparing local reasoning engine..."))
+            else:
+                self.status_text.setText("Warming up local search engine...")
+        if (
+            self._db_ready
+            and not bool(state.get("installed"))
+            and not self._ollama_notice_shown
+        ):
+            self._ollama_notice_shown = True
+            QTimer.singleShot(
+                0,
+                lambda: self._show_info_dialog(
+                    "Local AI Required",
+                    "Memact now requires Ollama and its local Qwen model before search is available. Install Ollama, keep it running, and Memact will download the model once on this device.",
+                ),
             )
 
     def _refresh_suggestions(self) -> None:
@@ -2274,6 +2349,7 @@ class MainWindow(QMainWindow):
         self._clear_evidence_cards()
         self.evidence_scroll.hide()
         self.answer_summary.clear()
+        self._render_session_context(None)
         self._render_related_queries([])
         self._last_answer = None
         self.search_button.setEnabled(True)
@@ -2291,7 +2367,13 @@ class MainWindow(QMainWindow):
         self._set_search_active(False)
         self._set_hero_shifted(False)
         if self._db_ready:
-            self.status_text.setText("Ready. Ask about your past activity.")
+            if self._local_ai_ready and self._query_engine_ready:
+                self.status_text.setText("Ready. Query the Past.")
+            else:
+                if not self._local_ai_ready:
+                    self.status_text.setText(str(get_ollama_setup_state().get("message") or "Preparing local reasoning engine..."))
+                else:
+                    self.status_text.setText("Warming up local search engine...")
         else:
             self.status_text.setText("Starting your local memory engine...")
         self._sync_back_button()
@@ -2304,6 +2386,14 @@ class MainWindow(QMainWindow):
         self.search_input.clearFocus()
         if not self._db_ready:
             self.status_text.setText("Still starting up. Your local memory engine is not ready yet.")
+            return
+        if not self._local_ai_ready or not self._query_engine_ready:
+            ensure_model_pulled()
+            warmup_query_engine()
+            if not self._local_ai_ready:
+                self.status_text.setText(str(get_ollama_setup_state().get("message") or "Preparing local reasoning engine..."))
+            else:
+                self.status_text.setText("Warming up local search engine...")
             return
         self._query_request_id += 1
         request_id = self._query_request_id
@@ -2363,6 +2453,7 @@ class MainWindow(QMainWindow):
         self.answer_eyebrow.setText("LOCAL ANSWER" if not answer.time_scope_label else f"LOCAL ANSWER - {answer.time_scope_label.upper()}")
         self.answer_text.setText(answer.answer)
         self.answer_summary.setText(answer.summary)
+        self._render_session_context(answer.session_context)
         self._render_related_queries(answer.related_queries)
         self.details_button.setVisible(bool(answer.evidence))
         self.details_button.setText(answer.details_label or "Show top matches")
@@ -2394,6 +2485,49 @@ class MainWindow(QMainWindow):
             widget = item.widget()
             if widget is not None:
                 widget.deleteLater()
+
+    def _render_session_context(self, session_context: dict | None) -> None:
+        while self.session_action_row.count():
+            item = self.session_action_row.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+        session = session_context.get("session") if isinstance(session_context, dict) else None
+        if not isinstance(session, dict):
+            self.session_heading.hide()
+            self.session_summary.hide()
+            self.session_action_host.hide()
+            self.session_summary.clear()
+            return
+        label = str(session.get("label") or "").strip() or "Local activity session"
+        event_count = int(session_context.get("event_count") or session.get("event_count") or 0)
+        upstream_count = len(session_context.get("upstream") or [])
+        downstream_count = len(session_context.get("downstream") or [])
+        foundational_count = len(session_context.get("foundational_events") or [])
+        parts = [label]
+        if event_count:
+            parts.append(f"{event_count} events")
+        if upstream_count:
+            parts.append(f"{upstream_count} before")
+        if downstream_count:
+            parts.append(f"{downstream_count} after")
+        if foundational_count:
+            parts.append(f"{foundational_count} foundational")
+        self.session_summary.setText("  |  ".join(parts))
+        for prompt in (
+            "What led me to this?",
+            "What happened after this?",
+            "Show everything connected to this session",
+        ):
+            button = QPushButton(prompt)
+            button.setObjectName("RefineButton")
+            button.setCursor(Qt.CursorShape.PointingHandCursor)
+            button.clicked.connect(lambda _checked=False, value=prompt: self._apply_suggestion(value))
+            self.session_action_row.addWidget(button)
+        self.session_action_row.addStretch(1)
+        self.session_heading.show()
+        self.session_summary.show()
+        self.session_action_host.show()
 
     def _render_related_queries(self, queries: list[str]) -> None:
         while self.refine_row.count():

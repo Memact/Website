@@ -9,7 +9,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from core.database import list_events_batch
-from core.network import build_network
+from core.episodic_graph import build_episodic_graph
 from core.vector_store import is_available, reset_collection, upsert_events
 
 
@@ -32,10 +32,10 @@ def main() -> int:
         print(f"Indexed {total} events...")
 
     print(f"Done. Indexed {total} events.")
-    print("Building experience network...")
-    result = build_network(full_rebuild=True)
+    print("Building episodic graph...")
+    result = build_episodic_graph(full_rebuild=True)
     print(
-        f"Network built: {result['sessions_created']} sessions, "
+        f"Episodic graph built: {result['sessions_created']} sessions, "
         f"{result['links_created']} links, "
         f"{result['events_scored']} events scored."
     )

@@ -246,7 +246,7 @@ def get_foundational_events(
         return []
 
 
-def get_network_health() -> dict:
+def get_episodic_graph_health() -> dict:
     """
     Return dependency score distribution for health checking.
     {
@@ -303,5 +303,5 @@ def get_network_health() -> dict:
             "foundational_pct": round((foundational / max(active, 1)) * 100, 1),
         }
     except Exception:
-        logger.exception("Failed to get network health.")
+        logger.exception("Failed to get episodic graph health.")
         return {}

@@ -1,10 +1,10 @@
 **Memact**
 
-**Version** `v0.6`
+**Version** `v7.0`
 
-Memact is a searchable memory of your activity.
+Memact helps you query the past.
 It quietly records what you do on your computer and lets you find it later.
-Instead of searching the internet again, you can search your own past activity.
+Instead of searching the internet again, you can query your own past.
 
 ---
 
@@ -45,6 +45,10 @@ You can ask things like:
 - What led me to start working on this?
 - What was I doing before I opened that repo?
 - Show me everything connected to that research session
+- Show me my learning journey on machine learning
+- What's the difference between what I read about Vue vs React?
+- What led me to start working on authentication?
+- Is there a connection between that async Python thing and the database optimization I read about?
 
 ---
 
@@ -70,11 +74,37 @@ It does not record keystrokes, passwords, or screenshots.
 
 **How It Works**
 
-`capture activity -> understand connections -> build network -> search it later`
+`capture activity -> understand connections -> build episodic graph -> search it later`
 
 No folders.
 No tagging.
 No manual organization.
+
+---
+
+**Episodic Graph**
+
+As Memact records your activity, it quietly builds
+a map of how things connect.
+
+It groups related moments into sessions. A session
+might be an hour of research on a topic, a coding
+session, or a reading block. Each session is linked
+to the sessions that came before and after it,
+based on what you were doing and why.
+
+This means Memact understands more than just what
+you did. It understands the shape of your work.
+How one thing led to another. What was foundational
+and what built on top of it.
+
+When you search, Memact uses this map to find not
+just the moment you are looking for, but the context
+around it. The session it belonged to. What triggered
+it. What followed from it.
+
+The episodic graph runs entirely on your device.
+Nothing is sent anywhere.
 
 ---
 
@@ -162,6 +192,27 @@ Run:
 ```powershell
 python main.py
 ```
+
+---
+
+**Local AI (Required)**
+
+Memact uses a small local AI model to synthesise
+richer answers from your activity data.
+
+Requirements:
+
+- Install Ollama: [https://ollama.com](https://ollama.com)
+- Pull the model: `ollama pull hf.co/lmstudio-community/Qwen3.5-0.8B-GGUF:Q8_0`
+
+Once running, Memact automatically detects Ollama and
+uses it to generate natural language answers instead of
+templates. On first launch, Memact will start Ollama if it
+can and pull the model in the background if it is missing.
+Once the model is downloaded, it stays on your device until
+you remove it from Ollama yourself.
+
+No data leaves your device. The model runs entirely locally.
 
 ---
 

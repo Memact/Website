@@ -98,7 +98,7 @@ async function captureActiveTabContext(tab) {
     const [injected] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       args: [SNIPPET_MAX_LEN, FULL_TEXT_MAX_LEN, readabilityReady],
-      func: (snippetMaxLen, fullTextMaxLen, canUseReadability) => {
+      func: async (snippetMaxLen, fullTextMaxLen, canUseReadability) => {
         if (!window.__memactCaptureInstalled) {
           window.__memactCaptureInstalled = true;
           window.__memactLastInputAt = 0;
@@ -118,57 +118,166 @@ async function captureActiveTabContext(tab) {
             true
           );
         }
+        const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
         const normalizeVisibleText = (value) =>
           String(value || "")
             .replace(/\s+/g, " ")
             .trim();
-        const pickContentText = () => {
-          const selectorGroups = [
-            "article",
-            "main",
-            "[role='main']",
-            "[role='article']",
-            "[role='document']",
-            "[role='feed']",
-            "[role='log']",
-            "[aria-live='polite']",
-            "[aria-live='assertive']",
-            "[data-testid*='conversation']",
-            "[data-testid*='message']",
-            "[data-testid*='messages']",
-            "[class*='conversation']",
-            "[class*='message-list']",
-            "[class*='messageList']",
-            "[class*='messages']",
-            "[class*='chat']",
-            "[class*='thread']"
-          ];
-          const seen = new Set();
-          const candidates = [];
-          for (const selector of selectorGroups) {
-            const nodes = document.querySelectorAll(selector);
-            for (const node of nodes) {
-              const text = normalizeVisibleText(node?.innerText || "");
-              if (!text) {
-                continue;
-              }
-              const key = text.slice(0, 600);
-              if (seen.has(key)) {
-                continue;
-              }
-              seen.add(key);
-              candidates.push(text);
+        const hostname = location.hostname.replace(/^www\./, "");
+        const isVisible = (node) => {
+          if (!node || !(node instanceof Element)) {
+            return false;
+          }
+          const style = window.getComputedStyle(node);
+          if (style.display === "none" || style.visibility === "hidden") {
+            return false;
+          }
+          const rect = node.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0;
+        };
+        const isNoiseNode = (node) => {
+          if (!node || !(node instanceof Element)) {
+            return false;
+          }
+          if (
+            node.closest(
+              "nav, header, footer, aside, [role='navigation'], [role='complementary'], [aria-label*='navigation' i], [class*='sidebar' i], [class*='nav' i], [class*='menu' i], [class*='footer' i], [class*='header' i], [class*='ad' i], [id*='ad' i]"
+            )
+          ) {
+            return true;
+          }
+          return false;
+        };
+        const collectRoots = () => {
+          const roots = [document];
+          const queue = [document.documentElement];
+          const seen = new Set([document]);
+          while (queue.length) {
+            const node = queue.shift();
+            if (!node || !(node instanceof Element)) {
+              continue;
+            }
+            if (node.shadowRoot && !seen.has(node.shadowRoot)) {
+              roots.push(node.shadowRoot);
+              seen.add(node.shadowRoot);
+              queue.push(node.shadowRoot);
+            }
+            for (const child of node.children || []) {
+              queue.push(child);
             }
           }
+          return roots;
+        };
+        const queryAllDeep = (selectors) => {
+          const roots = collectRoots();
+          const found = [];
+          const seen = new Set();
+          for (const root of roots) {
+            for (const selector of selectors) {
+              let nodes = [];
+              try {
+                nodes = Array.from(root.querySelectorAll(selector));
+              } catch (error) {
+                nodes = [];
+              }
+              for (const node of nodes) {
+                if (seen.has(node)) {
+                  continue;
+                }
+                seen.add(node);
+                found.push(node);
+              }
+            }
+          }
+          return found;
+        };
+        const scrapeNodeText = (node) => {
+          if (!node || !isVisible(node) || isNoiseNode(node)) {
+            return "";
+          }
+          return normalizeVisibleText(node.innerText || node.textContent || "");
+        };
+        const siteSelectors = [];
+        if (hostname.includes("github.com")) {
+          siteSelectors.push(".markdown-body");
+        }
+        if (hostname.includes("youtube.com")) {
+          siteSelectors.push("ytd-watch-metadata", "#description-inner");
+        }
+        if (hostname.includes("twitter.com") || hostname.includes("x.com")) {
+          siteSelectors.push("[data-testid='tweetText']");
+        }
+        if (hostname.includes("reddit.com")) {
+          siteSelectors.push("[data-testid='post-content']", ".md.feed-link-description");
+        }
+        if (hostname.includes("discord.com")) {
+          siteSelectors.push("[class*='messageContent']");
+        }
+        const generalSelectors = [
+          "article",
+          "main",
+          "[role='main']",
+          "[role='article']",
+          ".content",
+          ".post-body",
+          ".article-body",
+          "[class*='content']",
+          "[class*='article']",
+          "[class*='post-body']",
+          "[class*='messageContent']",
+          "[class*='message-content']",
+          "[class*='messages']",
+          "[class*='thread']",
+          "[class*='conversation']",
+          "[data-testid*='message']",
+          "[data-testid*='conversation']",
+          "[aria-live='polite']",
+          "[aria-live='assertive']"
+        ];
+        const pickContentText = () => {
+          const candidates = [];
+          const seen = new Set();
+          for (const node of queryAllDeep([...siteSelectors, ...generalSelectors])) {
+            const text = scrapeNodeText(node);
+            if (!text || text.length < 100) {
+              continue;
+            }
+            const key = text.slice(0, 800);
+            if (seen.has(key)) {
+              continue;
+            }
+            seen.add(key);
+            candidates.push(text);
+          }
           candidates.sort((left, right) => right.length - left.length);
-          const bodyText = normalizeVisibleText(document.body?.innerText || "");
-          if (candidates.length && candidates[0].length >= 120) {
-            return candidates[0];
-          }
-          if (bodyText) {
-            return bodyText;
-          }
           return candidates[0] || "";
+        };
+        const visibleBodyText = () => {
+          const text = normalizeVisibleText(document.body?.innerText || "");
+          if (text.length < 200) {
+            return "";
+          }
+          return text.slice(0, 3000);
+        };
+        const extractReadabilityText = async () => {
+          if (!(canUseReadability && typeof Readability === "function")) {
+            return "";
+          }
+          const parseArticle = () => {
+            try {
+              const articleData = new Readability(document.cloneNode(true)).parse();
+              return normalizeVisibleText(articleData?.textContent || "");
+            } catch (error) {
+              return "";
+            }
+          };
+          let articleText = parseArticle();
+          if (articleText) {
+            return articleText.slice(0, fullTextMaxLen);
+          }
+          await wait(800);
+          articleText = parseArticle();
+          return articleText ? articleText.slice(0, fullTextMaxLen) : "";
         };
         const readMeta = (key, attr = "name") => {
           const selector = `meta[${attr}="${key}"]`;
@@ -182,23 +291,22 @@ async function captureActiveTabContext(tab) {
         const h1 = document.querySelector("h1")?.innerText || "";
         const selection = window.getSelection()?.toString() || "";
         const pageContent = pickContentText();
-        const snippet = pageContent.slice(0, snippetMaxLen);
-        let fullText = "";
-        if (canUseReadability && typeof Readability === "function") {
-          try {
-            const clonedDocument = document.cloneNode(true);
-            const articleData = new Readability(clonedDocument).parse();
-            const articleText = normalizeVisibleText(articleData?.textContent || "");
-            if (articleText) {
-              fullText = articleText.slice(0, fullTextMaxLen);
-            }
-          } catch (error) {
-            fullText = "";
+        let fullText = await extractReadabilityText();
+        if (!fullText || fullText.length < 100) {
+          const scraped = pageContent;
+          if (scraped && scraped.length >= 100) {
+            fullText = scraped.slice(0, fullTextMaxLen);
           }
         }
-        if (!fullText && pageContent) {
-          fullText = pageContent.slice(0, fullTextMaxLen);
+        if (!fullText || fullText.length < 100) {
+          const fallbackText = visibleBodyText();
+          if (fallbackText) {
+            fullText = fallbackText.slice(0, fullTextMaxLen);
+          }
         }
+        fullText = normalizeVisibleText(fullText).slice(0, fullTextMaxLen);
+        const snippetSource = fullText || pageContent || visibleBodyText() || "";
+        const snippet = snippetSource.slice(0, snippetMaxLen);
         const now = Date.now();
         const activeEl = document.activeElement;
         const activeTag = activeEl?.tagName || "";
@@ -216,7 +324,7 @@ async function captureActiveTabContext(tab) {
           h1,
           selection,
           snippet,
-          ...(fullText ? { fullText } : {}),
+          fullText,
           activeTag,
           activeType,
           typingActive,
@@ -234,9 +342,7 @@ async function captureActiveTabContext(tab) {
       h1: normalizeText(result.h1, 120),
       selection: normalizeText(result.selection, 200),
       snippet: normalizeText(result.snippet, SNIPPET_MAX_LEN),
-      ...(result.fullText
-        ? { fullText: truncateText(normalizeText(result.fullText), FULL_TEXT_MAX_LEN) }
-        : {}),
+      fullText: truncateText(normalizeText(result.fullText), FULL_TEXT_MAX_LEN),
       activeTag: normalizeText(result.activeTag, 40),
       activeType: normalizeText(result.activeType, 40),
       typingActive: Boolean(result.typingActive),

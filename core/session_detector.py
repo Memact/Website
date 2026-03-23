@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 
 from core.database import (
     Event,
-    clear_network_tables,
+    clear_episodic_graph_tables,
     get_event,
     get_event_session,
     init_db,
@@ -299,7 +299,7 @@ def rebuild_all_sessions() -> int:
     """
     try:
         init_db()
-        clear_network_tables()
+        clear_episodic_graph_tables()
         events: list[Event] = []
         offset = 0
         batch_size = 1000

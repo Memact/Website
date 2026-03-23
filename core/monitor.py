@@ -14,7 +14,12 @@ from pywinauto import Desktop
 
 from core.browser_bridge import BrowserStateStore
 from core.database import append_event
-from core.network import build_network, get_network_stats, should_rebuild_incremental
+from core.episodic_graph import (
+    build_episodic_graph,
+    get_episodic_graph_stats,
+    should_rebuild_incremental,
+)
+from core.file_parser import extract_file_text, infer_file_path
 from core.settings import load_excluded_apps
 
 
@@ -426,7 +431,8 @@ class WindowMonitor(threading.Thread):
         self._last_activity_kind: str | None = None
         self._last_activity_at = 0.0
         self._last_error_at = 0.0
-        self._network_build_thread: threading.Thread | None = None
+        self._episodic_graph_build_thread: threading.Thread | None = None
+        self._file_text_cache: dict[str, tuple[float, str]] = {}
 
     def stop(self) -> None:
         self._stop_event.set()
@@ -434,44 +440,77 @@ class WindowMonitor(threading.Thread):
     def reload_excluded_apps(self) -> None:
         self._excluded_apps = load_excluded_apps()
 
-    def _maybe_schedule_network_build(self) -> None:
+    def _resolve_file_full_text(
+        self,
+        snapshot: WindowSnapshot,
+        browser_context: BrowserContext,
+        interaction_type: str,
+    ) -> str | None:
+        existing = (browser_context.full_text or "").strip()
+        if existing:
+            return existing
+        if interaction_type in {"heartbeat", "scrolling", "typing"}:
+            return None
+        file_path = infer_file_path(browser_context.url or "") or infer_file_path(snapshot.title)
+        if file_path is None:
+            return None
+        cache_key = str(file_path).casefold()
+        try:
+            modified_at = float(file_path.stat().st_mtime)
+        except OSError:
+            modified_at = 0.0
+        cached = self._file_text_cache.get(cache_key)
+        if cached and cached[0] == modified_at:
+            return cached[1] or None
+        extracted = extract_file_text(file_path)
+        self._file_text_cache[cache_key] = (modified_at, extracted)
+        if len(self._file_text_cache) > 24:
+            oldest_key = next(iter(self._file_text_cache))
+            self._file_text_cache.pop(oldest_key, None)
+        return extracted or None
+
+    def _maybe_schedule_episodic_graph_build(self) -> None:
         try:
             if not should_rebuild_incremental():
                 return
-            if self._network_build_thread is not None and self._network_build_thread.is_alive():
+            if (
+                self._episodic_graph_build_thread is not None
+                and self._episodic_graph_build_thread.is_alive()
+            ):
                 return
-            stats = get_network_stats()
+            stats = get_episodic_graph_stats()
             last_built_at = stats.get("last_built_at") if isinstance(stats, dict) else None
 
-            def _run_network_build() -> None:
+            def _run_episodic_graph_build() -> None:
                 try:
-                    build_network(since=last_built_at)
+                    build_episodic_graph(since=last_built_at)
                 except Exception:
-                    logger.exception("Incremental network build failed.")
+                    logger.exception("Incremental episodic graph build failed.")
 
-            self._network_build_thread = threading.Thread(
-                target=_run_network_build,
-                name="memact-network-build",
+            self._episodic_graph_build_thread = threading.Thread(
+                target=_run_episodic_graph_build,
+                name="memact-episodic-graph-build",
                 daemon=True,
             )
-            self._network_build_thread.start()
+            self._episodic_graph_build_thread.start()
         except Exception:
-            logger.exception("Failed to schedule incremental network build.")
+            logger.exception("Failed to schedule incremental episodic graph build.")
 
     def _emit_event(self, snapshot: WindowSnapshot, browser_context: BrowserContext, interaction_type: str) -> None:
+        full_text = self._resolve_file_full_text(snapshot, browser_context, interaction_type)
         append_event(
             application=snapshot.app_name,
             window_title=snapshot.title,
             url=browser_context.url,
             interaction_type=interaction_type,
             content_text=_compose_content_text(snapshot, browser_context),
-            full_text=browser_context.full_text,
+            full_text=full_text,
             exe_path=snapshot.exe_path,
             tab_titles=browser_context.tab_titles,
             tab_urls=browser_context.tab_urls,
             source="monitor",
         )
-        self._maybe_schedule_network_build()
+        self._maybe_schedule_episodic_graph_build()
         self._last_recorded_at = time.monotonic()
         if self.on_new_event is not None:
             self.on_new_event()

@@ -12,6 +12,7 @@ from urllib.parse import urlparse
 
 from core.database import (
     Event,
+    get_event_session,
     lexical_candidates,
     list_events_around,
     list_events_between,
@@ -19,8 +20,15 @@ from core.database import (
     list_recent_events,
 )
 from core.engine_client import engine_candidates, first_available
-from core.meaning_extractor import extract_query_meaning, warmup_spacy
-from core.network import find_related_sessions, get_session_chain
+from core.keywords import extract_keyphrases
+from core.meaning_extractor import QueryMeaning, extract_query_meaning, warmup_spacy
+from core.episodic_graph import find_related_sessions, get_session_chain
+from core.ollama_client import (
+    is_ollama_available,
+    synthesise_answer,
+    synthesise_comparison,
+    synthesise_progression,
+)
 from core.semantic import cosine_similarity, embed_text, rerank_query_text_pairs, tokenize
 from core.skill_loader import Skill, get_skills
 from core.skill_router import route_skill
@@ -218,7 +226,7 @@ class GraphEdge:
     weight: float
 
 
-def _network_session_context(query_embedding: list[float]) -> dict | None:
+def _episodic_graph_session_context(query_embedding: list[float]) -> dict | None:
     if not query_embedding:
         return None
     try:
@@ -252,6 +260,20 @@ def _attach_session_context(answer: QueryAnswer, session_context: dict | None) -
             answer.summary = f"{answer.summary} {addition}"
     else:
         answer.summary = addition
+    prompts = [
+        "What led me to this?",
+        "What happened after this?",
+        "Show everything connected to this session",
+    ]
+    existing = {query.casefold() for query in answer.related_queries}
+    for prompt in prompts:
+        key = prompt.casefold()
+        if key in existing:
+            continue
+        answer.related_queries.append(prompt)
+        existing.add(key)
+        if len(answer.related_queries) >= 6:
+            break
     return answer
 
 
@@ -1133,6 +1155,511 @@ def _content_query_answer(
     return answer, " ".join(summary_parts), deduped
 
 
+def _event_embedding_vector(event: Event) -> list[float]:
+    try:
+        raw = json.loads(event.embedding_json)
+    except Exception:
+        raw = embed_text(event.searchable_text or "")
+    vector: list[float] = []
+    for value in raw:
+        try:
+            vector.append(float(value))
+        except Exception:
+            continue
+    return vector
+
+
+def _event_to_dict(event: Event) -> dict:
+    title = _content_source_label_for_span(
+        ActivitySpan(
+            start_at=_parse_timestamp(event.occurred_at),
+            end_at=_parse_timestamp(event.occurred_at),
+            duration_seconds=0,
+            label=_event_label(event),
+            session_title=_event_label(event),
+            session_flow=_event_label(event),
+            attention_cue=None,
+            tab_preview=[],
+            application=event.application,
+            url=event.url,
+            events=[event],
+            relevance=0.0,
+            snippet="",
+            match_reason="",
+            before_context=None,
+            after_context=None,
+            moment_summary=_event_label(event),
+            activity_category=None,
+            activity_mode=None,
+            activity_confidence=0.0,
+        )
+    ) or _condense_source_label(event.window_title, max_len=120)
+    return {
+        "id": event.id,
+        "occurred_at": event.occurred_at,
+        "title": title or _event_label(event),
+        "window_title": event.window_title,
+        "url": event.url,
+        "application": event.application,
+        "keyphrases": event.keyphrases[:5],
+        "snippet": _snippet_from_event(event),
+    }
+
+
+def _primary_event_for_span(span: ActivitySpan) -> Event | None:
+    if not span.events:
+        return None
+    return max(
+        span.events,
+        key=lambda event: (
+            len((event.full_text or "").strip()),
+            len((event.content_text or "").strip()),
+            len((event.window_title or "").strip()),
+            event.id,
+        ),
+    )
+
+
+def _spans_to_event_dicts(spans: list[ActivitySpan], *, limit: int = 5) -> list[dict]:
+    items: list[dict] = []
+    seen: set[int] = set()
+    for span in spans:
+        event = _primary_event_for_span(span)
+        if event is None or event.id in seen:
+            continue
+        items.append(_event_to_dict(event))
+        seen.add(event.id)
+        if len(items) >= limit:
+            break
+    return items
+
+
+def _topic_from_query(query: str, meaning: QueryMeaning) -> str:
+    if meaning.domain:
+        return meaning.domain
+    if meaning.app:
+        return meaning.app
+    lowered = query.casefold().strip().rstrip("?")
+    for prefix in (
+        "what have i learned about ",
+        "my learning on ",
+        "show me my progress on ",
+        "how much do i know about ",
+        "what did i study about ",
+        "learning journey on ",
+        "learning journey ",
+        "what do i know about ",
+        "what led me to ",
+        "why did i end up ",
+        "how did i get to ",
+        "what started my interest in ",
+        "trace back ",
+        "what triggered ",
+        "how did i discover ",
+    ):
+        if lowered.startswith(prefix):
+            original = query.strip().rstrip("?")
+            return original[len(prefix) :].strip() or original
+    return _query_topic_hint(query) or query.strip().rstrip("?")
+
+
+def _clean_topic_value(value: str | None) -> str | None:
+    text = re.sub(r"\s+", " ", str(value or "").strip(" .,:;!?\"'()[]{}"))
+    if not text:
+        return None
+    text = re.sub(r"^(?:that|the|a|an)\s+", "", text, flags=re.IGNORECASE)
+    return text.strip() or None
+
+
+def _extract_dual_topics(query: str) -> tuple[str | None, str | None]:
+    patterns = (
+        r"difference between\s+(.+?)\s+and\s+(.+)$",
+        r"connection between\s+(.+?)\s+and\s+(.+)$",
+        r"what do\s+(.+?)\s+and\s+(.+?)\s+have in common$",
+        r"how does\s+(.+?)\s+differ from\s+(.+)$",
+        r"how does\s+(.+?)\s+relate to\s+(.+)$",
+        r"is\s+(.+?)\s+related to\s+(.+)$",
+        r"(.+?)\s+vs\.?\s+(.+)$",
+        r"(.+?)\s+versus\s+(.+)$",
+        r"(.+?)\s+compared to\s+(.+)$",
+    )
+    lowered = query.strip().rstrip("?")
+    for pattern in patterns:
+        match = re.search(pattern, lowered, flags=re.IGNORECASE)
+        if not match:
+            continue
+        left = _clean_topic_value(match.group(1))
+        right = _clean_topic_value(match.group(2))
+        if left and right and left.casefold() != right.casefold():
+            return left, right
+    phrases = extract_keyphrases(query, max_phrases=4)
+    cleaned: list[str] = []
+    seen: set[str] = set()
+    for phrase in phrases:
+        value = _clean_topic_value(phrase)
+        key = (value or "").casefold()
+        if not value or key in seen:
+            continue
+        cleaned.append(value)
+        seen.add(key)
+        if len(cleaned) >= 2:
+            return cleaned[0], cleaned[1]
+    return None, None
+
+
+def _topic_candidate_events(topic: str, *, limit: int = 12) -> tuple[list[EventMatch], list[ActivitySpan]]:
+    topic = _clean_topic_value(topic) or ""
+    if not topic:
+        return [], []
+    query_embedding = embed_text(topic)
+    target_domains = _extract_domains(topic)
+    chroma_events: list[Event] = []
+    if chroma_available():
+        where = _build_chroma_where(
+            skill_filters=set(),
+            start_at=None,
+            end_at=None,
+            target_domains=target_domains,
+            app_hint=None,
+        )
+        chroma_ids = query_event_ids(query_embedding, where=where, limit=max(limit * 12, 80))
+        if chroma_ids:
+            chroma_events = list_events_by_ids(chroma_ids)
+    if len(chroma_events) >= max(limit * 3, 18):
+        candidates = chroma_events
+    else:
+        candidates = _merge_event_pools(
+            chroma_events,
+            _load_candidate_events(topic, None, None),
+            list_recent_events(limit=800),
+        )
+    app_hint = _coerce_app_hint(_extract_app_hint(topic, candidates), candidates)
+    filtered = _filter_events(candidates, target_domains=target_domains, app_hint=app_hint)
+    ranked = _rank_events(
+        topic,
+        filtered or candidates,
+        target_domains=target_domains,
+        app_hint=app_hint,
+        query_embedding=query_embedding,
+        query_tokens=_meaningful_tokens(topic),
+        intent_categories=None,
+    )
+    if ranked:
+        ranked = ranked[: max(limit * 8, 40)]
+    spans = _build_spans(
+        ranked,
+        all_events=filtered or candidates,
+        target_domains=target_domains,
+        app_hint=app_hint,
+    ) if ranked else []
+    return ranked, spans[: max(limit, 1)]
+
+
+def _synthesise_existing_answer(
+    query: str,
+    spans: list[ActivitySpan],
+    fallback_answer: str,
+    *,
+    session_context: dict | None = None,
+) -> str:
+    if not spans or not is_ollama_available():
+        return fallback_answer
+    synthesis = synthesise_answer(
+        query,
+        _spans_to_event_dicts(spans, limit=5),
+        session_context=session_context,
+    )
+    return synthesis or fallback_answer
+
+
+def _handle_learning_query(
+    query: str,
+    meaning: QueryMeaning,
+) -> QueryAnswer:
+    topic = _topic_from_query(query, meaning)
+    ranked, spans = _topic_candidate_events(topic, limit=8)
+    if not ranked or not spans:
+        return QueryAnswer(
+            answer="No activity found for that topic yet.",
+            summary="Try a clearer topic name or a concept you actually read about.",
+            details_label="",
+            evidence=[],
+            time_scope_label=None,
+            result_count=0,
+            related_queries=[],
+        )
+    spans = sorted(spans, key=lambda span: (span.start_at, span.label))
+    event_dicts = _spans_to_event_dicts(spans, limit=6)
+    first_seen = spans[0].start_at.strftime("%b %d")
+    last_seen = spans[-1].start_at.strftime("%b %d")
+    top_topics = _top_content_topics(spans, limit=3)
+    fallback_answer = (
+        f"You first revisited {topic} on {first_seen} and kept returning to it through {last_seen}."
+    )
+    if top_topics:
+        fallback_answer += f" The main ideas that kept showing up were {_join_labels(top_topics)}."
+    answer_text = synthesise_progression(query, event_dicts) or fallback_answer
+    summary = (
+        f"I found {len(ranked)} related events across {len(spans)} moments."
+        f" Earliest match: {first_seen}. Latest match: {last_seen}."
+    )
+    return QueryAnswer(
+        answer=answer_text,
+        summary=summary,
+        details_label="Show learning timeline",
+        evidence=spans[:6],
+        time_scope_label=None,
+        result_count=len(ranked),
+        related_queries=[
+            f"What led me to start working on {topic}?",
+            f"What else did I read about {topic}?",
+            f"Is there a connection between {topic} and something else I studied?",
+        ],
+    )
+
+
+def _handle_comparison_query(
+    query: str,
+    meaning: QueryMeaning,
+) -> QueryAnswer:
+    topic_a, topic_b = _extract_dual_topics(query)
+    if not topic_a or not topic_b:
+        return QueryAnswer(
+            answer="I could not clearly separate the two topics to compare yet.",
+            summary="Try phrasing it like 'Vue vs React' or 'difference between X and Y'.",
+            details_label="",
+            evidence=[],
+            time_scope_label=None,
+            result_count=0,
+            related_queries=[],
+        )
+    ranked_a, spans_a = _topic_candidate_events(topic_a, limit=5)
+    ranked_b, spans_b = _topic_candidate_events(topic_b, limit=5)
+    if not ranked_a and not ranked_b:
+        return QueryAnswer(
+            answer="No activity found for those topics yet.",
+            summary="I could not find strong local evidence for either side.",
+            details_label="",
+            evidence=[],
+            time_scope_label=None,
+            result_count=0,
+            related_queries=[],
+        )
+    topics_a = _top_content_topics(spans_a, limit=3) or [topic_a]
+    topics_b = _top_content_topics(spans_b, limit=3) or [topic_b]
+    fallback_answer = (
+        f"Your {topic_a} activity leaned toward {_join_labels(topics_a[:2])}, "
+        f"while {topic_b} leaned toward {_join_labels(topics_b[:2])}."
+    )
+    answer_text = synthesise_comparison(
+        query,
+        _spans_to_event_dicts(spans_a, limit=4),
+        _spans_to_event_dicts(spans_b, limit=4),
+    ) or fallback_answer
+    summary = (
+        f"I found {len(ranked_a)} matches for {topic_a} and {len(ranked_b)} for {topic_b}."
+    )
+    combined_evidence = (spans_a[:3] + spans_b[:3])[:6]
+    return QueryAnswer(
+        answer=answer_text,
+        summary=summary,
+        details_label="Show comparison evidence",
+        evidence=combined_evidence,
+        time_scope_label=None,
+        result_count=len(ranked_a) + len(ranked_b),
+        related_queries=[
+            f"What do {topic_a} and {topic_b} have in common?",
+            f"What else did I read about {topic_a}?",
+            f"What else did I read about {topic_b}?",
+        ],
+    )
+
+
+def _handle_connection_query(
+    query: str,
+    meaning: QueryMeaning,
+) -> QueryAnswer:
+    topic_a, topic_b = _extract_dual_topics(query)
+    if not topic_a or not topic_b:
+        return QueryAnswer(
+            answer="I could not clearly identify the two topics to connect yet.",
+            summary="Try phrasing it like 'connection between X and Y'.",
+            details_label="",
+            evidence=[],
+            time_scope_label=None,
+            result_count=0,
+            related_queries=[],
+        )
+    ranked_a, spans_a = _topic_candidate_events(topic_a, limit=6)
+    ranked_b, spans_b = _topic_candidate_events(topic_b, limit=6)
+    if not ranked_a or not ranked_b:
+        return QueryAnswer(
+            answer="No activity found for one or both topics yet.",
+            summary="I need clear matches for both sides before I can connect them.",
+            details_label="",
+            evidence=[],
+            time_scope_label=None,
+            result_count=0,
+            related_queries=[],
+        )
+    topic_a_embedding = embed_text(topic_a)
+    topic_b_embedding = embed_text(topic_b)
+    bridge_pool = _merge_event_pools(
+        [match.event for match in ranked_a[:16]],
+        [match.event for match in ranked_b[:16]],
+        list_events_between(None, None, limit=1800),
+    )
+    bridge_scored: list[EventMatch] = []
+    for event in bridge_pool:
+        event_vector = _event_embedding_vector(event)
+        if not event_vector:
+            continue
+        sim_a = max(cosine_similarity(event_vector, topic_a_embedding), 0.0)
+        sim_b = max(cosine_similarity(event_vector, topic_b_embedding), 0.0)
+        bridge_strength = min(sim_a, sim_b)
+        if bridge_strength < 0.18:
+            continue
+        bridge_scored.append(
+            EventMatch(
+                event=event,
+                score=bridge_strength + (max(sim_a, sim_b) * 0.25),
+                lexical_score=0.0,
+                semantic_score=bridge_strength,
+                fuzzy_score=0.0,
+                phrase_match=False,
+                entity_match=False,
+            )
+        )
+    bridge_scored.sort(key=lambda item: (item.score, item.event.occurred_at, item.event.id), reverse=True)
+    bridge_spans = _build_spans(bridge_scored, all_events=[item.event for item in bridge_scored]) if bridge_scored else []
+    centroid_similarity = cosine_similarity(topic_a_embedding, topic_b_embedding)
+    bridge_labels = _unique_session_titles(bridge_spans or (spans_a[:1] + spans_b[:1]), limit=2) or [topic_a, topic_b]
+    fallback_answer = (
+        f"I found a connection between {topic_a} and {topic_b} through {_join_labels(bridge_labels[:2])}."
+    )
+    fallback_answer += (
+        " Their local activity overlap looks strong."
+        if centroid_similarity >= 0.45
+        else " Their local activity overlap looks moderate."
+    )
+    answer_text = synthesise_answer(
+        query,
+        _spans_to_event_dicts(bridge_spans or (spans_a[:2] + spans_b[:2]), limit=5),
+    ) or fallback_answer
+    summary = (
+        f"I found {len(bridge_scored)} bridging events between {topic_a} and {topic_b}."
+    )
+    evidence = (bridge_spans[:4] or (spans_a[:2] + spans_b[:2]))[:6]
+    return QueryAnswer(
+        answer=answer_text,
+        summary=summary,
+        details_label="Show bridge evidence",
+        evidence=evidence,
+        time_scope_label=None,
+        result_count=len(bridge_scored),
+        related_queries=[
+            f"What led me to start working on {topic_a}?",
+            f"What led me to start working on {topic_b}?",
+            f"What's the difference between {topic_a} and {topic_b}?",
+        ],
+    )
+
+
+def _handle_progression_query(
+    query: str,
+    meaning: QueryMeaning,
+) -> QueryAnswer:
+    topic = _topic_from_query(query, meaning)
+    ranked, spans = _topic_candidate_events(topic, limit=6)
+    if not ranked:
+        return QueryAnswer(
+            answer="No activity found for that topic yet.",
+            summary="I could not find a strong target to trace backwards from.",
+            details_label="",
+            evidence=[],
+            time_scope_label=None,
+            result_count=0,
+            related_queries=[],
+        )
+    target_event = ranked[0].event
+    session_id = get_event_session(target_event.id)
+    if session_id is None:
+        return QueryAnswer(
+            answer=f"I found activity about {topic}, but there is no episodic graph chain for it yet.",
+            summary="The event exists in local memory, but it has not been connected into a session chain.",
+            details_label="Show top matches",
+            evidence=spans[:4],
+            time_scope_label=None,
+            result_count=len(ranked),
+            related_queries=[f"What else did I read about {topic}?"],
+        )
+
+    chain_session_ids: list[int] = []
+    chain_events: list[Event] = []
+    seen: set[int] = set()
+    current_id: int | None = session_id
+    for _ in range(6):
+        if current_id is None or current_id in seen:
+            break
+        seen.add(current_id)
+        chain_session_ids.append(current_id)
+        chain = get_session_chain(current_id)
+        foundational_ids = [
+            int(item.get("id"))
+            for item in chain.get("foundational_events", [])
+            if str(item.get("id", "")).isdigit()
+        ]
+        if foundational_ids:
+            chain_events.extend(list_events_by_ids(foundational_ids))
+        upstream = chain.get("upstream") or []
+        if not upstream:
+            break
+        best = max(
+            upstream,
+            key=lambda item: (
+                float(item.get("strength") or 0.0),
+                float(item.get("total_score") or 0.0),
+                str(item.get("started_at") or ""),
+            ),
+        )
+        next_id = best.get("id")
+        current_id = int(next_id) if str(next_id).isdigit() else None
+
+    if chain_events:
+        chain_ranked = _rank_events(
+            topic,
+            chain_events,
+            query_embedding=embed_text(topic),
+            query_tokens=_meaningful_tokens(topic),
+            intent_categories=None,
+        )
+        chain_spans = _build_spans(chain_ranked, all_events=chain_events) if chain_ranked else []
+        chain_spans.sort(key=lambda span: (span.start_at, span.label))
+    else:
+        chain_spans = spans[:4]
+
+    labels = _unique_session_titles(chain_spans, limit=3) or [topic]
+    fallback_answer = (
+        f"It looks like {topic} grew out of {_join_labels(labels[:2])}"
+        f"{', and then ' + labels[2] if len(labels) > 2 else ''}."
+    )
+    answer_text = synthesise_progression(query, _spans_to_event_dicts(chain_spans, limit=6)) or fallback_answer
+    summary = f"I traced back through {len(chain_session_ids)} linked sessions."
+    return QueryAnswer(
+        answer=answer_text,
+        summary=summary,
+        details_label="Show causal chain",
+        evidence=chain_spans[:6],
+        time_scope_label=None,
+        result_count=len(chain_events) or len(ranked),
+        related_queries=[
+            f"What else was connected to {topic}?",
+            f"What did I do before {topic}?",
+            f"Show me my learning journey on {topic}",
+        ],
+    )
+
+
 def _recent_recall_topics(events: list[Event], *, limit: int = 4) -> list[str]:
     topics: list[str] = []
     seen: set[str] = set()
@@ -1228,6 +1755,30 @@ def _candidate_passages_for_event(event: Event, query_tokens: list[str]) -> list
     return passages
 
 
+def _score_passage_candidate(
+    text: str,
+    query_tokens: list[str],
+    normalized_query: str,
+    *,
+    query: str,
+) -> tuple[float, int, bool]:
+    passage_tokens = set(tokenize(text))
+    overlap = sum(1 for token in query_tokens if token in passage_tokens)
+    phrase_match = bool(normalized_query and normalized_query in " ".join(tokenize(text)))
+    adjacency = 0.0
+    if len(query_tokens) >= 2:
+        adjacent_hits = 0
+        normalized_text = " ".join(tokenize(text))
+        for left, right in zip(query_tokens, query_tokens[1:]):
+            if f"{left} {right}" in normalized_text:
+                adjacent_hits += 1
+        adjacency = adjacent_hits / max(len(query_tokens) - 1, 1)
+    score = (overlap / max(len(query_tokens), 1) * 0.44 if query_tokens else 0.0) + (0.24 if phrase_match else 0.0) + (adjacency * 0.18)
+    if _looks_like_ui_feature_text(text):
+        score *= 0.58 if _reading_style_query(query) else 0.8
+    return score, overlap, phrase_match
+
+
 def _best_passage_for_event(event: Event, query: str) -> tuple[str, float, int, bool]:
     query_tokens = [token for token in _meaningful_tokens(query) if len(token) >= 3]
     normalized_query = " ".join(query_tokens)
@@ -1236,28 +1787,21 @@ def _best_passage_for_event(event: Event, query: str) -> tuple[str, float, int, 
         fallback = re.sub(r"\s+", " ", event.searchable_text or "").strip()
         passages = [fallback[:320]] if fallback else [_friendly_app_name(event.application)]
 
-    rerank_scores = rerank_query_text_pairs(query, passages)
     best_text = passages[0]
-    best_score = rerank_scores[0] if rerank_scores else 0.0
+    best_score = -1.0
     best_overlap = 0
     best_phrase_match = False
 
-    for text, rerank_score in zip(passages, rerank_scores or [0.0] * len(passages)):
-        passage_tokens = set(tokenize(text))
-        overlap = sum(1 for token in query_tokens if token in passage_tokens)
-        phrase_match = bool(normalized_query and normalized_query in " ".join(tokenize(text)))
-        ui_feature_like = _looks_like_ui_feature_text(text)
-        combined = rerank_score + (0.18 if phrase_match else 0.0) + (
-            overlap / max(len(query_tokens), 1) * 0.24 if query_tokens else 0.0
+    for text in passages:
+        combined, overlap, phrase_match = _score_passage_candidate(
+            text,
+            query_tokens,
+            normalized_query,
+            query=query,
         )
-        if ui_feature_like:
-            combined *= 0.58 if _reading_style_query(query) else 0.8
         if combined > best_score:
             best_text = text
             best_score = combined
-            best_overlap = overlap
-            best_phrase_match = phrase_match
-        elif text == best_text:
             best_overlap = overlap
             best_phrase_match = phrase_match
     return best_text, best_score, best_overlap, best_phrase_match
@@ -1267,22 +1811,31 @@ def _apply_pairwise_reranker(
     query: str,
     matches: list[EventMatch],
     *,
-    top_n: int = 80,
+    top_n: int | None = None,
 ) -> list[EventMatch]:
     if not matches:
         return matches
 
     query_tokens = [token for token in _meaningful_tokens(query) if len(token) >= 3]
+    effective_top_n = top_n if top_n is not None else (18 if _reading_style_query(query) else 10)
+    effective_top_n = max(0, min(effective_top_n, len(matches)))
     reranked_matches: list[EventMatch] = []
+    candidate_payloads: list[tuple[EventMatch, str, float, int, bool]] = []
 
     for index, match in enumerate(matches):
-        if index >= top_n:
+        if index >= effective_top_n:
             reranked_matches.append(match)
             continue
-        best_text, rerank_score, best_overlap, phrase_match = _best_passage_for_event(match.event, query)
+        best_text, heuristic_score, best_overlap, phrase_match = _best_passage_for_event(match.event, query)
+        candidate_payloads.append((match, best_text, heuristic_score, best_overlap, phrase_match))
+
+    rerank_scores = rerank_query_text_pairs(query, [item[1] for item in candidate_payloads]) if candidate_payloads else []
+
+    for index, (match, best_text, heuristic_score, best_overlap, phrase_match) in enumerate(candidate_payloads):
+        rerank_score = rerank_scores[index] if index < len(rerank_scores) else heuristic_score
         new_score = (
             (match.score * 0.68)
-            + (rerank_score * 0.42)
+            + ((rerank_score * 0.34) + (heuristic_score * 0.16))
             + (min(best_overlap, 4) * 0.06)
             + (0.12 if phrase_match else 0.0)
         )
@@ -1426,34 +1979,50 @@ def _build_chroma_where(
 
 
 _WARMUP_STARTED = False
+_WARMUP_IN_PROGRESS = False
+_WARMUP_DONE = False
+_WARMUP_ERROR: str | None = None
 
 
 def _start_background_warmup() -> None:
-    global _WARMUP_STARTED
-    if _WARMUP_STARTED:
+    global _WARMUP_STARTED, _WARMUP_IN_PROGRESS
+    if _WARMUP_IN_PROGRESS:
         return
     _WARMUP_STARTED = True
+    _WARMUP_IN_PROGRESS = True
 
     def _warmup() -> None:
+        global _WARMUP_DONE, _WARMUP_ERROR, _WARMUP_IN_PROGRESS
         try:
             warmup_spacy()
-        except Exception:
-            pass
-        try:
             embed_text("warmup")
-        except Exception:
-            pass
-        try:
             rerank_query_text_pairs("warmup", ["warmup memory result"])
-        except Exception:
-            pass
-        if chroma_available():
             try:
-                ensure_seeded(list_recent_events(limit=2000))
+                if chroma_available():
+                    ensure_seeded(list_recent_events(limit=2000))
             except Exception:
                 pass
+            _WARMUP_DONE = True
+            _WARMUP_ERROR = None
+        except Exception as exc:
+            _WARMUP_ERROR = str(exc)
+        finally:
+            _WARMUP_IN_PROGRESS = False
 
     threading.Thread(target=_warmup, daemon=True).start()
+
+
+def warmup_query_engine() -> None:
+    _start_background_warmup()
+
+
+def get_query_engine_warmup_state() -> dict:
+    return {
+        "started": _WARMUP_STARTED,
+        "in_progress": _WARMUP_IN_PROGRESS,
+        "ready": _WARMUP_DONE,
+        "error": _WARMUP_ERROR,
+    }
 
 def _time_window_for_query(query: str) -> tuple[datetime | None, datetime | None, str | None]:
     text = query.lower()
@@ -1701,6 +2270,7 @@ def _best_event_for_span(events: list[Event], score_by_id: dict[int, float]) -> 
 
 def _snippet_from_event(event: Event) -> str:
     candidates = [
+        (event.full_text or "").strip(),
         (event.content_text or "").strip(),
         (event.window_title or "").strip(),
     ]
@@ -1712,8 +2282,8 @@ def _snippet_from_event(event: Event) -> str:
         if not value:
             continue
         cleaned = re.sub(r"\s+", " ", value)
-        if len(cleaned) > 140:
-            return f"{cleaned[:137].rstrip()}..."
+        if len(cleaned) > 200:
+            return f"{cleaned[:197].rstrip()}..."
         return cleaned
     return _friendly_app_name(event.application)
 
@@ -2688,6 +3258,209 @@ def _duration_related_queries(
     return deduped
 
 
+def _focus_query(query: str) -> bool:
+    text = query.casefold()
+    return any(
+        phrase in text
+        for phrase in (
+            "focus session",
+            "focus sessions",
+            "most focused",
+            "deep work",
+            "deep focus",
+            "when was i focused",
+            "when do i focus best",
+        )
+    )
+
+
+def _attention_pattern_query(query: str) -> bool:
+    text = query.casefold()
+    return any(
+        phrase in text
+        for phrase in (
+            "attention pattern",
+            "attention patterns",
+            "focus pattern",
+            "focus patterns",
+            "what breaks my focus",
+            "what broke my focus",
+            "what derailed me",
+            "study pattern",
+            "study patterns",
+        )
+    )
+
+
+def _uniform_matches(events: list[Event]) -> list[EventMatch]:
+    return [
+        EventMatch(
+            event=event,
+            score=1.0,
+            lexical_score=0.0,
+            semantic_score=1.0,
+            fuzzy_score=0.0,
+            phrase_match=False,
+            entity_match=False,
+        )
+        for event in events
+    ]
+
+
+def _scoped_activity_spans(
+    start_at: datetime | None,
+    end_at: datetime | None,
+    *,
+    limit: int = 1200,
+) -> list[ActivitySpan]:
+    start_text = start_at.isoformat(sep=" ", timespec="seconds") if start_at else None
+    end_text = end_at.isoformat(sep=" ", timespec="seconds") if end_at else None
+    events = (
+        list_events_between(start_text, end_text, limit=limit)
+        if start_text or end_text
+        else list_recent_events(limit=limit)
+    )
+    if not events:
+        return []
+    spans = _build_spans(_uniform_matches(events), all_events=events)
+    spans.sort(key=lambda span: (span.start_at, span.session_title), reverse=True)
+    return spans
+
+
+def _time_bucket_name(value: datetime) -> str:
+    hour = value.hour
+    if 5 <= hour < 12:
+        return "morning"
+    if 12 <= hour < 17:
+        return "afternoon"
+    if 17 <= hour < 22:
+        return "evening"
+    return "night"
+
+
+def _focus_candidate_spans(spans: list[ActivitySpan]) -> list[ActivitySpan]:
+    scored: list[tuple[float, ActivitySpan]] = []
+    for span in spans:
+        if span.duration_seconds < 240 and not span.attention_cue:
+            continue
+        score = span.relevance
+        score += min(span.duration_seconds / 1800.0, 0.7)
+        if span.attention_cue:
+            score += 0.25
+        if span.activity_category in {"coding", "reading", "writing", "searching"}:
+            score += 0.18
+        if span.activity_category in {"chatting", "emailing"}:
+            score -= 0.14
+        if span.activity_mode == "scrolling":
+            score -= 0.10
+        scored.append((score, span))
+    scored.sort(key=lambda item: (item[0], item[1].duration_seconds, item[1].start_at), reverse=True)
+    return [span for _score, span in scored]
+
+
+def _handle_focus_session_query(
+    query: str,
+    spans: list[ActivitySpan],
+    *,
+    time_scope: str | None,
+) -> QueryAnswer:
+    focus_spans = _focus_candidate_spans(spans)
+    if not focus_spans:
+        return QueryAnswer(
+            answer="I could not find a clear focus session in that window yet.",
+            summary="Try a wider time range like this week so I can compare longer sessions.",
+            details_label="",
+            evidence=[],
+            time_scope_label=time_scope,
+            result_count=0,
+            related_queries=[],
+        )
+    strongest = focus_spans[0]
+    bucket_counts = Counter(_time_bucket_name(span.start_at) for span in focus_spans[:8])
+    top_bucket = bucket_counts.most_common(1)[0][0] if bucket_counts else None
+    categories = [span.activity_category for span in focus_spans if span.activity_category]
+    top_categories = [name for name, _count in Counter(categories).most_common(2)]
+    fallback_answer = (
+        f"Your strongest focus session was {strongest.session_title} on {strongest.start_at.strftime('%b %d')} "
+        f"for about {_format_duration(strongest.duration_seconds)}."
+    )
+    if top_bucket:
+        fallback_answer += f" Your best focus tended to show up in the {top_bucket}."
+    answer_text = _synthesise_existing_answer(query, focus_spans[:5], fallback_answer)
+    summary_parts = [f"I found {len(focus_spans)} focus-worthy sessions."]
+    if top_categories:
+        summary_parts.append(f"They mostly looked like {_join_labels(top_categories)}.")
+    return QueryAnswer(
+        answer=answer_text,
+        summary=" ".join(summary_parts),
+        details_label="Show focus sessions",
+        evidence=focus_spans[:6],
+        time_scope_label=time_scope,
+        result_count=len(focus_spans),
+        related_queries=[
+            "What led me to this?",
+            "What happened after this focus session?",
+            "Show my attention patterns",
+        ],
+    )
+
+
+def _handle_attention_pattern_report(
+    query: str,
+    spans: list[ActivitySpan],
+    *,
+    time_scope: str | None,
+) -> QueryAnswer:
+    focus_spans = _focus_candidate_spans(spans)
+    if not focus_spans:
+        return QueryAnswer(
+            answer="I do not have enough strong focus sessions yet to describe a pattern.",
+            summary="Try a wider time range like this week or this month.",
+            details_label="",
+            evidence=[],
+            time_scope_label=time_scope,
+            result_count=0,
+            related_queries=[],
+        )
+    bucket_counts = Counter(_time_bucket_name(span.start_at) for span in focus_spans)
+    top_bucket = bucket_counts.most_common(1)[0][0]
+    category_counts = Counter(
+        span.activity_category for span in focus_spans if span.activity_category
+    )
+    top_categories = [name for name, _count in category_counts.most_common(2)]
+    interruption_spans = [
+        span
+        for span in spans
+        if span.duration_seconds <= 120 and span.activity_category in {"chatting", "emailing"}
+    ]
+    answer = (
+        f"Your attention looked strongest in the {top_bucket}, mostly during "
+        f"{_join_labels(top_categories or ['focused work'])} sessions."
+    )
+    if interruption_spans:
+        interruption_labels = _unique_session_titles(interruption_spans, limit=2)
+        if interruption_labels:
+            answer += f" Short interruptions often came from {_join_labels(interruption_labels)}."
+    answer = _synthesise_existing_answer(query, focus_spans[:5], answer)
+    summary = (
+        f"I found {len(focus_spans)} strong focus sessions and {len(interruption_spans)} short interruptions "
+        f"in that window."
+    )
+    return QueryAnswer(
+        answer=answer,
+        summary=summary,
+        details_label="Show attention sessions",
+        evidence=(focus_spans[:4] + interruption_spans[:2])[:6],
+        time_scope_label=time_scope,
+        result_count=len(focus_spans),
+        related_queries=[
+            "When was I most focused?",
+            "What led me to this?",
+            "Show my focus sessions",
+        ],
+    )
+
+
 def _work_focused_query(query: str) -> bool:
     text = query.casefold()
     return any(
@@ -2820,7 +3593,7 @@ def answer_query(query: str) -> QueryAnswer:
     if not query.strip():
         return QueryAnswer(
             answer="Ask a question about what you have been doing.",
-            summary="Memact searches only your local activity history.",
+            summary="Memact helps you query your local past.",
             details_label="",
             evidence=[],
             time_scope_label=None,
@@ -2833,12 +3606,22 @@ def answer_query(query: str) -> QueryAnswer:
     meaning = extract_query_meaning(query)
     base_query_text = meaning.embedding_text() or query
     query_vector = embed_text(base_query_text)
-    session_context = _network_session_context(query_vector)
+    session_context = _episodic_graph_session_context(query_vector)
 
     def _final(result: QueryAnswer) -> QueryAnswer:
         return _attach_session_context(result, session_context)
 
     skill = route_skill(query, get_skills())
+    if skill is not None:
+        if skill.name == "learning_query":
+            return _final(_handle_learning_query(query, meaning))
+        if skill.name == "comparison_query":
+            return _final(_handle_comparison_query(query, meaning))
+        if skill.name == "connection_query":
+            return _final(_handle_connection_query(query, meaning))
+        if skill.name == "progression_query":
+            return _final(_handle_progression_query(query, meaning))
+
     intent_categories = _intent_category_candidates(query, query_vector)
     if intent_categories:
         expanded_text = f"{base_query_text} {' '.join(name for name, _ in intent_categories)}"
@@ -2854,6 +3637,19 @@ def answer_query(query: str) -> QueryAnswer:
     target_domains = {meaning.domain} if meaning.domain else _extract_domains(query)
     app_hint = meaning.app
 
+    if _focus_query(query):
+        return _final(_handle_focus_session_query(
+            query,
+            _scoped_activity_spans(start_at, end_at),
+            time_scope=time_scope,
+        ))
+    if _attention_pattern_query(query):
+        return _final(_handle_attention_pattern_report(
+            query,
+            _scoped_activity_spans(start_at, end_at),
+            time_scope=time_scope,
+        ))
+
     base_candidates: list[Event] = []
     candidates: list[Event] = []
     chroma_events: list[Event] = []
@@ -2865,7 +3661,7 @@ def answer_query(query: str) -> QueryAnswer:
             target_domains=target_domains,
             app_hint=app_hint,
         )
-        chroma_ids = query_event_ids(query_vector, where=where, limit=240)
+        chroma_ids = query_event_ids(query_vector, where=where, limit=140)
         if chroma_ids:
             chroma_events = list_events_by_ids(chroma_ids)
             try:
@@ -2873,7 +3669,7 @@ def answer_query(query: str) -> QueryAnswer:
             except Exception:
                 pass
     fallback_events: list[Event] = []
-    if not chroma_events or len(chroma_events) < 80:
+    if not chroma_events or len(chroma_events) < 48:
         fallback_events = _load_candidate_events(query, start_at, end_at)
     base_candidates = _merge_event_pools(chroma_events, fallback_events)
     candidates = base_candidates or fallback_events
@@ -2923,7 +3719,17 @@ def answer_query(query: str) -> QueryAnswer:
             query_tokens=expanded_tokens,
             intent_categories=intent_categories,
         )
-    if ranked:
+    use_pairwise_reranker = (
+        "content_match" in skill_filters
+        or _reading_style_query(query)
+        or (active_skill is not None and active_skill.name in {
+            "learning_query",
+            "comparison_query",
+            "connection_query",
+            "progression_query",
+        })
+    )
+    if ranked and use_pairwise_reranker:
         ranked = _apply_pairwise_reranker(query, ranked)
     if not ranked:
         if _duration_query(query):
@@ -3011,6 +3817,12 @@ def answer_query(query: str) -> QueryAnswer:
             query=query,
             time_scope=time_scope,
         )
+        content_answer = _synthesise_existing_answer(
+            query,
+            relevant_spans[:evidence_limit],
+            content_answer,
+            session_context=session_context,
+        )
         return _final(QueryAnswer(
             answer=content_answer,
             summary=content_summary,
@@ -3038,6 +3850,12 @@ def answer_query(query: str) -> QueryAnswer:
             query=query,
             time_scope=time_scope,
             query_category=query_category,
+        )
+        broad_answer = _synthesise_existing_answer(
+            query,
+            broad_spans[:evidence_limit],
+            broad_answer,
+            session_context=session_context,
         )
         return _final(QueryAnswer(
             answer=broad_answer,
@@ -3195,6 +4013,12 @@ def answer_query(query: str) -> QueryAnswer:
     if _last_time_query(query):
         span = relevant_spans[0]
         answer = f"{_format_clock(span.start_at)} on {span.start_at.strftime('%b %d')}"
+        answer = _synthesise_existing_answer(
+            query,
+            relevant_spans[:evidence_limit],
+            answer,
+            session_context=session_context,
+        )
         return _final(QueryAnswer(
             answer=answer,
             summary=_memory_summary(span, time_scope, include_context=not bool(target_domains)),
@@ -3297,6 +4121,12 @@ def answer_query(query: str) -> QueryAnswer:
                 time_scope,
                 include_context=not bool(target_domains),
             )
+    answer = _synthesise_existing_answer(
+        query,
+        relevant_spans[:evidence_limit],
+        answer,
+        session_context=session_context,
+    )
     return _final(QueryAnswer(
         answer=answer,
         summary=summary,

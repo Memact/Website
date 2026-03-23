@@ -17,20 +17,20 @@ _BUILD_LOCK = Lock()
 _INCREMENTAL_THRESHOLD = 50
 
 
-def build_network(
+def build_episodic_graph(
     *,
     full_rebuild: bool = False,
     since: str | None = None,
 ) -> dict:
     """
-    Build or update the experience network.
+    Build or update the episodic graph.
     If full_rebuild=True: clear and rebuild everything.
     If since is provided: only process events after that timestamp.
     If neither: process events not yet in any session.
 
     Returns summary dict:
     {sessions_created, links_created, events_scored, duration_seconds}
-    Never raises — logs errors and returns partial results.
+    Never raises - logs errors and returns partial results.
     """
     started = time.monotonic()
     summary = {
@@ -57,16 +57,16 @@ def build_network(
         summary["events_scored"] = score_event_dependencies()
         score_sessions()
     except Exception:
-        logger.exception("Failed to build experience network.")
+        logger.exception("Failed to build episodic graph.")
     finally:
         summary["duration_seconds"] = round(time.monotonic() - started, 3)
         _BUILD_LOCK.release()
     return summary
 
 
-def get_network_stats() -> dict:
+def get_episodic_graph_stats() -> dict:
     """
-    Return current network state:
+    Return current episodic graph state:
     {session_count, link_count, scored_events,
      foundational_event_count, last_built_at}
     """
@@ -102,7 +102,7 @@ def get_network_stats() -> dict:
             "last_built_at": row["updated_at"] if row and row["updated_at"] else None,
         }
     except Exception:
-        logger.exception("Failed to get network stats.")
+        logger.exception("Failed to get episodic graph stats.")
         return {
             "session_count": 0,
             "link_count": 0,
@@ -249,7 +249,7 @@ def get_session_chain(session_id: int) -> dict:
 def should_rebuild_incremental() -> bool:
     """
     Return True if there are enough unprocessed events
-    to warrant an incremental network build.
+    to warrant an incremental episodic graph build.
     Threshold: 50+ events not yet in any session.
     """
     try:
@@ -270,5 +270,6 @@ def should_rebuild_incremental() -> bool:
             ).fetchone()
         return int(count_row["count"]) >= _INCREMENTAL_THRESHOLD if count_row else False
     except Exception:
-        logger.exception("Failed to check incremental network rebuild threshold.")
+        logger.exception("Failed to check incremental episodic graph rebuild threshold.")
         return False
+

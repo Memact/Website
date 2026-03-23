@@ -55,6 +55,81 @@ _CONTENT_MARKERS = {
     "jwt",
 }
 
+_CONTENT_QUERY_TRIGGERS = (
+    "article",
+    "read about",
+    "that thing about",
+    "saw something about",
+    "remember reading",
+)
+
+CONCEPT_WORDS = {
+    "jwt",
+    "oauth",
+    "api",
+    "rest",
+    "graphql",
+    "sql",
+    "nosql",
+    "python",
+    "javascript",
+    "typescript",
+    "rust",
+    "golang",
+    "async",
+    "await",
+    "authentication",
+    "authorization",
+    "docker",
+    "kubernetes",
+    "deployment",
+    "microservices",
+    "machine learning",
+    "deep learning",
+    "neural network",
+    "transformer",
+    "embedding",
+    "vector",
+    "database",
+    "algorithm",
+    "data structure",
+    "recursion",
+    "complexity",
+    "http",
+    "https",
+    "tcp",
+    "dns",
+    "ssl",
+    "tls",
+    "react",
+    "vue",
+    "angular",
+    "node",
+    "flask",
+    "fastapi",
+    "git",
+    "github",
+    "gitlab",
+    "ci",
+    "cd",
+    "devops",
+}
+
+APP_ALIASES = {
+    "vs code": "VS Code",
+    "vscode": "VS Code",
+    "visual studio code": "VS Code",
+    "code": "VS Code",
+    "chrome": "Chrome",
+    "google chrome": "Chrome",
+    "discord": "Discord",
+    "notion": "Notion",
+    "slack": "Slack",
+    "figma": "Figma",
+    "cursor": "Cursor",
+    "codex": "Codex",
+}
+
 _ACTIVITY_LEMMA_MAP = {
     "code": "coding",
     "program": "coding",
@@ -163,6 +238,42 @@ def _looks_like_content_phrase(text: str | None) -> bool:
     return False
 
 
+def _starts_with_concept(text: str | None) -> bool:
+    lowered = re.sub(r"\s+", " ", str(text or "").strip()).casefold()
+    if not lowered:
+        return False
+    for concept in CONCEPT_WORDS:
+        if lowered == concept or lowered.startswith(f"{concept} "):
+            return True
+    return False
+
+
+def _contains_content_query_trigger(query: str) -> bool:
+    lowered = query.casefold()
+    return any(trigger in lowered for trigger in _CONTENT_QUERY_TRIGGERS)
+
+
+def _apply_app_alias(app_name: str | None, query: str) -> str | None:
+    cleaned = _normalize_app(str(app_name or ""))
+    if not cleaned:
+        return None
+    lowered = cleaned.casefold()
+    query_lower = query.casefold()
+    for alias, canonical in APP_ALIASES.items():
+        if alias == "code":
+            if lowered == "code" and (
+                re.search(r"\buse\s+(?:vs\s+)?code\b", query_lower)
+                or "visual studio code" in query_lower
+                or "vs code" in query_lower
+                or "vscode" in query_lower
+            ):
+                return canonical
+            continue
+        if lowered == alias or lowered.startswith(f"{alias} "):
+            return canonical
+    return cleaned
+
+
 def _extract_app_from_doc(doc) -> str | None:
     if doc is None:
         return None
@@ -181,12 +292,14 @@ def _extract_app_from_doc(doc) -> str | None:
             candidate_text = _normalize_app(" ".join(collected))
             if _looks_like_content_phrase(candidate_text):
                 continue
+            if _starts_with_concept(candidate_text):
+                continue
             return candidate_text
     entities = [ent.text for ent in doc.ents if ent.label_ in {"ORG", "PRODUCT", "WORK_OF_ART"}]
     if entities:
         entities.sort(key=len, reverse=True)
         candidate_text = _normalize_app(entities[0])
-        if not _looks_like_content_phrase(candidate_text):
+        if not _looks_like_content_phrase(candidate_text) and not _starts_with_concept(candidate_text):
             return candidate_text
     return None
 
@@ -200,6 +313,8 @@ def _extract_app_from_regex(query: str) -> str | None:
         return None
     candidate_text = _normalize_app(match.group(1))
     if _looks_like_content_phrase(candidate_text):
+        return None
+    if _starts_with_concept(candidate_text):
         return None
     return candidate_text
 
@@ -244,7 +359,10 @@ def extract_query_meaning(query: str) -> QueryMeaning:
     doc = model(query) if model is not None else None
     domain = _extract_domain(query)
     app = _extract_app_from_doc(doc) or _extract_app_from_regex(query)
+    app = _apply_app_alias(app, query)
     if app and domain and domain.casefold().startswith(app.casefold()):
+        app = None
+    if app and _contains_content_query_trigger(query) and _starts_with_concept(app):
         app = None
     time_text = _extract_time_text(query, doc)
     activity_type = _extract_activity_type(query, doc)
