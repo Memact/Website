@@ -556,6 +556,7 @@ button:disabled {
   font-size: clamp(28px, 4vw, 34px);
   font-weight: 500;
   line-height: 1.1;
+  text-wrap: balance;
 }
 
 .results-panel__subtitle {
@@ -568,16 +569,19 @@ button:disabled {
 .results-empty {
   min-height: 220px;
   display: grid;
-  place-items: center;
+  align-items: center;
   border-radius: 18px;
   border: 1px solid var(--border-soft);
   background: rgba(255, 255, 255, 0.04);
+  padding: 20px;
 }
 
 .results-empty__text {
   margin: 0;
   color: var(--text-soft);
   font-size: 15px;
+  line-height: 1.55;
+  max-width: 32ch;
 }
 
 .answer-detail-grid,
@@ -1339,6 +1343,11 @@ button:disabled {
     justify-content: center;
   }
 
+  .memact-page.is-compact .home-menu-slot,
+  .memact-page.is-mobile .home-menu-slot {
+    justify-content: flex-end;
+  }
+
   .results-divider-host,
   .results-shadow {
     display: none;
@@ -1447,6 +1456,17 @@ button:disabled {
   .results-panel__subtitle {
     font-size: 14px;
     line-height: 1.55;
+  }
+
+  .results-empty {
+    min-height: 160px;
+    align-items: start;
+    padding: 18px 16px;
+  }
+
+  .results-empty__text {
+    max-width: none;
+    font-size: 14px;
   }
 
   .evidence-card {
