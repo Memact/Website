@@ -142,6 +142,19 @@ const COMMERCE_DOMAINS = new Set([
   "flipkart.com",
 ]);
 
+const DOCUMENT_EXTENSIONS = new Set([
+  "pdf",
+  "doc",
+  "docx",
+  "ppt",
+  "pptx",
+  "xls",
+  "xlsx",
+  "csv",
+  "txt",
+  "md",
+]);
+
 const SEARCH_HOME_NOISE_PATTERNS = [
   /\bgmail\s*images\b/i,
   /\bhow search works\b/i,
@@ -251,6 +264,68 @@ function urlDetails(url) {
   }
 }
 
+function documentExtensionFromValue(value) {
+  const match = String(value || "").match(/\.(pdf|docx?|pptx?|xlsx?|csv|txt|md)\b/i);
+  const extension = match ? match[1].toLowerCase() : "";
+  return DOCUMENT_EXTENSIONS.has(extension) ? extension : "";
+}
+
+function documentFormatLabel(raw) {
+  const value =
+    documentExtensionFromValue(raw?.url) ||
+    documentExtensionFromValue(raw?.title) ||
+    documentExtensionFromValue(raw?.pageTitle);
+  return value ? value.toUpperCase() : "";
+}
+
+function looksLikeDocumentResource(raw) {
+  const details = urlDetails(raw?.url || "");
+  const title = normalizeText(raw?.title || raw?.pageTitle, 220).toLowerCase();
+  const path = normalizeText(details.pathname, 220).toLowerCase();
+
+  if (documentExtensionFromValue(path) || documentExtensionFromValue(title)) {
+    return true;
+  }
+
+  if (details.hostname === "drive.google.com" && details.pathname.includes("/file/")) {
+    return true;
+  }
+
+  if (details.hostname === "docs.google.com") {
+    return true;
+  }
+
+  return false;
+}
+
+function normalizeDocumentTitle(title, url = "") {
+  const value = normalizeText(title, 220)
+    .replace(/\s*-\s*google drive$/i, "")
+    .replace(/\s*-\s*google docs$/i, "")
+    .replace(/\s*-\s*google sheets$/i, "")
+    .replace(/\s*-\s*google slides$/i, "")
+    .replace(/\s*-\s*google forms$/i, "")
+    .replace(/\.(pdf|docx?|pptx?|xlsx?|csv|txt|md)\b/gi, "")
+    .replace(/[_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (value) {
+    return value;
+  }
+
+  const details = urlDetails(url);
+  const fileName = normalizeText(
+    String(details.pathname || "").split("/").filter(Boolean).pop() || "",
+    220
+  )
+    .replace(/\.(pdf|docx?|pptx?|xlsx?|csv|txt|md)\b/gi, "")
+    .replace(/[_]+/g, " ")
+    .trim();
+
+  return fileName;
+}
+
 function searchEngineName(value) {
   const hostname = hostnameFromUrl(value) || normalizeText(value).toLowerCase();
   if (hostname.includes("google.")) {
@@ -345,6 +420,8 @@ function dedupeStrings(values, limit = 8) {
 function cleanTopic(value) {
   return normalizeText(value, 140)
     .replace(/\s+/g, " ")
+    .replace(/\.(pdf|docx?|pptx?|xlsx?|csv|txt|md)\b/gi, "")
+    .replace(/[_]+/g, " ")
     .replace(/\b(home|official site|search results?)\b/gi, "")
     .replace(/\s+\|\s+.*$/, "")
     .replace(/[,:;.\- ]+$/g, "")
@@ -584,6 +661,9 @@ export function inferPageType(raw) {
   if (isSearchEngineHomePage(raw)) {
     return "web";
   }
+  if (looksLikeDocumentResource(raw)) {
+    return "docs";
+  }
   if (
     titleLower.includes("lyrics") ||
     bodyLower.includes("lyrics:") ||
@@ -688,6 +768,11 @@ export function buildStructuredFacts(raw, pageType = inferPageType(raw)) {
   const facts = [];
   const subject = primarySubject(raw);
   const domain = hostnameFromUrl(raw.url || "") || normalizeText(raw.domain);
+  const documentLike = looksLikeDocumentResource(raw);
+  const documentTitle = documentLike
+    ? normalizeDocumentTitle(raw.title || raw.pageTitle || subject, raw.url)
+    : "";
+  const documentFormat = documentLike ? documentFormatLabel(raw) : "";
 
   if (pageType === "lyrics") {
     const { song, artist } = parseLyricsFacts(raw.title || raw.pageTitle || subject);
@@ -718,7 +803,14 @@ export function buildStructuredFacts(raw, pageType = inferPageType(raw)) {
       facts.push({ label: "Question", value: subject });
     }
   } else if (pageType === "docs") {
-    if (subject) {
+    if (documentLike) {
+      if (documentTitle) {
+        facts.push({ label: "Document", value: documentTitle });
+      }
+      if (documentFormat) {
+        facts.push({ label: "Format", value: documentFormat });
+      }
+    } else if (subject) {
       facts.push({ label: "Topic", value: subject });
     }
   } else if (pageType === "discussion" || pageType === "chat" || pageType === "social") {
@@ -729,7 +821,7 @@ export function buildStructuredFacts(raw, pageType = inferPageType(raw)) {
     facts.push({ label: "Topic", value: subject });
   }
 
-  const focus = usefulCandidate((raw.topics || [])[0]);
+  const focus = documentLike ? "" : usefulCandidate((raw.topics || [])[0]);
   if (focus && !facts.some((fact) => fact.value.toLowerCase() === focus.toLowerCase())) {
     facts.push({ label: "Focus", value: focus });
   }
@@ -857,6 +949,11 @@ export function buildDisplayExcerpt(raw, pageType = inferPageType(raw)) {
 export function buildStructuredSummary(raw, pageType = inferPageType(raw), facts = buildStructuredFacts(raw, pageType)) {
   const site = hostnameFromUrl(raw.url || "") || normalizeText(raw.domain) || "this site";
   const primaryFact = facts[0]?.value || primarySubject(raw);
+  const documentLike = looksLikeDocumentResource(raw);
+  const documentFormat = documentLike ? documentFormatLabel(raw) : "";
+  const documentTitle = documentLike
+    ? normalizeDocumentTitle(raw.title || raw.pageTitle || primaryFact, raw.url)
+    : "";
 
   if (pageType === "lyrics") {
     const song = facts.find((fact) => fact.label === "Song")?.value || primaryFact;
@@ -877,6 +974,12 @@ export function buildStructuredSummary(raw, pageType = inferPageType(raw), facts
   }
 
   if (pageType === "docs") {
+    if (documentLike && documentTitle && documentFormat) {
+      return `${documentFormat} document: ${documentTitle}.`;
+    }
+    if (documentLike && documentTitle) {
+      return `Document: ${documentTitle}.`;
+    }
     return primaryFact ? `Documentation page about ${primaryFact}.` : `Documentation page on ${site}.`;
   }
 
@@ -1080,7 +1183,7 @@ export function buildSuggestionQueries(raw, options = {}) {
 
 export function extractContextProfile(raw) {
   const stored = parseObjectValue(raw?.context_profile_json || raw?.contextProfile);
-  const title = normalizeText(
+  const rawTitle = normalizeText(
     stored.title || raw?.title || raw?.pageTitle || raw?.window_title,
     160
   );
@@ -1090,6 +1193,8 @@ export function extractContextProfile(raw) {
   const snippet = normalizeText(stored.snippet || raw?.snippet || raw?.content_text, 320);
   const fullText = normalizeRichText(stored.fullText || raw?.fullText || raw?.full_text, 0);
   const url = normalizeText(stored.url || raw?.url);
+  const documentLike = looksLikeDocumentResource({ title: rawTitle, pageTitle: rawTitle, url, description });
+  const title = documentLike ? normalizeDocumentTitle(rawTitle, url) || rawTitle : rawTitle;
   const domain = hostnameFromUrl(url) || normalizeText(stored.domain || raw?.domain);
   const application = normalizeText(stored.application || raw?.application);
   const seededKeyphrases = dedupeStrings(
@@ -1108,6 +1213,8 @@ export function extractContextProfile(raw) {
       ? queryValue
         ? [queryValue]
         : []
+      : documentLike
+        ? []
       : [...parseArrayValue(stored.entities || []), ...buildEntities({ title, h1, selection, description, keyphrases: seededKeyphrases })];
   const entities = skipShell ? [] : dedupeStrings(seededEntities, 8);
   const seededTopics =
@@ -1115,12 +1222,15 @@ export function extractContextProfile(raw) {
       ? queryValue
         ? [queryValue]
         : []
+      : documentLike
+        ? []
       : [...parseArrayValue(stored.topics || []), ...buildTopics({ title, h1, selection, description, snippet, fullText, keyphrases: seededKeyphrases, entities })];
   const topics = skipShell ? [] : dedupeStrings(seededTopics, 8);
   const subject = skipShell
     ? ""
     : usefulCandidate(
-        stored.subject ||
+        (documentLike ? title : "") ||
+          stored.subject ||
           chooseSubject({ selection, entities, topics, h1, title, domain, pageType, url })
       );
   const pageTypeLabelValue = pageTypeLabel(pageType);

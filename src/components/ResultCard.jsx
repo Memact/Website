@@ -1,3 +1,5 @@
+import MathRichText from './MathRichText'
+
 function formatDateTime(value) {
   if (!value) return ''
   try {
@@ -82,21 +84,32 @@ export default function ResultCard({ result, onOpen, onSelect }) {
       tabIndex={onSelect ? 0 : undefined}
     >
       <p className="evidence-url">{urlLabel}</p>
-      <h3 className="evidence-title">{result.title || 'Untitled memory'}</h3>
+      <h3 className="evidence-title">
+        <MathRichText inline text={result.title || 'Untitled memory'} />
+      </h3>
       {meta.length ? <p className="evidence-meta">{meta.join(' - ')}</p> : null}
-      {summary ? <p className="evidence-summary">{summary}</p> : null}
+      {summary ? (
+        <div className="evidence-summary">
+          <MathRichText text={summary} />
+        </div>
+      ) : null}
 
       {facts.length ? (
         <div className="evidence-fact-row">
           {facts.map((fact) => (
             <span key={`${fact.label}-${fact.value}`} className="evidence-fact-pill">
-              <strong>{fact.label}:</strong> {fact.value}
+              <strong>{fact.label}:</strong>{' '}
+              <MathRichText inline text={fact.value} />
             </span>
           ))}
         </div>
       ) : null}
 
-      {excerpt && excerpt !== summary ? <p className="evidence-snippet">{excerpt}</p> : null}
+      {excerpt && excerpt !== summary ? (
+        <div className="evidence-snippet">
+          <MathRichText text={excerpt} />
+        </div>
+      ) : null}
 
       <div className="evidence-footer">
         <span className="evidence-availability">

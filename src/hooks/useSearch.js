@@ -275,6 +275,7 @@ export function useSearch(extension, activeTimeFilter = null) {
   const suggestionCacheRef = useRef(new Map())
   const suggestionRequestRef = useRef(0)
   const broadSuggestionsRef = useRef([])
+  const resultCacheRef = useRef(new Map())
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -352,7 +353,7 @@ export function useSearch(extension, activeTimeFilter = null) {
       setSuggestions(
         normalizedQuery ? filterSuggestions(normalizedItems, normalizedQuery) : normalizedItems
       )
-    }, normalizedQuery ? 30 : 0)
+    }, 0)
 
     return () => {
       cancelled = true
@@ -394,6 +395,7 @@ export function useSearch(extension, activeTimeFilter = null) {
   const runSearch = useCallback(
     async (value) => {
       const normalized = normalize(value)
+      const cacheKey = `${activeTimeFilter || 'all'}::${normalized.toLowerCase()}`
       const searchId = latestSearchRef.current + 1
       latestSearchRef.current = searchId
       if (!normalized) {
@@ -414,6 +416,12 @@ export function useSearch(extension, activeTimeFilter = null) {
       setError('')
       persistSearch(normalized)
 
+      const cached = resultCacheRef.current.get(cacheKey)
+      if (cached) {
+        setResults(cached.results)
+        setAnswerMeta(cached.answerMeta)
+      }
+
       try {
         const response = await extension.search(normalized, 20)
         if (!response || response.error) {
@@ -428,6 +436,10 @@ export function useSearch(extension, activeTimeFilter = null) {
 
         const normalizedResults = items.map(normalizeResult)
         const normalizedAnswerMeta = normalizeAnswerMeta(response?.answer)
+        resultCacheRef.current.set(cacheKey, {
+          results: normalizedResults,
+          answerMeta: normalizedAnswerMeta,
+        })
         setAnswerMeta(normalizedAnswerMeta)
         setResults(normalizedResults)
 
@@ -470,7 +482,7 @@ export function useSearch(extension, activeTimeFilter = null) {
         setLoading(false)
       }
     },
-    [extension, persistSearch]
+    [activeTimeFilter, extension, persistSearch]
   )
 
   const recentSearches = useMemo(

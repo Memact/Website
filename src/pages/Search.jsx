@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import MathRichText from '../components/MathRichText'
 import SearchBar from '../components/SearchBar'
 import ResultCard from '../components/ResultCard'
 import { useSearch } from '../hooks/useSearch'
@@ -214,6 +215,33 @@ function PrivacyDialog({ onClose }) {
         </button>
       }
     />
+  )
+}
+
+function DetailValue({ value }) {
+  return <MathRichText inline className="answer-detail-value" text={value} />
+}
+
+function DetailValueList({ values }) {
+  return (
+    <div className="detail-chip-list">
+      {values.map((value) => (
+        <span key={value} className="detail-chip">
+          <MathRichText inline text={value} />
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function DetailCard({ label, value, values = [] }) {
+  const items = Array.isArray(values) ? values.filter(Boolean) : []
+
+  return (
+    <div className={`answer-detail-card ${items.length ? 'answer-detail-card--list' : ''}`}>
+      <span className="answer-detail-label">{label}</span>
+      {items.length ? <DetailValueList values={items} /> : <DetailValue value={value} />}
+    </div>
   )
 }
 
@@ -483,8 +511,8 @@ function MemoryDetailDialog({ result, onOpen, onClose }) {
   const factItems = Array.isArray(result.factItems) ? result.factItems : []
   const extractedContext = [
     result.contextSubject ? { label: 'Subject', value: result.contextSubject } : null,
-    result.contextEntities.length ? { label: 'Entities', value: result.contextEntities.join(' | ') } : null,
-    result.contextTopics.length ? { label: 'Topics', value: result.contextTopics.join(' | ') } : null,
+    result.contextEntities.length ? { label: 'Entities', values: result.contextEntities } : null,
+    result.contextTopics.length ? { label: 'Topics', values: result.contextTopics } : null,
   ].filter(Boolean)
   const showExtractedContext = extractedContext.length && result.pageType !== 'search'
 
@@ -521,14 +549,11 @@ function MemoryDetailDialog({ result, onOpen, onClose }) {
       }
     >
       {detailItems.length ? (
-        <div className="answer-detail-grid">
-          {detailItems.map((item) => (
-            <div key={`${item.label}-${item.value}`} className="answer-detail-card">
-              <span className="answer-detail-label">{item.label}</span>
-              <span className="answer-detail-value">{item.value}</span>
-            </div>
-          ))}
-        </div>
+          <div className="answer-detail-grid">
+            {detailItems.map((item) => (
+              <DetailCard key={`${item.label}-${item.value}`} label={item.label} value={item.value} />
+            ))}
+          </div>
       ) : null}
 
       {displayUrl ? <p className="browser-url">{displayUrl}</p> : null}
@@ -536,7 +561,9 @@ function MemoryDetailDialog({ result, onOpen, onClose }) {
       {result.structuredSummary ? (
         <div className="memory-detail-body">
           <div className="refine-heading">SUMMARY</div>
-          <p className="dialog-body">{result.structuredSummary}</p>
+          <div className="dialog-body">
+            <MathRichText text={result.structuredSummary} />
+          </div>
         </div>
       ) : null}
 
@@ -545,10 +572,7 @@ function MemoryDetailDialog({ result, onOpen, onClose }) {
           <div className="refine-heading">FACTS</div>
           <div className="answer-detail-grid">
             {factItems.map((item) => (
-              <div key={`${item.label}-${item.value}`} className="answer-detail-card">
-                <span className="answer-detail-label">{item.label}</span>
-                <span className="answer-detail-value">{item.value}</span>
-              </div>
+              <DetailCard key={`${item.label}-${item.value}`} label={item.label} value={item.value} />
             ))}
           </div>
         </div>
@@ -559,10 +583,12 @@ function MemoryDetailDialog({ result, onOpen, onClose }) {
           <div className="refine-heading">EXTRACTED CONTEXT</div>
           <div className="answer-detail-grid">
             {extractedContext.map((item) => (
-              <div key={`${item.label}-${item.value}`} className="answer-detail-card">
-                <span className="answer-detail-label">{item.label}</span>
-                <span className="answer-detail-value">{item.value}</span>
-              </div>
+              <DetailCard
+                key={`${item.label}-${item.value || (item.values || []).join('|')}`}
+                label={item.label}
+                value={item.value}
+                values={item.values}
+              />
             ))}
           </div>
         </div>
@@ -575,7 +601,9 @@ function MemoryDetailDialog({ result, onOpen, onClose }) {
             {searchResults.map((item, index) => (
               <div key={`${index + 1}-${item}`} className="memory-result-item">
                 <span className="memory-result-index">{index + 1}.</span>
-                <span className="memory-result-copy">{item}</span>
+                <span className="memory-result-copy">
+                  <MathRichText text={item} />
+                </span>
               </div>
             ))}
           </div>
@@ -585,14 +613,16 @@ function MemoryDetailDialog({ result, onOpen, onClose }) {
       {snippetText && snippetText !== fullText ? (
         <div className="memory-detail-body">
           <div className="refine-heading">SAVED SNIPPET</div>
-          <p className="dialog-body">{snippetText}</p>
+          <div className="dialog-body">
+            <MathRichText text={snippetText} />
+          </div>
         </div>
       ) : null}
 
       {fullText ? (
         <div className="memory-detail-body">
           <div className="refine-heading">{primaryTextHeading}</div>
-          <pre className="memory-detail-text">{fullText}</pre>
+          <MathRichText className="memory-detail-text" text={fullText} />
         </div>
       ) : (
         <p className="dialog-body">No full extracted text is available for this memory yet.</p>
@@ -611,7 +641,7 @@ function MemoryDetailDialog({ result, onOpen, onClose }) {
           {rawVisible ? (
             <>
               <div className="refine-heading">RAW CAPTURED TEXT</div>
-              <pre className="memory-detail-text">{rawFullText}</pre>
+              <pre className="memory-detail-text memory-detail-text--raw">{rawFullText}</pre>
             </>
           ) : null}
         </div>
@@ -1056,8 +1086,12 @@ export default function Search({ extension }) {
               <section className="results-panel">
                 <div className="results-panel__header">
                   <div className="answer-eyebrow">LOCAL RESULTS</div>
-                  <h2 className="results-panel__title">{resultsTitle}</h2>
-                  <p className="results-panel__subtitle">{resultsSubtitle}</p>
+                  <h2 className="results-panel__title">
+                    <MathRichText inline text={resultsTitle} />
+                  </h2>
+                  <div className="results-panel__subtitle">
+                    <MathRichText text={resultsSubtitle} />
+                  </div>
                 </div>
 
                 {resultCount ? (
@@ -1075,9 +1109,9 @@ export default function Search({ extension }) {
                   </div>
                 ) : (
                   <div className="results-empty">
-                    <p className="results-empty__text">
-                      No saved page matched this search closely enough.
-                    </p>
+                    <div className="results-empty__text">
+                      <MathRichText text="No saved page matched this search closely enough." />
+                    </div>
                   </div>
                 )}
               </section>
