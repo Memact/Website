@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { polishAnswerSummary } from '../lib/localLanguageModel'
 
 const RECENT_SEARCHES_KEY = 'memact.recent-searches'
 const MAX_RECENTS = 10
@@ -196,6 +197,31 @@ function normalizeSuggestion(item, index = 0) {
   }
 }
 
+function suggestionMatches(item, query) {
+  const normalizedQuery = normalize(query).toLowerCase()
+  if (!normalizedQuery) {
+    return true
+  }
+
+  const haystack = [
+    item?.title,
+    item?.subtitle,
+    item?.completion,
+    item?.category,
+  ]
+    .map((value) => normalize(value).toLowerCase())
+    .join(' ')
+
+  return normalizedQuery
+    .split(/\s+/)
+    .filter(Boolean)
+    .every((token) => haystack.includes(token))
+}
+
+function filterSuggestions(items, query, limit = SUGGESTION_LIMIT) {
+  return items.filter((item) => suggestionMatches(item, query)).slice(0, limit)
+}
+
 function normalizeAnswerMeta(item) {
   if (!item || typeof item !== 'object') {
     return null
@@ -245,6 +271,10 @@ export function useSearch(extension, activeTimeFilter = null) {
   const [status, setStatus] = useState(null)
   const [suggestions, setSuggestions] = useState([])
   const [answerMeta, setAnswerMeta] = useState(null)
+  const latestSearchRef = useRef(0)
+  const suggestionCacheRef = useRef(new Map())
+  const suggestionRequestRef = useRef(0)
+  const broadSuggestionsRef = useRef([])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -275,9 +305,31 @@ export function useSearch(extension, activeTimeFilter = null) {
     }
 
     let cancelled = false
+    const normalizedQuery = normalize(query)
+    const cacheKey = `${activeTimeFilter || 'all'}::${normalizedQuery.toLowerCase()}`
+    const broadKey = `${activeTimeFilter || 'all'}::`
+    const cachedItems = suggestionCacheRef.current.get(cacheKey)
+    const broadItems =
+      suggestionCacheRef.current.get(broadKey) ||
+      broadSuggestionsRef.current ||
+      []
+
+    if (cachedItems?.length) {
+      setSuggestions(cachedItems)
+    } else if (normalizedQuery && broadItems.length) {
+      setSuggestions(filterSuggestions(broadItems, normalizedQuery))
+    } else if (!normalizedQuery && broadItems.length) {
+      setSuggestions(broadItems)
+    } else {
+      setSuggestions([])
+    }
+
+    const requestId = suggestionRequestRef.current + 1
+    suggestionRequestRef.current = requestId
+
     const timer = window.setTimeout(async () => {
       const response = await extension.getSuggestions(query, activeTimeFilter, SUGGESTION_LIMIT)
-      if (cancelled) {
+      if (cancelled || suggestionRequestRef.current !== requestId) {
         return
       }
 
@@ -287,8 +339,20 @@ export function useSearch(extension, activeTimeFilter = null) {
           ? response.results
           : []
 
-      setSuggestions(items.map(normalizeSuggestion).filter(Boolean))
-    }, query.trim() ? 140 : 60)
+      const normalizedItems = items.map(normalizeSuggestion).filter(Boolean)
+      suggestionCacheRef.current.set(cacheKey, normalizedItems)
+
+      if (!normalizedQuery) {
+        suggestionCacheRef.current.set(broadKey, normalizedItems)
+        broadSuggestionsRef.current = normalizedItems
+      } else if (normalizedItems.length > broadSuggestionsRef.current.length) {
+        broadSuggestionsRef.current = normalizedItems
+      }
+
+      setSuggestions(
+        normalizedQuery ? filterSuggestions(normalizedItems, normalizedQuery) : normalizedItems
+      )
+    }, normalizedQuery ? 30 : 0)
 
     return () => {
       cancelled = true
@@ -330,6 +394,8 @@ export function useSearch(extension, activeTimeFilter = null) {
   const runSearch = useCallback(
     async (value) => {
       const normalized = normalize(value)
+      const searchId = latestSearchRef.current + 1
+      latestSearchRef.current = searchId
       if (!normalized) {
         setResults([])
         setAnswerMeta(null)
@@ -361,8 +427,39 @@ export function useSearch(extension, activeTimeFilter = null) {
             : []
 
         const normalizedResults = items.map(normalizeResult)
-        setAnswerMeta(normalizeAnswerMeta(response?.answer))
+        const normalizedAnswerMeta = normalizeAnswerMeta(response?.answer)
+        setAnswerMeta(normalizedAnswerMeta)
         setResults(normalizedResults)
+
+        if (normalizedAnswerMeta?.summary) {
+          void polishAnswerSummary({
+            query: normalized,
+            answerMeta: normalizedAnswerMeta,
+            results: normalizedResults,
+            environment: extension?.environment,
+          }).then((polished) => {
+            if (
+              !polished?.applied ||
+              latestSearchRef.current !== searchId
+            ) {
+              return
+            }
+
+            setAnswerMeta((current) => {
+              if (!current) {
+                return current
+              }
+
+              return {
+                ...current,
+                summary: polished.summary,
+                polishedByLocalModel: true,
+                localModel: polished.model,
+              }
+            })
+          })
+        }
+
         return normalizedResults
       } catch (err) {
         setError(err?.message || 'Search failed.')

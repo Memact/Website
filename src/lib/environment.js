@@ -89,6 +89,8 @@ export function detectClientEnvironment() {
       extensionsUrl: 'edge://extensions/',
       helpUrl:
         'https://learn.microsoft.com/microsoft-edge/extensions-chromium/getting-started/extension-sideloading',
+      webgpuCapable: false,
+      localLanguageModelSupported: false,
       extensionCapable: true,
       extensionRecommended: true,
       automaticCaptureSupported: true,
@@ -114,6 +116,8 @@ export function detectClientEnvironment() {
   const extensionCapable = !mobile && ['edge', 'chrome', 'opera', 'vivaldi', 'brave'].includes(effectiveFamily)
   const extensionRecommended = !mobile && effectiveFamily === 'edge'
   const automaticCaptureSupported = extensionCapable
+  const webgpuCapable = !mobile && typeof navigator.gpu !== 'undefined'
+  const localLanguageModelSupported = extensionCapable && webgpuCapable
 
   return {
     family: effectiveFamily,
@@ -126,6 +130,8 @@ export function detectClientEnvironment() {
     isBrave,
     extensionsUrl: extensionsUrlForFamily(family, isBrave),
     helpUrl: helpUrlForFamily(family, isBrave),
+    webgpuCapable,
+    localLanguageModelSupported,
     extensionCapable,
     extensionRecommended,
     automaticCaptureSupported,

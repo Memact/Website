@@ -206,7 +206,7 @@ function PrivacyDialog({ onClose }) {
   return (
     <GlassDialog
       title="Privacy Notice"
-      subtitle="Memact stores events, embeddings, and answers locally on this device. It does not call cloud APIs or send your activity off-machine."
+      subtitle="Memact stores events, embeddings, and answers locally on this device. It does not call cloud APIs or send your activity off-machine. If local language polish is available in your browser, Memact may download local model files to this device."
       onClose={onClose}
       footer={
         <button type="button" className="dialog-primary-button" onClick={onClose}>
@@ -463,6 +463,12 @@ function BrowserSetupDialog({ browserInfo, mode, extensionDetected, extensionRea
 }
 
 function MemoryDetailDialog({ result, onOpen, onClose }) {
+  const [rawVisible, setRawVisible] = useState(false)
+
+  useEffect(() => {
+    setRawVisible(false)
+  }, [result?.id])
+
   if (!result) {
     return null
   }
@@ -594,8 +600,20 @@ function MemoryDetailDialog({ result, onOpen, onClose }) {
 
       {showRawCapturedText ? (
         <div className="memory-detail-body">
-          <div className="refine-heading">RAW CAPTURED TEXT</div>
-          <pre className="memory-detail-text">{rawFullText}</pre>
+          <button
+            type="button"
+            className="details-button"
+            onClick={() => setRawVisible((current) => !current)}
+          >
+            {rawVisible ? 'Hide raw captured text' : 'Show raw captured text'}
+          </button>
+
+          {rawVisible ? (
+            <>
+              <div className="refine-heading">RAW CAPTURED TEXT</div>
+              <pre className="memory-detail-text">{rawFullText}</pre>
+            </>
+          ) : null}
         </div>
       ) : null}
     </GlassDialog>

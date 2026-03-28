@@ -492,6 +492,11 @@ button:disabled {
   gap: 8px;
 }
 
+.suggestion-list {
+  flex: 1;
+  min-height: 0;
+}
+
 .suggestion-card {
   width: 100%;
   padding: 16px 18px;
@@ -1221,7 +1226,7 @@ button:disabled {
 }
 
 .suggestion-list {
-  max-height: min(46vh, 420px);
+  max-height: none;
   padding-right: 4px;
   scrollbar-gutter: stable;
   overscroll-behavior: contain;
@@ -1376,6 +1381,8 @@ button:disabled {
   .memact-page.is-compact .home-menu-slot,
   .memact-page.is-mobile .home-menu-slot {
     justify-content: flex-end;
+    min-height: 52px;
+    align-items: flex-start;
   }
 
   .results-divider-host,
@@ -1410,6 +1417,15 @@ button:disabled {
   .compact-brand {
     width: 52px;
     height: 52px;
+  }
+
+  .top-bar {
+    min-height: 52px;
+  }
+
+  .home-menu-slot {
+    min-height: 52px;
+    align-items: flex-start;
   }
 
   .compact-brand {
