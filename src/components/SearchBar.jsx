@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import enterIcon from '../../assets/enter_icon.svg'
+import searchIcon from '../../assets/search_icon.svg'
 
 function isPrintableKey(event) {
   return (
@@ -41,6 +43,7 @@ export default function SearchBar({
       : null
   const previewActive = Boolean(selectedSuggestion)
   const inputValue = previewActive ? selectedSuggestion.completion : value
+  const hasSearchText = Boolean(inputValue.trim())
 
   useEffect(() => {
     onFocusChange?.(focused)
@@ -261,11 +264,13 @@ export default function SearchBar({
         />
 
         <button
-          className={`search-button ${value.trim() && focused ? 'is-enter' : 'is-search'}`}
+          className={`search-button ${hasSearchText ? 'is-enter' : 'is-search'}`}
           type="submit"
-          aria-label={value.trim() && focused ? 'Search' : 'Search'}
+          aria-label={hasSearchText ? 'Submit search' : 'Search'}
           disabled={loading}
-        />
+        >
+          <img src={hasSearchText ? enterIcon : searchIcon} alt="" aria-hidden="true" />
+        </button>
       </form>
 
       {dockVisible ? (

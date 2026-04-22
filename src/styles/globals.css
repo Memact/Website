@@ -160,7 +160,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: min(460px, 72vw);
+  width: min(380px, 64vw);
 }
 
 .memact-logo img {
@@ -170,7 +170,7 @@ button {
 }
 
 .has-results .memact-logo {
-  width: min(210px, 50vw);
+  width: min(180px, 44vw);
 }
 
 .search-cluster {
@@ -188,8 +188,9 @@ button {
   align-items: center;
   border: 1px solid var(--white-16);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.96);
+  background: var(--panel);
   box-shadow: var(--shadow);
+  backdrop-filter: blur(20px);
   overflow: hidden;
 }
 
@@ -209,17 +210,17 @@ button {
   outline: 0;
   padding: 0 0 0 clamp(22px, 4vw, 30px);
   background: transparent;
-  color: var(--bg);
+  color: var(--white);
   font-size: clamp(16px, 2.4vw, 20px);
   font-weight: 700;
 }
 
 .search-input::placeholder {
-  color: rgba(0, 1, 27, 0.48);
+  color: var(--white-46);
 }
 
 .search-input.is-preview {
-  color: rgba(0, 1, 27, 0.52);
+  color: var(--white-62);
 }
 
 .search-button {
@@ -229,34 +230,21 @@ button {
   margin-right: 6px;
   border: 0;
   border-radius: 999px;
-  background: var(--bg);
+  background: transparent;
   color: var(--ink);
   display: grid;
   place-items: center;
 }
 
+.search-button img {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
 .search-button:disabled {
   opacity: 0.52;
   cursor: wait;
-}
-
-.search-button::before {
-  content: '';
-  width: 15px;
-  height: 15px;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-  transform: translate(-1px, -1px);
-}
-
-.search-button::after {
-  content: '';
-  position: absolute;
-  width: 9px;
-  height: 2px;
-  border-radius: 99px;
-  background: currentColor;
-  transform: translate(8px, 8px) rotate(45deg);
 }
 
 .suggestion-dock {
@@ -267,16 +255,17 @@ button {
   border: 1px solid var(--white-24);
   border-top: 0;
   border-radius: 0 0 32px 32px;
-  background: rgba(255, 255, 255, 0.96);
-  color: var(--bg);
+  background: var(--panel);
+  color: var(--white);
   box-shadow: var(--shadow);
+  backdrop-filter: blur(20px);
   overflow: auto;
   padding: 8px;
 }
 
 .suggestion-heading {
   padding: 10px 18px 6px;
-  color: rgba(0, 1, 27, 0.52);
+  color: var(--white-46);
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.16em;
@@ -295,17 +284,17 @@ button {
   border: 0;
   border-radius: 20px;
   background: transparent;
-  color: var(--bg);
+  color: var(--white);
   padding: 12px 14px;
 }
 
 .suggestion-card:hover,
 .suggestion-card.is-active {
-  background: rgba(0, 1, 27, 0.08);
+  background: var(--white-10);
 }
 
 .suggestion-meta {
-  color: rgba(0, 1, 27, 0.56);
+  color: var(--white-46);
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.14em;
@@ -319,14 +308,14 @@ button {
 }
 
 .suggestion-subtitle {
-  color: rgba(0, 1, 27, 0.62);
+  color: var(--white-62);
   font-size: 13px;
   line-height: 1.4;
 }
 
 .suggestion-empty {
   padding: 14px 16px 16px;
-  color: rgba(0, 1, 27, 0.62);
+  color: var(--white-62);
   font-size: 14px;
   font-weight: 800;
   line-height: 1.45;
@@ -502,11 +491,11 @@ blockquote {
   }
 
   .memact-logo {
-    width: min(320px, 74vw);
+    width: min(270px, 68vw);
   }
 
   .has-results .memact-logo {
-    width: min(170px, 46vw);
+    width: min(150px, 42vw);
   }
 
   .search-shell {
