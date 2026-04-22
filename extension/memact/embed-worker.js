@@ -2,6 +2,7 @@ const MODEL_NAME = "Xenova/all-MiniLM-L6-v2";
 
 let extractorPromise = null;
 let modelReady = false;
+let transformersModule = null;
 
 function normalizeVector(values) {
   const vector = Array.from(values || []).map((value) => Number(value) || 0);
@@ -41,6 +42,9 @@ async function hashEmbedding(text, dim = 384) {
 }
 
 function getPipelineFactory() {
+  if (transformersModule?.pipeline) {
+    return transformersModule.pipeline;
+  }
   if (globalThis.transformers?.pipeline) {
     return globalThis.transformers.pipeline;
   }
@@ -63,6 +67,14 @@ async function tryLoadTransformers() {
           chrome.runtime?.getURL?.("vendor/transformers.min.js")
         ].filter(Boolean);
         for (const url of urls) {
+          try {
+            transformersModule = await import(url);
+            if (getPipelineFactory()) {
+              break;
+            }
+          } catch {
+            // Try importScripts next or fall back to hashing.
+          }
           try {
             importScripts(url);
             if (getPipelineFactory()) {

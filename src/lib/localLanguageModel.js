@@ -229,20 +229,7 @@ function buildMessages({ query, answerMeta, result }) {
 }
 
 async function createGenerator(device) {
-  const { pipeline, env } = await import('@xenova/transformers')
-  env.allowRemoteModels = true
-  env.useBrowserCache = true
-
-  if (device === 'webgpu') {
-    return pipeline('text-generation', SMOLLM_MODEL_ID, {
-      device: 'webgpu',
-      dtype: 'q4',
-    })
-  }
-
-  return pipeline('text-generation', SMOLLM_MODEL_ID, {
-    device: 'wasm',
-  })
+  throw new Error(`Memact local language formatting is disabled for ${device}.`)
 }
 
 async function getGenerator(environment) {
@@ -276,7 +263,7 @@ async function getGenerator(environment) {
 }
 
 export function supportsLocalLanguageModel(environment) {
-  return Boolean(environment?.localLanguageModelSupported)
+  return false
 }
 
 export async function structureAnswerMeta({ query, answerMeta, results, environment }) {

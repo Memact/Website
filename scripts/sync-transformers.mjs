@@ -10,10 +10,10 @@ const vendors = [
     source: path.join(
       root,
       'node_modules',
-      '@xenova',
+      '@huggingface',
       'transformers',
       'dist',
-      'transformers.min.js'
+      'transformers.web.min.js'
     ),
     target: path.join(vendorDir, 'transformers.min.js'),
     label: 'transformers bundle',
