@@ -159,7 +159,7 @@ button {
   margin: 0;
   color: var(--white);
   font-family: var(--brand-font);
-  font-size: clamp(48px, 9vw, 104px);
+  font-size: clamp(44px, 8.2vw, 96px);
   font-weight: 700;
   line-height: 0.74;
   text-transform: lowercase;
@@ -174,7 +174,7 @@ button {
   align-items: baseline;
   justify-content: center;
   letter-spacing: 0;
-  transform: scaleX(1.08);
+  transform: none;
   transform-origin: center;
   white-space: nowrap;
 }
@@ -184,31 +184,31 @@ button {
 }
 
 .memact-wordmark span:nth-child(2) {
-  margin-left: 0.096em;
+  margin-left: -0.025em;
 }
 
 .memact-wordmark span:nth-child(3) {
-  margin-left: 0.12em;
+  margin-left: 0.006em;
 }
 
 .memact-wordmark span:nth-child(4) {
-  margin-left: 0.108em;
+  margin-left: -0.015em;
 }
 
 .memact-wordmark span:nth-child(5) {
-  margin-left: 0.084em;
+  margin-left: -0.016em;
 }
 
 .memact-wordmark span:nth-child(6) {
-  margin-left: 0.096em;
+  margin-left: -0.025em;
 }
 
 .has-results .memact-logo {
-  font-size: clamp(32px, 5vw, 48px);
+  font-size: clamp(30px, 4.6vw, 44px);
 }
 
 .has-results .memact-wordmark {
-  transform: scaleX(1.06);
+  transform: none;
 }
 
 .search-cluster {
@@ -529,15 +529,15 @@ blockquote {
   }
 
   .memact-logo {
-    font-size: clamp(44px, 14vw, 68px);
+    font-size: clamp(40px, 12.5vw, 60px);
   }
 
   .memact-wordmark {
-    transform: scaleX(1.06);
+    transform: none;
   }
 
   .has-results .memact-logo {
-    font-size: clamp(30px, 10vw, 40px);
+    font-size: clamp(28px, 9vw, 36px);
   }
 
   .search-shell {
