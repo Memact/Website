@@ -1,10 +1,7 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import MathRichText from '../components/MathRichText'
+import SearchBar from '../components/SearchBar'
 import { useSearch } from '../hooks/useSearch'
-
-const SAMPLE_THOUGHT = 'I feel like I need to build something real before applying anywhere.'
-
-const PIPELINE = ['Capture', 'Inference', 'Schema', 'Query', 'Influence', 'Origin']
 
 function normalize(value) {
   return String(value || '').replace(/\s+/g, ' ').trim()
@@ -26,31 +23,75 @@ function domainFromResult(result) {
   }
 }
 
-function formatStatus(extension, search, resultCount, tracedThought) {
-  if (search.loading) return 'Finding citations from captured activity...'
-  if (extension?.requiresBridge) return 'Capture extension needed for real citations.'
-  if (extension?.ready || extension?.bridgeDetected) return tracedThought ? `${resultCount} evidence candidates found.` : 'Capture connected.'
-  if (extension?.mode === 'web-fallback') return tracedThought ? `${resultCount} local candidates found.` : 'Local memory mode.'
-  return 'Ready.'
+function compactText(value, maxLength = 190) {
+  const text = normalize(value)
+  if (!text) return ''
+  if (text.length <= maxLength) return text
+  return `${text.slice(0, maxLength - 3).trim()}...`
 }
 
-function EvidenceCard({ result }) {
+function buildStatus(extension, search, submittedQuery) {
+  if (search.loading) return 'Searching captured activity...'
+  if (search.error) return search.error
+  if (submittedQuery && search.results.length) return `${search.results.length} cited source candidates`
+  if (submittedQuery) return 'No strong captured match yet'
+  if (extension?.requiresBridge) return 'Connect Capture for real activity suggestions'
+  return 'Ready'
+}
+
+function buildAnswerText(query, answerMeta, results) {
+  const answer = normalize(answerMeta?.answer)
+  const summary = normalize(answerMeta?.summary || answerMeta?.overview)
+
+  if (summary) return summary
+  if (answer) return answer
+
+  if (!results.length) {
+    return 'Memact did not find a strong enough captured source to cite for this query yet.'
+  }
+
+  const primary = results[0]
+  const secondary = results[1]
+  const primaryTitle = primary?.title || domainFromResult(primary)
+  const secondaryTitle = secondary?.title || domainFromResult(secondary)
+
+  if (secondary) {
+    return `The strongest captured match is ${primaryTitle} [1]. A related source also appears in ${secondaryTitle} [2].`
+  }
+
+  return `The strongest captured match is ${primaryTitle} [1].`
+}
+
+function buildActivitySuggestions(search) {
+  return search.suggestions
+}
+
+function CitationCard({ result, index }) {
   const domain = domainFromResult(result)
-  const text = result?.structuredSummary || result?.snippet || result?.displayExcerpt || result?.fullText || ''
+  const text = compactText(
+    result?.structuredSummary ||
+      result?.snippet ||
+      result?.displayExcerpt ||
+      result?.fullText,
+    220
+  )
 
   return (
-    <article className="evidence-card">
-      <div className="evidence-card__meta">{domain}</div>
-      <h3 className="evidence-card__title">{result?.title || 'Captured activity'}</h3>
+    <article className="citation-card">
+      <div className="citation-card__top">
+        <span className="citation-card__rank">[{index + 1}] {index === 0 ? 'Strong match' : 'Related source'}</span>
+        {result?.url ? (
+          <button type="button" onClick={() => openExternal(result.url)}>
+            Open link
+          </button>
+        ) : null}
+      </div>
+      <h3>{result?.title || 'Captured activity'}</h3>
+      <p className="citation-card__domain">{domain}</p>
       {text ? (
-        <div className="evidence-card__text">
+        <div className="citation-card__text">
           <MathRichText text={text} />
         </div>
-      ) : null}
-      {result?.url ? (
-        <button type="button" className="evidence-card__link" onClick={() => openExternal(result.url)}>
-          Open source
-        </button>
       ) : null}
     </article>
   )
@@ -58,117 +99,82 @@ function EvidenceCard({ result }) {
 
 export default function Search({ extension }) {
   const search = useSearch(extension, null)
-  const [thought, setThought] = useState('')
-  const [tracedThought, setTracedThought] = useState('')
+  const [submittedQuery, setSubmittedQuery] = useState('')
+  const [infoOpen, setInfoOpen] = useState(false)
 
-  const resultCount = search.results.length
-  const status = formatStatus(extension, search, resultCount, tracedThought)
+  const suggestions = useMemo(() => buildActivitySuggestions(search), [search])
+  const status = buildStatus(extension, search, submittedQuery)
+  const answerText = buildAnswerText(submittedQuery, search.answerMeta, search.results)
+  const hasSubmitted = Boolean(submittedQuery)
 
-  const answerWithCitations = async (event) => {
-    event?.preventDefault()
-    const query = normalize(thought)
+  const runQuery = async (value = search.query) => {
+    const query = normalize(value)
     if (!query) return
-
-    setTracedThought(query)
+    search.setQuery(query)
+    setSubmittedQuery(query)
     await search.runSearch(query)
   }
 
-  const useSample = () => {
-    setThought(SAMPLE_THOUGHT)
-    search.setQuery(SAMPLE_THOUGHT)
-  }
-
   return (
-    <main className="memact-page">
-      <section className="thought-shell" aria-labelledby="memact-title">
-        <header className="thought-header">
-          <div className="brand-row">
-            <span className="brand-mark">memact</span>
-            <span className="version-pill">v0.0</span>
-          </div>
-          <h1 id="memact-title">Answers with citations.</h1>
+    <main className={`memact-page ${hasSubmitted ? 'has-results' : 'is-home'}`}>
+      <button
+        type="button"
+        className="info-button"
+        aria-label="About Memact"
+        onClick={() => setInfoOpen((current) => !current)}
+      >
+        i
+      </button>
+
+      {infoOpen ? (
+        <aside className="info-popover" role="dialog" aria-label="About Memact">
           <p>
-            Enter a thought or question. Memact answers with citations from the websites, videos,
-            posts, searches, and pages you actually consumed.
+            Memact searches captured activity and returns answers with citations. Suggestions and
+            cited results come from local activity evidence when Capture is connected.
           </p>
-        </header>
+        </aside>
+      ) : null}
 
-        <form className="thought-form" onSubmit={answerWithCitations}>
-          <label className="thought-label" htmlFor="thought-input">
-            Thought or question
-          </label>
-          <textarea
-            id="thought-input"
-            value={thought}
-            onChange={(event) => {
-              setThought(event.target.value)
-              search.setQuery(event.target.value)
-            }}
-            placeholder="What do you want Memact to answer from your captured activity?"
-            rows={5}
-          />
-          <div className="form-actions">
-            <button type="submit" className="primary-action" disabled={!normalize(thought) || search.loading}>
-              Answer with citations
-            </button>
-            <button type="button" className="secondary-action" onClick={useSample}>
-              Try example
-            </button>
-          </div>
-        </form>
+      <section className="search-home" aria-label="Memact search">
+        <h1 className="memact-logo">memact</h1>
+        <SearchBar
+          value={search.query}
+          onChange={search.setQuery}
+          onSubmit={runQuery}
+          onSuggestionClick={runQuery}
+          placeholder="Search your captured activity"
+          loading={search.loading}
+          suggestions={suggestions}
+        />
+        <p className="search-status">{status}</p>
+      </section>
 
-        <section className="trace-panel" aria-live="polite">
-          <div className="trace-panel__top">
-            <span className="trace-label">Answer engine</span>
-            <span className="trace-status">{status}</span>
-          </div>
-
-          {tracedThought ? (
-            <>
-              <blockquote>{tracedThought}</blockquote>
-              <div className="claim-grid">
-                <div>
-                  <span>Answer</span>
-                  <p>Memact should only answer from captured evidence, not unsupported guessing.</p>
-                </div>
-                <div>
-                  <span>Citations</span>
-                  <p>Every answer should point back to source pages, posts, videos, or searches.</p>
-                </div>
-              </div>
-            </>
-          ) : (
-            <p className="empty-copy">No answer yet. Ask something and Memact will cite the evidence it can find.</p>
-          )}
-        </section>
-
-        {tracedThought ? (
-          <section className="evidence-section">
-            <div className="section-heading">
-              <h2>Evidence candidates</h2>
-              <p>These are retrieved memories, not final conclusions.</p>
+      {hasSubmitted ? (
+        <section className="answer-layout" aria-live="polite">
+          <article className="answer-card">
+            <p className="eyebrow">Answer</p>
+            <blockquote>{submittedQuery}</blockquote>
+            <div className="answer-copy">
+              <MathRichText text={answerText} />
             </div>
+          </article>
 
-            {resultCount ? (
-              <div className="evidence-list">
-                {search.results.slice(0, 5).map((result) => (
-                  <EvidenceCard key={result.id} result={result} />
+          <section className="citation-panel" aria-label="Citations">
+            <p className="eyebrow">Citations</p>
+            {search.results.length ? (
+              <div className="citation-list">
+                {search.results.slice(0, 4).map((result, index) => (
+                  <CitationCard key={result.id} result={result} index={index} />
                 ))}
               </div>
             ) : (
-              <div className="empty-evidence">
-                No captured evidence matched this thought closely enough yet.
+              <div className="empty-citations">
+                No captured source was strong enough to cite for this query.
               </div>
             )}
           </section>
-        ) : null}
-
-        <footer className="pipeline-row" aria-label="Memact pipeline">
-          {PIPELINE.map((item) => (
-            <span key={item}>{item}</span>
-          ))}
-        </footer>
-      </section>
+        </section>
+      ) : null}
     </main>
   )
 }
