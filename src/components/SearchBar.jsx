@@ -37,15 +37,23 @@ export default function SearchBar({
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [typedBeforeSelection, setTypedBeforeSelection] = useState('')
   const [voiceState, setVoiceState] = useState('idle')
+  const [placeholderIndex, setPlaceholderIndex] = useState(0)
+  const [placeholderVisible, setPlaceholderVisible] = useState(true)
   const blurTimerRef = useRef(null)
   const dockPointerDownRef = useRef(false)
   const inputRef = useRef(null)
+  const placeholderTimerRef = useRef(null)
+  const placeholderTransitionTimerRef = useRef(null)
   const recognitionRef = useRef(null)
   const voiceSubmitTimerRef = useRef(null)
   const voiceStatusTimerRef = useRef(null)
   const finalVoiceTextRef = useRef('')
   const latestVoiceTextRef = useRef('')
 
+  const placeholderItems = useMemo(
+    () => (Array.isArray(placeholder) ? placeholder.filter(Boolean) : [placeholder].filter(Boolean)),
+    [placeholder]
+  )
   const visibleSuggestions = useMemo(() => suggestions.slice(0, 12), [suggestions])
   const chipsVisible = focused && !value.trim() && timeFilters.length > 0
   const emptySuggestionsVisible = focused && Boolean(emptySuggestionMessage) && visibleSuggestions.length === 0
@@ -57,6 +65,8 @@ export default function SearchBar({
   const previewActive = Boolean(selectedSuggestion)
   const inputValue = previewActive ? selectedSuggestion.completion : value
   const hasActiveSearchText = focused && Boolean(inputValue.trim())
+  const currentPlaceholder = placeholderItems[placeholderIndex % Math.max(placeholderItems.length, 1)] || ''
+  const placeholderActive = !inputValue && Boolean(currentPlaceholder)
   const voiceActive = voiceState === 'listening' || voiceState === 'processing'
 
   useEffect(() => {
@@ -70,6 +80,43 @@ export default function SearchBar({
   useEffect(() => {
     onVoiceStateChange?.(voiceState)
   }, [onVoiceStateChange, voiceState])
+
+  useEffect(() => {
+    setPlaceholderIndex(0)
+    setPlaceholderVisible(true)
+
+    if (placeholderTimerRef.current) {
+      window.clearInterval(placeholderTimerRef.current)
+      placeholderTimerRef.current = null
+    }
+    if (placeholderTransitionTimerRef.current) {
+      window.clearTimeout(placeholderTransitionTimerRef.current)
+      placeholderTransitionTimerRef.current = null
+    }
+
+    if (placeholderItems.length <= 1) {
+      return undefined
+    }
+
+    placeholderTimerRef.current = window.setInterval(() => {
+      setPlaceholderVisible(false)
+      placeholderTransitionTimerRef.current = window.setTimeout(() => {
+        setPlaceholderIndex((index) => (index + 1) % placeholderItems.length)
+        setPlaceholderVisible(true)
+      }, 180)
+    }, 3200)
+
+    return () => {
+      if (placeholderTimerRef.current) {
+        window.clearInterval(placeholderTimerRef.current)
+        placeholderTimerRef.current = null
+      }
+      if (placeholderTransitionTimerRef.current) {
+        window.clearTimeout(placeholderTransitionTimerRef.current)
+        placeholderTransitionTimerRef.current = null
+      }
+    }
+  }, [placeholderItems])
 
   useEffect(() => {
     if (!focused) {
@@ -94,6 +141,12 @@ export default function SearchBar({
     return () => {
       if (blurTimerRef.current) {
         window.clearTimeout(blurTimerRef.current)
+      }
+      if (placeholderTimerRef.current) {
+        window.clearInterval(placeholderTimerRef.current)
+      }
+      if (placeholderTransitionTimerRef.current) {
+        window.clearTimeout(placeholderTransitionTimerRef.current)
       }
       if (voiceSubmitTimerRef.current) {
         window.clearTimeout(voiceSubmitTimerRef.current)
@@ -385,7 +438,7 @@ export default function SearchBar({
               submitSuggestion(selectedSuggestion, { passiveAfterSubmit: true })
             }
           }}
-          placeholder={placeholder}
+          placeholder=""
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="none"
@@ -394,6 +447,13 @@ export default function SearchBar({
           enterKeyHint="search"
           aria-label="Input"
         />
+
+        <span
+          className={`search-placeholder ${placeholderActive && placeholderVisible ? 'is-visible' : ''}`}
+          aria-hidden="true"
+        >
+          {currentPlaceholder}
+        </span>
 
         <button
           className={`search-button ${hasActiveSearchText ? 'is-enter' : 'is-mic'} ${voiceActive ? 'is-listening' : ''}`}

@@ -3,6 +3,12 @@ import MathRichText from '../components/MathRichText'
 import SearchBar from '../components/SearchBar'
 import { useSearch } from '../hooks/useSearch'
 
+const EXAMPLE_PLACEHOLDERS = [
+  'e.g. I feel like I\'m behind everyone',
+  'e.g. startups are better than jobs',
+  'e.g. I need to prove myself',
+]
+
 function normalize(value) {
   return String(value || '').replace(/\s+/g, ' ').trim()
 }
@@ -433,7 +439,7 @@ export default function Search({ extension }) {
           onSubmit={runQuery}
           onSuggestionClick={runQuery}
           onVoiceStateChange={setVoiceState}
-          placeholder="Type Here"
+          placeholder={EXAMPLE_PLACEHOLDERS}
           loading={search.loading}
           suggestions={suggestions}
           emptySuggestionMessage={emptySuggestionMessage}
