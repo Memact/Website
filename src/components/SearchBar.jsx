@@ -30,18 +30,19 @@ export default function SearchBar({
   onTimeFilter,
   onFocusChange,
   onDockVisibilityChange,
+  onVoiceStateChange,
   emptySuggestionMessage = '',
 }) {
   const [focused, setFocused] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [typedBeforeSelection, setTypedBeforeSelection] = useState('')
   const [voiceState, setVoiceState] = useState('idle')
-  const [voiceMessage, setVoiceMessage] = useState('')
   const blurTimerRef = useRef(null)
   const dockPointerDownRef = useRef(false)
   const inputRef = useRef(null)
   const recognitionRef = useRef(null)
   const voiceSubmitTimerRef = useRef(null)
+  const voiceStatusTimerRef = useRef(null)
   const finalVoiceTextRef = useRef('')
   const latestVoiceTextRef = useRef('')
 
@@ -65,6 +66,10 @@ export default function SearchBar({
   useEffect(() => {
     onDockVisibilityChange?.(dockVisible)
   }, [dockVisible, onDockVisibilityChange])
+
+  useEffect(() => {
+    onVoiceStateChange?.(voiceState)
+  }, [onVoiceStateChange, voiceState])
 
   useEffect(() => {
     if (!focused) {
@@ -92,6 +97,9 @@ export default function SearchBar({
       }
       if (voiceSubmitTimerRef.current) {
         window.clearTimeout(voiceSubmitTimerRef.current)
+      }
+      if (voiceStatusTimerRef.current) {
+        window.clearTimeout(voiceStatusTimerRef.current)
       }
       recognitionRef.current?.abort?.()
     }
@@ -209,6 +217,10 @@ export default function SearchBar({
       window.clearTimeout(voiceSubmitTimerRef.current)
       voiceSubmitTimerRef.current = null
     }
+    if (voiceStatusTimerRef.current) {
+      window.clearTimeout(voiceStatusTimerRef.current)
+      voiceStatusTimerRef.current = null
+    }
 
     const recognition = new SpeechRecognition()
     recognitionRef.current = recognition
@@ -223,7 +235,6 @@ export default function SearchBar({
       clearPreview()
       setFocused(true)
       setVoiceState('listening')
-      setVoiceMessage('Listening. Say the thought you want Memact to connect.')
       window.requestAnimationFrame(() => {
         inputRef.current?.focus({ preventScroll: true })
       })
@@ -251,20 +262,13 @@ export default function SearchBar({
       if (finalText) {
         finalVoiceTextRef.current = spokenText
         setVoiceState('processing')
-        setVoiceMessage('Connecting the dots...')
       }
     }
 
-    recognition.onerror = (event) => {
-      const errorText =
-        event?.error === 'not-allowed'
-          ? 'Microphone access was blocked.'
-          : 'Voice input stopped. Try again.'
+    recognition.onerror = () => {
       setVoiceState('unsupported')
-      setVoiceMessage(errorText)
       window.setTimeout(() => {
         setVoiceState('idle')
-        setVoiceMessage('')
       }, 2800)
     }
 
@@ -273,17 +277,17 @@ export default function SearchBar({
       recognitionRef.current = null
       if (!finalText) {
         setVoiceState('idle')
-        setVoiceMessage('')
         return
       }
 
       setVoiceState('processing')
-      setVoiceMessage('Connecting the dots...')
       voiceSubmitTimerRef.current = window.setTimeout(() => {
-        setVoiceState('idle')
-        setVoiceMessage('')
+        setVoiceState('done')
         makeSearchPassive()
         onSubmit?.(finalText)
+        voiceStatusTimerRef.current = window.setTimeout(() => {
+          setVoiceState('idle')
+        }, 2200)
       }, 420)
     }
 
@@ -291,10 +295,8 @@ export default function SearchBar({
       recognition.start()
     } catch {
       setVoiceState('unsupported')
-      setVoiceMessage('Voice input is already active.')
       window.setTimeout(() => {
         setVoiceState('idle')
-        setVoiceMessage('')
       }, 2200)
     }
   }
@@ -411,12 +413,6 @@ export default function SearchBar({
           <img src={hasActiveSearchText ? enterIcon : micIcon} alt="" aria-hidden="true" />
         </button>
       </form>
-
-      {voiceMessage ? (
-        <div className={`voice-status voice-status--${voiceState}`} role="status">
-          {voiceMessage}
-        </div>
-      ) : null}
 
       {dockVisible ? (
         <div

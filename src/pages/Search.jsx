@@ -30,7 +30,10 @@ function compactText(value, maxLength = 190) {
   return `${text.slice(0, maxLength - 3).trim()}...`
 }
 
-function buildStatus(extension, search, submittedQuery) {
+function buildStatus(extension, search, submittedQuery, voiceState) {
+  if (voiceState === 'listening' || voiceState === 'processing') return 'Listening...'
+  if (voiceState === 'done') return 'Done'
+  if (voiceState === 'unsupported') return 'Voice input unavailable'
   if (search.loading) return 'Finding sources...'
   if (search.error) return search.error
   if (submittedQuery && search.results.length) return `${search.results.length} source candidates`
@@ -178,12 +181,13 @@ export default function Search({ extension }) {
   const [navigation, setNavigation] = useState({ entries: [], index: -1 })
   const [historyOpen, setHistoryOpen] = useState(false)
   const [infoOpen, setInfoOpen] = useState(false)
+  const [voiceState, setVoiceState] = useState('idle')
   const topActionsRef = useRef(null)
   const historyPopoverRef = useRef(null)
 
   const suggestions = useMemo(() => buildActivitySuggestions(search), [search])
   const emptySuggestionMessage = buildEmptySuggestionMessage(extension)
-  const status = buildStatus(extension, search, submittedQuery)
+  const status = buildStatus(extension, search, submittedQuery, voiceState)
   const answerText = buildAnswerText(submittedQuery, search.answerMeta, search.results)
   const hasSubmitted = Boolean(submittedQuery)
   const canGoBack = navigation.index >= 0
@@ -428,6 +432,7 @@ export default function Search({ extension }) {
           onChange={search.setQuery}
           onSubmit={runQuery}
           onSuggestionClick={runQuery}
+          onVoiceStateChange={setVoiceState}
           placeholder="Type Here"
           loading={search.loading}
           suggestions={suggestions}

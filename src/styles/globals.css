@@ -531,6 +531,7 @@ button {
   color: var(--ink);
   display: grid;
   place-items: center;
+  overflow: visible;
 }
 
 .search-button::after {
@@ -538,22 +539,26 @@ button {
 }
 
 .search-button img {
-  width: 26px;
-  height: 26px;
+  position: relative;
+  z-index: 1;
+  width: 24px;
+  height: 24px;
   display: block;
+  pointer-events: none;
 }
 
 .search-button.is-listening {
-  background: var(--white-10);
+  background: transparent;
 }
 
 .search-button.is-listening::before {
   position: absolute;
-  inset: 5px;
+  inset: 7px;
   border: 1px solid var(--white-46);
   border-radius: 999px;
+  background: var(--white-06);
   content: "";
-  opacity: 0.8;
+  opacity: 0.95;
   animation: memact-voice-pulse 1.15s ease-in-out infinite;
 }
 
@@ -566,27 +571,6 @@ button {
     opacity: 0;
     transform: scale(1.22);
   }
-}
-
-.voice-status {
-  justify-self: center;
-  width: fit-content;
-  max-width: min(100%, 560px);
-  margin: 10px auto 0;
-  padding: 8px 13px;
-  border: 1px solid var(--white-16);
-  border-radius: 999px;
-  background: var(--white-06);
-  color: var(--white-76);
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  line-height: 1.25;
-  text-align: center;
-}
-
-.voice-status--listening {
-  color: var(--white);
 }
 
 .search-button:disabled {
@@ -680,6 +664,7 @@ button {
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.02em;
+  transition: color 160ms ease, opacity 160ms ease;
 }
 
 .answer-layout {
