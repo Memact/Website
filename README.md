@@ -18,6 +18,13 @@ Enter a thought -> see how it connects with what you read, watch, search, and re
 
 Memact is not a generic search box. It uses the user's own local digital activity: pages, posts, videos, searches, and revisits saved by Capture.
 
+Memact is built for better decision making. It helps users:
+
+- See what sources may have shaped a thought.
+- Spot one-sided views before acting on them.
+- Understand emotions that may be tied to externally influenced thoughts.
+- Revisit the real context behind an idea instead of relying on memory alone.
+
 ## How It Works
 
 ```text

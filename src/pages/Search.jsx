@@ -364,8 +364,8 @@ export default function Search({ extension }) {
       {infoOpen ? (
         <aside className="info-popover" role="dialog" aria-label="About Memact" onClick={() => setInfoOpen(false)}>
           <p>
-            See how your thoughts and digital activity are connected. Memact looks at sources from
-            what you read, watch, search, and revisit when Capture is connected.
+            Memact helps you make better decisions by showing the sources around a thought,
+            spotting one-sided views, and noticing emotions shaped by what you consume.
           </p>
         </aside>
       ) : null}
