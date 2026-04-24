@@ -323,11 +323,16 @@ export default function Search({ extension }) {
   const status = buildStatus(extension, search, submittedQuery, voiceState)
   const answerText = buildAnswerText(submittedQuery, search.answerMeta, search.results)
   const bootstrapState = extension?.bootstrap || {}
-  const isBackgroundProcessing = bootstrapRequested || bootstrapState.status === 'running'
+  const bootstrapStatus = normalize(bootstrapState.status || 'idle').toLowerCase()
+  const isBootstrapRunning = bootstrapStatus === 'running'
+  const isBootstrapError = bootstrapStatus === 'error'
+  const isBootstrapComplete = bootstrapStatus === 'complete'
+  const shouldKeepBootstrapPane = bootstrapRequested || isBootstrapRunning || isBootstrapError
+  const isBackgroundProcessing = bootstrapRequested || isBootstrapRunning
   const shouldShowStatus = status !== 'Ready.'
   const shouldShowLoader =
     search.loading ||
-    bootstrapState.status === 'running' ||
+    isBootstrapRunning ||
     voiceState === 'listening' ||
     voiceState === 'processing'
   const hasSubmitted = Boolean(submittedQuery)
@@ -356,7 +361,7 @@ export default function Search({ extension }) {
   const shouldShowProcessingPane =
     !shouldShowInstallModal &&
     !shouldShowImportModal &&
-    isBackgroundProcessing
+    shouldKeepBootstrapPane
 
   const requestSetupPrompt = () => {
     setSetupPromptRequested(true)
@@ -377,7 +382,7 @@ export default function Search({ extension }) {
         limit: 320,
       })
 
-      if (!state || ['complete', 'idle', 'error'].includes(state.status)) {
+      if (!state || normalize(state.status, 20).toLowerCase() === 'error') {
         setBootstrapRequested(false)
       }
     } catch {
@@ -398,26 +403,28 @@ export default function Search({ extension }) {
   }, [extension?.bridgeDetected])
 
   useEffect(() => {
-    if (hasBootstrapData) {
+    if (hasBootstrapData || isBootstrapComplete) {
       setImportDecision('allowed')
       setBootstrapRequested(false)
       writeStoredValue(IMPORT_DECISION_KEY, 'allowed')
     }
-  }, [hasBootstrapData])
+  }, [hasBootstrapData, isBootstrapComplete])
 
   useEffect(() => {
-    if (!bootstrapState.status || bootstrapState.status === 'running') {
+    if (!bootstrapStatus || bootstrapStatus === 'running') {
       return
     }
 
-    setBootstrapRequested(false)
-  }, [bootstrapState.status])
+    if (bootstrapStatus === 'complete' || bootstrapStatus === 'error') {
+      setBootstrapRequested(false)
+    }
+  }, [bootstrapStatus])
 
   useEffect(() => {
-    if (isBackgroundProcessing) {
+    if (shouldKeepBootstrapPane) {
       setProcessingPaneCollapsed(false)
     }
-  }, [isBackgroundProcessing])
+  }, [shouldKeepBootstrapPane])
 
   useEffect(() => {
     const canAutoOpenInfo =
@@ -878,7 +885,7 @@ export default function Search({ extension }) {
 
       {shouldShowProcessingPane ? (
         <aside
-          className={`processing-pane ${processingPaneCollapsed ? 'is-collapsed' : 'is-expanded'}`}
+          className={`processing-pane ${processingPaneCollapsed ? 'is-collapsed' : 'is-expanded'} ${isBootstrapError ? 'is-error' : ''}`}
           role="status"
           aria-live="polite"
           aria-label="Memact setup progress"
@@ -886,43 +893,49 @@ export default function Search({ extension }) {
           {!processingPaneCollapsed ? (
             <div className="processing-pane__copy">
               <p className="processing-pane__eyebrow">Memact setup</p>
-              <p className="processing-pane__title">Working in the background.</p>
-              <p className="processing-pane__text">
-                Memact is going through recent activity and getting your first suggestions ready. Search will open when this finishes.
+              <p className="processing-pane__title">
+                {isBootstrapError ? 'Import needs attention.' : 'Working in the background.'}
               </p>
-              <div className="processing-pane__detail-grid">
-                <p className="processing-pane__detail">
-                  <span>Stage</span>
-                  <strong>{normalize(bootstrapState.stage || 'processing')}</strong>
-                </p>
-                <p className="processing-pane__detail">
-                  <span>Imported</span>
-                  <strong>{Number(bootstrapState.imported_count || 0)}</strong>
-                </p>
-                <p className="processing-pane__detail">
-                  <span>Checked</span>
-                  <strong>{Number(bootstrapState.scanned_count || bootstrapState.processed_count || 0)}</strong>
-                </p>
-                <p className="processing-pane__detail">
-                  <span>Window</span>
-                  <strong>{Number(bootstrapState.history_days || 0)} days</strong>
-                </p>
-              </div>
+              <p className="processing-pane__text">
+                {isBootstrapError
+                  ? normalize(bootstrapState.error || 'Memact could not finish the local import.')
+                  : 'Memact is going through recent activity and getting your first suggestions ready. Search will open when this finishes.'}
+              </p>
+              {!isBootstrapError ? (
+                <div className="processing-pane__detail-grid">
+                  <p className="processing-pane__detail">
+                    <span>Stage</span>
+                    <strong>{normalize(bootstrapState.stage || (bootstrapRequested ? 'starting' : 'processing'))}</strong>
+                  </p>
+                  <p className="processing-pane__detail">
+                    <span>Imported</span>
+                    <strong>{Number(bootstrapState.imported_count || 0)}</strong>
+                  </p>
+                  <p className="processing-pane__detail">
+                    <span>Checked</span>
+                    <strong>{Number(bootstrapState.scanned_count || bootstrapState.processed_count || 0)}</strong>
+                  </p>
+                  <p className="processing-pane__detail">
+                    <span>Window</span>
+                    <strong>{Number(bootstrapState.history_days || 0)} days</strong>
+                  </p>
+                </div>
+              ) : null}
             </div>
           ) : null}
           <div className="processing-pane__meta">
             <div className="processing-pane__progress">
               <div className="processing-pane__progress-bar">
-                <span style={{ width: `${Math.max(4, Math.min(100, Number(bootstrapState.progress_percent || 0)))}%` }} />
+                <span style={{ width: `${Math.max(4, Math.min(100, Number(bootstrapState.progress_percent || (isBootstrapError ? 100 : 1))))}%` }} />
               </div>
               {!processingPaneCollapsed ? (
                 <p className="processing-pane__note">
-                  {bootstrapState.note || 'Checking what to keep.'}
+                  {bootstrapState.note || (isBootstrapError ? 'You can try local import again from Settings.' : 'Checking what to keep.')}
                 </p>
               ) : null}
             </div>
             <p className="processing-pane__percent">
-              {Math.max(1, Math.min(100, Math.round(Number(bootstrapState.progress_percent || 0))))}%
+              {Math.max(1, Math.min(100, Math.round(Number(bootstrapState.progress_percent || (isBootstrapError ? 100 : 1)))))}%
             </p>
             <button
               className="processing-pane__toggle"
