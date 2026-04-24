@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { detectClientEnvironment } from '../lib/environment'
+import { createRuntimeContext } from '../lib/memactContracts'
 import { analyzeThoughtQuery, buildMemactKnowledge } from '../lib/memactPipeline'
 import {
   clearWebMemories,
@@ -365,6 +366,19 @@ export function useExtension() {
 
   const mode = bridgeDetected ? 'extension' : useWebFallback ? 'web-fallback' : 'bridge-required'
   const requiresBridge = mode === 'bridge-required'
+  const runtimeContext = useMemo(
+    () => createRuntimeContext({
+      environment,
+      mode,
+      surface: 'website',
+      capabilities: {
+        capture_installed: bridgeDetected,
+        capture_required: requiresBridge,
+        has_local_knowledge: Boolean(knowledge),
+      },
+    }),
+    [bridgeDetected, environment, knowledge, mode, requiresBridge]
+  )
 
   return useMemo(
     () => ({
@@ -374,6 +388,7 @@ export function useExtension() {
       mode,
       requiresBridge,
       environment,
+      runtimeContext,
       webMemoryCount,
       knowledge,
       bootstrap,
@@ -408,6 +423,7 @@ export function useExtension() {
       ready,
       refreshKnowledge,
       requiresBridge,
+      runtimeContext,
       search,
       sendToExtension,
       startBootstrapImport,

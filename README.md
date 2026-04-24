@@ -34,6 +34,20 @@ Capture -> Inference -> Schema -> Website -> Influence / Origin
 - `Origin`
   Shows what may have first introduced the thought.
 
+## Infrastructure Contract
+
+Website is only one Memact client.
+The same backend shape should also work for Android and later API explanations.
+
+The shared contract lives here:
+
+```text
+docs/platform-contract.md
+```
+
+The important rule is simple:
+AI can help explain the wording later, but the evidence must already come from deterministic Memact engines.
+
 ## First-Time Setup
 
 Memact does not interrupt the user right away.

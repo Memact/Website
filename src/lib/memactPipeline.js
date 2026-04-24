@@ -2,6 +2,10 @@ import { analyzeCaptureSnapshot } from "../../../inference/src/engine.mjs"
 import { detectSchemas } from "../../../schema/src/engine.mjs"
 import { detectOriginCandidates } from "../../../origin/src/engine.mjs"
 import { analyzeInfluenceSnapshot } from "../../../influence/src/engine.mjs"
+import {
+  createKnowledgeEnvelope,
+  createThoughtExplanationEnvelope,
+} from './memactContracts'
 
 function normalize(value) {
   return String(value || '').replace(/\s+/g, ' ').trim()
@@ -112,19 +116,13 @@ export function buildMemactKnowledge(snapshot) {
     })
   }
 
-  return {
+  return createKnowledgeEnvelope({
     snapshot: safeSnapshot,
     inference,
     schema,
     influence,
     suggestionSeed: suggestionSeed.slice(0, 12),
-    stats: {
-      eventCount: Number(safeSnapshot?.counts?.events || safeSnapshot?.events?.length || 0),
-      activityCount: Number(safeSnapshot?.counts?.activities || safeSnapshot?.activities?.length || 0),
-      schemaCount: Number(schema.schemas?.length || 0),
-      influenceCount: Number(influence.valid_chains?.length || 0),
-    },
-  }
+  })
 }
 
 function buildOriginSummary(query, origin) {
@@ -272,39 +270,49 @@ export function analyzeThoughtQuery(query, knowledge) {
     ...relevantInfluence.map((item) => `${titleCase(item.from)} -> ${titleCase(item.to)} (${item.count})`),
   ].slice(0, 6)
 
+  const answer = {
+    overview: origin.candidates?.length
+      ? `Memact found source candidates around "${normalizedQuery}".`
+      : `Memact checked captured activity for "${normalizedQuery}".`,
+    answer: normalizedQuery,
+    summary,
+    detailsLabel: 'Evidence around this thought',
+    detailItems,
+    signals,
+    sessionSummary: summary,
+    sessionPrompts: buildRelatedQueries(origin, relevantSchemas, relevantInfluence),
+    relatedQueries: buildRelatedQueries(origin, relevantSchemas, relevantInfluence),
+    originCandidates: (origin.candidates || []).map((candidate) => ({
+      id: candidate.id,
+      source_label: candidate.source_label,
+      score: candidate.score,
+      overlapping_terms: candidate.overlapping_terms,
+    })),
+    schemaSignals: relevantSchemas.map((schema) => ({
+      id: schema.id,
+      label: schema.label,
+      state: schema.state,
+    })),
+    influenceSignals: relevantInfluence.map((chain) => ({
+      from: chain.from,
+      to: chain.to,
+      count: chain.count,
+      confidence: chain.confidence,
+    })),
+  }
+
   return {
     origin,
     relevantSchemas,
     relevantInfluence,
-    answer: {
-      overview: origin.candidates?.length
-        ? `Memact found source candidates around "${normalizedQuery}".`
-        : `Memact checked captured activity for "${normalizedQuery}".`,
-      answer: normalizedQuery,
-      summary,
-      detailsLabel: 'Evidence around this thought',
-      detailItems,
-      signals,
-      sessionSummary: summary,
-      sessionPrompts: buildRelatedQueries(origin, relevantSchemas, relevantInfluence),
-      relatedQueries: buildRelatedQueries(origin, relevantSchemas, relevantInfluence),
-      originCandidates: (origin.candidates || []).map((candidate) => ({
-        id: candidate.id,
-        source_label: candidate.source_label,
-        score: candidate.score,
-        overlapping_terms: candidate.overlapping_terms,
-      })),
-      schemaSignals: relevantSchemas.map((schema) => ({
-        id: schema.id,
-        label: schema.label,
-        state: schema.state,
-      })),
-      influenceSignals: relevantInfluence.map((chain) => ({
-        from: chain.from,
-        to: chain.to,
-        count: chain.count,
-        confidence: chain.confidence,
-      })),
-    },
+    answer,
+    explanation: createThoughtExplanationEnvelope({
+      query: normalizedQuery,
+      origin,
+      relevantSchemas,
+      relevantInfluence,
+      answer,
+      knowledge,
+    }),
   }
 }

@@ -930,7 +930,7 @@ button {
 .processing-pane {
   position: fixed;
   left: 50%;
-  bottom: max(46px, calc(46px + var(--safe-bottom)));
+  bottom: max(30px, calc(30px + var(--safe-bottom)));
   z-index: 70;
   width: min(920px, calc(100vw - 36px));
   display: grid;
@@ -1530,7 +1530,7 @@ blockquote {
 
   .processing-pane {
     left: 50%;
-    bottom: max(36px, calc(36px + var(--safe-bottom)));
+    bottom: max(24px, calc(24px + var(--safe-bottom)));
     right: auto;
     width: min(calc(100vw - 24px), 560px);
     padding: 16px 14px 14px;
