@@ -97,7 +97,7 @@ npm run preview
 
 ## Install Capture Extension
 
-If the website opens without Capture, it will show an install popup first.
+If the website opens without Capture, the setup popup appears when the user first tries to interact with search, not immediately on page load.
 
 The same extension zip used by that popup is available here:
 
@@ -114,7 +114,11 @@ Load it like this:
 5. Click `Load unpacked`.
 6. Select the extracted folder.
 
-After Capture is installed, Memact will ask whether it should import a limited local slice of recent browser activity. If that is declined, only future activity is used.
+After Capture is installed, Memact asks whether it should import a limited local slice of recent browser activity.
+
+- If allowed, Memact starts local screening and sync right away.
+- If declined, only future activity is used.
+- If the user later wants to enable that import, the `Settings` button in the top-right exposes the local import option again.
 
 ## Search And Indexing
 

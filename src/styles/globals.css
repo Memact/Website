@@ -80,6 +80,7 @@ html::-webkit-scrollbar,
 body::-webkit-scrollbar,
 .suggestion-dock::-webkit-scrollbar,
 .history-popover::-webkit-scrollbar,
+.settings-popover::-webkit-scrollbar,
 .memact-modal::-webkit-scrollbar,
 .memact-modal__steps::-webkit-scrollbar {
   width: 10px;
@@ -90,6 +91,7 @@ html::-webkit-scrollbar-track,
 body::-webkit-scrollbar-track,
 .suggestion-dock::-webkit-scrollbar-track,
 .history-popover::-webkit-scrollbar-track,
+.settings-popover::-webkit-scrollbar-track,
 .memact-modal::-webkit-scrollbar-track,
 .memact-modal__steps::-webkit-scrollbar-track {
   background: var(--scroll-track);
@@ -99,6 +101,7 @@ html::-webkit-scrollbar-thumb,
 body::-webkit-scrollbar-thumb,
 .suggestion-dock::-webkit-scrollbar-thumb,
 .history-popover::-webkit-scrollbar-thumb,
+.settings-popover::-webkit-scrollbar-thumb,
 .memact-modal::-webkit-scrollbar-thumb,
 .memact-modal__steps::-webkit-scrollbar-thumb {
   border: 2px solid transparent;
@@ -111,6 +114,7 @@ html::-webkit-scrollbar-thumb:hover,
 body::-webkit-scrollbar-thumb:hover,
 .suggestion-dock::-webkit-scrollbar-thumb:hover,
 .history-popover::-webkit-scrollbar-thumb:hover,
+.settings-popover::-webkit-scrollbar-thumb:hover,
 .memact-modal::-webkit-scrollbar-thumb:hover,
 .memact-modal__steps::-webkit-scrollbar-thumb:hover {
   background: var(--scroll-thumb-hover);
@@ -338,7 +342,8 @@ button {
 }
 
 .info-popover,
-.history-popover {
+.history-popover,
+.settings-popover {
   position: fixed;
   top: max(104px, calc(104px + var(--safe-top)));
   right: max(18px, calc(18px + var(--safe-right)));
@@ -365,6 +370,82 @@ button {
 .history-popover {
   display: grid;
   gap: 12px;
+}
+
+.settings-popover {
+  display: grid;
+  gap: 16px;
+}
+
+.settings-popover__section {
+  display: grid;
+  gap: 10px;
+}
+
+.settings-title,
+.settings-label,
+.settings-copy,
+.settings-helper {
+  margin: 0;
+}
+
+.settings-title,
+.settings-label {
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.settings-copy,
+.settings-helper {
+  color: var(--white-76);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.settings-button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border: 1px solid var(--white-16);
+  border-radius: 999px;
+  background: var(--white-06);
+  color: var(--white);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.settings-button:hover,
+.settings-button:focus-visible {
+  outline: none;
+  background: var(--white-10);
+}
+
+.settings-checkbox-row {
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  border: 1px solid var(--white-16);
+  border-radius: 999px;
+  background: var(--white-06);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.settings-checkbox-row input {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  accent-color: var(--white);
 }
 
 .history-popover__top {

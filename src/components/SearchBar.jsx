@@ -30,6 +30,7 @@ export default function SearchBar({
   onTimeFilter,
   onFocusChange,
   onDockVisibilityChange,
+  onInteraction,
   onVoiceStateChange,
   emptySuggestionMessage = '',
 }) {
@@ -203,6 +204,7 @@ export default function SearchBar({
     if (!suggestion) {
       return
     }
+    onInteraction?.()
     clearPreview()
     setTypedBeforeSelection(suggestion.completion)
     onChange?.(suggestion.completion)
@@ -239,6 +241,7 @@ export default function SearchBar({
       window.clearTimeout(blurTimerRef.current)
       blurTimerRef.current = null
     }
+    onInteraction?.()
     setFocused(true)
     if (selectedIndex === -1) {
       setTypedBeforeSelection(value)
@@ -249,6 +252,8 @@ export default function SearchBar({
     if (loading || typeof window === 'undefined') {
       return
     }
+
+    onInteraction?.()
 
     if (voiceState === 'listening') {
       recognitionRef.current?.stop?.()
@@ -358,6 +363,7 @@ export default function SearchBar({
         className={`search-shell ${focused || value.trim() ? 'is-active' : ''} ${dockVisible ? 'is-attached' : ''}`}
         onSubmit={(event) => {
           event.preventDefault()
+          onInteraction?.()
           if (selectedSuggestion) {
             submitSuggestion(selectedSuggestion, { passiveAfterSubmit: true })
             return
@@ -371,6 +377,7 @@ export default function SearchBar({
           className={`search-input ${!value ? 'is-empty' : ''} ${previewActive ? 'is-preview' : ''}`}
           value={inputValue}
           onChange={(event) => {
+            onInteraction?.()
             clearPreview()
             onChange?.(event.target.value)
           }}

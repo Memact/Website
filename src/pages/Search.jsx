@@ -225,6 +225,17 @@ function InfoIcon() {
   )
 }
 
+function SettingsIcon() {
+  return (
+    <svg className="control-icon control-icon--round" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5.5 7.5h13" />
+      <path d="M5.5 16.5h13" />
+      <circle cx="9" cy="7.5" r="1.9" />
+      <circle cx="15" cy="16.5" r="1.9" />
+    </svg>
+  )
+}
+
 function DeleteIcon() {
   return (
     <svg className="control-icon control-icon--cross" viewBox="0 0 24 24" aria-hidden="true">
@@ -283,12 +294,16 @@ export default function Search({ extension }) {
   const [navigation, setNavigation] = useState({ entries: [], index: -1 })
   const [historyOpen, setHistoryOpen] = useState(false)
   const [infoOpen, setInfoOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [voiceState, setVoiceState] = useState('idle')
   const [installPromptDismissed, setInstallPromptDismissed] = useState(false)
   const [importDecision, setImportDecision] = useState('')
+  const [setupPromptRequested, setSetupPromptRequested] = useState(false)
+  const [bootstrapRequested, setBootstrapRequested] = useState(false)
   const [thoughtPrompt] = useState(() => THOUGHT_PROMPTS[Math.floor(Math.random() * THOUGHT_PROMPTS.length)])
   const topActionsRef = useRef(null)
   const historyPopoverRef = useRef(null)
+  const settingsPopoverRef = useRef(null)
 
   const suggestions = useMemo(() => buildActivitySuggestions(search), [search])
   const emptySuggestionMessage = buildEmptySuggestionMessage(extension, importDecision)
@@ -309,13 +324,46 @@ export default function Search({ extension }) {
     !hasBootstrapData &&
     captureEventCount < 40 &&
     bootstrapState.status !== 'running' &&
-    importDecision !== 'denied'
-  const shouldShowInstallModal = extension?.requiresBridge && !installPromptDismissed
-  const shouldShowImportModal = !shouldShowInstallModal && shouldAskForImport
+    !importDecision
+  const shouldShowInstallModal =
+    extension?.requiresBridge &&
+    setupPromptRequested &&
+    !installPromptDismissed
+  const shouldShowImportModal =
+    !shouldShowInstallModal &&
+    setupPromptRequested &&
+    shouldAskForImport
   const shouldShowProcessingModal =
     !shouldShowInstallModal &&
     !shouldShowImportModal &&
-    bootstrapState.status === 'running'
+    (bootstrapRequested || bootstrapState.status === 'running')
+
+  const requestSetupPrompt = () => {
+    setSetupPromptRequested(true)
+  }
+
+  const requestBootstrapImport = async () => {
+    setSetupPromptRequested(true)
+    setBootstrapRequested(true)
+    setSettingsOpen(false)
+    setHistoryOpen(false)
+    setInfoOpen(false)
+    setImportDecision('allowed')
+    writeStoredValue(IMPORT_DECISION_KEY, 'allowed')
+
+    try {
+      const state = await extension?.startBootstrapImport?.({
+        days: 21,
+        limit: 320,
+      })
+
+      if (!state || ['complete', 'idle', 'error'].includes(state.status)) {
+        setBootstrapRequested(false)
+      }
+    } catch {
+      setBootstrapRequested(false)
+    }
+  }
 
   useEffect(() => {
     setInstallPromptDismissed(readStoredValue(INSTALL_PROMPT_DISMISSED_KEY) === '1')
@@ -332,9 +380,18 @@ export default function Search({ extension }) {
   useEffect(() => {
     if (hasBootstrapData) {
       setImportDecision('allowed')
+      setBootstrapRequested(false)
       writeStoredValue(IMPORT_DECISION_KEY, 'allowed')
     }
   }, [hasBootstrapData])
+
+  useEffect(() => {
+    if (!bootstrapState.status || bootstrapState.status === 'running') {
+      return
+    }
+
+    setBootstrapRequested(false)
+  }, [bootstrapState.status])
 
   useEffect(() => {
     const canAutoOpenInfo =
@@ -429,6 +486,7 @@ export default function Search({ extension }) {
     const closePanels = () => {
       setInfoOpen(false)
       setHistoryOpen(false)
+      setSettingsOpen(false)
     }
     const timer = infoOpen ? window.setTimeout(() => setInfoOpen(false), 30000) : null
 
@@ -436,7 +494,8 @@ export default function Search({ extension }) {
       const target = event.target
       if (
         topActionsRef.current?.contains(target) ||
-        historyPopoverRef.current?.contains(target)
+        historyPopoverRef.current?.contains(target) ||
+        settingsPopoverRef.current?.contains(target)
       ) {
         return
       }
@@ -457,7 +516,7 @@ export default function Search({ extension }) {
       window.removeEventListener('pointerdown', handlePointerDown, true)
       window.removeEventListener('keydown', handleKeyDown, true)
     }
-  }, [historyOpen, infoOpen])
+  }, [historyOpen, infoOpen, settingsOpen])
 
   return (
     <main className={`memact-page ${hasSubmitted ? 'has-results' : 'is-home'}`}>
@@ -510,12 +569,7 @@ export default function Search({ extension }) {
               className="memact-modal__button memact-modal__button--primary"
               type="button"
               onClick={() => {
-                setImportDecision('allowed')
-                writeStoredValue(IMPORT_DECISION_KEY, 'allowed')
-                extension?.startBootstrapImport?.({
-                  days: 21,
-                  limit: 320,
-                })
+                requestBootstrapImport()
               }}
             >
               Allow local import
@@ -599,9 +653,24 @@ export default function Search({ extension }) {
           onClick={() => {
             setHistoryOpen((current) => !current)
             setInfoOpen(false)
+            setSettingsOpen(false)
           }}
         >
           <HistoryIcon />
+        </button>
+        <button
+          className="top-action-button top-action-button--settings"
+          type="button"
+          aria-label="Settings"
+          data-tooltip="Settings"
+          aria-expanded={settingsOpen}
+          onClick={() => {
+            setSettingsOpen((current) => !current)
+            setHistoryOpen(false)
+            setInfoOpen(false)
+          }}
+        >
+          <SettingsIcon />
         </button>
         <button
           className="top-action-button top-action-button--info"
@@ -612,6 +681,7 @@ export default function Search({ extension }) {
           onClick={() => {
             setInfoOpen((current) => !current)
             setHistoryOpen(false)
+            setSettingsOpen(false)
           }}
         >
           <InfoIcon />
@@ -627,6 +697,60 @@ export default function Search({ extension }) {
               ? ` It has already seeded ${extension.bootstrap.imported_count} early activity sources from recent browser history on this device.`
               : ''}
           </p>
+        </aside>
+      ) : null}
+
+      {settingsOpen ? (
+        <aside ref={settingsPopoverRef} className="settings-popover" role="dialog" aria-label="Settings">
+          <div className="settings-popover__section">
+            <p className="settings-title">Settings</p>
+            <p className="settings-copy">
+              Keep Capture connected so Memact can connect thoughts with what you read, watch, search, and revisit.
+            </p>
+            <a
+              className="settings-button"
+              href="/memact-extension.zip"
+              download="memact-extension.zip"
+            >
+              Install local extension
+            </a>
+          </div>
+
+          {!extension?.requiresBridge ? (
+            <div className="settings-popover__section">
+              <p className="settings-label">Capture status</p>
+              <p className="settings-helper">
+                {extension?.bridgeDetected ? 'Capture is connected.' : 'Waiting for Capture to connect.'}
+              </p>
+            </div>
+          ) : null}
+
+          {importDecision === 'denied' && !hasBootstrapData && bootstrapState.status !== 'running' && !bootstrapRequested ? (
+            <div className="settings-popover__section">
+              <p className="settings-label">Local import</p>
+              <label className="settings-checkbox-row">
+                <input
+                  type="checkbox"
+                  onChange={() => {
+                    requestBootstrapImport()
+                  }}
+                />
+                <span>Allow local import</span>
+              </label>
+              <p className="settings-helper">
+                Use a limited recent local activity slice to form first suggestions before future capture builds up.
+              </p>
+            </div>
+          ) : null}
+
+          {(bootstrapRequested || bootstrapState.status === 'running') ? (
+            <div className="settings-popover__section">
+              <p className="settings-label">Local import</p>
+              <p className="settings-helper">
+                Syncing local activity now. Memact is deciding what to include and what to skip.
+              </p>
+            </div>
+          ) : null}
         </aside>
       ) : null}
 
@@ -695,6 +819,7 @@ export default function Search({ extension }) {
           onChange={search.setQuery}
           onSubmit={runQuery}
           onSuggestionClick={runQuery}
+          onInteraction={requestSetupPrompt}
           onVoiceStateChange={setVoiceState}
           placeholder={EXAMPLE_PLACEHOLDERS}
           loading={search.loading}
