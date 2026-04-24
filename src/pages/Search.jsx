@@ -485,7 +485,7 @@ export default function Search({ extension }) {
   }
 
   useEffect(() => {
-    if ((!infoOpen && !historyOpen) || typeof window === 'undefined') {
+    if ((!infoOpen && !historyOpen && !settingsOpen) || typeof window === 'undefined') {
       return undefined
     }
 
