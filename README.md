@@ -48,6 +48,10 @@ docs/platform-contract.md
 The important rule is simple:
 AI can help explain the wording later, but the evidence must already come from deterministic Memact engines.
 
+Website uses Capture's lightweight memory signature before pulling a full snapshot.
+That means it does not keep downloading captured memory when nothing changed.
+Search still talks to Capture directly, and Capture ranks results with local sentence-transformer embeddings.
+
 ## First-Time Setup
 
 Memact does not interrupt the user right away.
@@ -66,7 +70,10 @@ After that, Memact can ask to import some recent activity from this device so it
 
 - If the user allows it, Memact starts building first suggestions.
 - If the user skips it, Memact waits for new activity from then on.
-- If the user changes their mind later, the `Settings` button lets them turn local import on.
+- Settings shows whether Capture is installed.
+- Settings shows whether browser activity was imported.
+- Settings can clear only browser-imported memories without clearing future captured activity.
+- If the user changes their mind later, Settings lets them turn browser import on.
 
 Website does not keep its own extension source code.
 Capture is the only extension codebase.

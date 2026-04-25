@@ -31,12 +31,30 @@ function isResponseType(type) {
     type === 'CAPTURE_GET_SNAPSHOT_RESULT' ||
     type === 'CAPTURE_BOOTSTRAP_STATUS_RESULT' ||
     type === 'CAPTURE_BOOTSTRAP_HISTORY_RESULT' ||
+    type === 'CAPTURE_CLEAR_BOOTSTRAP_HISTORY_RESULT' ||
     type === 'MEMACT_ERROR'
   )
 }
 
 function hasKnowledgeSnapshot(snapshot) {
   return Boolean(snapshot?.events?.length || snapshot?.activities?.length)
+}
+
+function statusSignature(status) {
+  if (!status || status.error) {
+    return ''
+  }
+  if (status.memorySignature) {
+    return String(status.memorySignature)
+  }
+  return [
+    Number(status.eventCount || 0),
+    Number(status.sessionCount || 0),
+    String(status.lastEventAt || ''),
+    String(status.bootstrap?.status || ''),
+    String(status.bootstrap?.imported_at || ''),
+    Number(status.bootstrap?.imported_count || 0),
+  ].join('|')
 }
 
 export function useExtension() {
@@ -51,6 +69,7 @@ export function useExtension() {
   const [bootstrap, setBootstrap] = useState(null)
   const pending = useRef(new Map())
   const knowledgeRefreshInFlight = useRef(null)
+  const knowledgeSignatureRef = useRef('')
 
   useEffect(() => {
     let cancelled = false
@@ -251,6 +270,20 @@ export function useExtension() {
     return sendToExtension('CAPTURE_BOOTSTRAP_HISTORY', options, 10000)
   }, [bridgeDetected, sendToExtension, useWebFallback])
 
+  const clearBootstrapImport = useCallback(async () => {
+    if (useWebFallback && !bridgeDetected) {
+      return { ok: false, skipped: true }
+    }
+    const response = await sendToExtension('CAPTURE_CLEAR_BOOTSTRAP_HISTORY', {}, 10000)
+    const state = response?.bootstrap || response?.response?.bootstrap || null
+    if (state) {
+      setBootstrap(state)
+    }
+    knowledgeSignatureRef.current = ''
+    setKnowledge(null)
+    return response
+  }, [bridgeDetected, sendToExtension, useWebFallback])
+
   const clearAllData = useCallback(async () => {
     if (useWebFallback && !bridgeDetected) {
       const response = await clearWebMemories()
@@ -272,26 +305,37 @@ export function useExtension() {
     }
 
     const task = (async () => {
-      const [statusResult, bootstrapResult, snapshotResponse] = await Promise.all([
-        getStatus().catch(() => null),
-        getBootstrapStatus().catch(() => null),
-        getSnapshot(3000).catch(() => null),
-      ])
+      const statusResult = await getStatus().catch(() => null)
+      const signature = statusSignature(statusResult)
 
       if (statusResult?.bootstrap) {
         setBootstrap(statusResult.bootstrap)
-      } else if (bootstrapResult?.bootstrap || bootstrapResult) {
+      }
+
+      if (knowledge && signature && signature === knowledgeSignatureRef.current) {
+        return knowledge
+      }
+
+      const bootstrapResult = statusResult?.bootstrap
+        ? null
+        : await getBootstrapStatus().catch(() => null)
+
+      if (bootstrapResult?.bootstrap || bootstrapResult) {
         setBootstrap(bootstrapResult?.bootstrap || bootstrapResult)
       }
+
+      const snapshotResponse = await getSnapshot(3000).catch(() => null)
 
       const snapshot = snapshotResponse?.snapshot || snapshotResponse || null
       if (hasKnowledgeSnapshot(snapshot)) {
         const nextKnowledge = buildMemactKnowledge(snapshot)
         setKnowledge(nextKnowledge)
+        knowledgeSignatureRef.current = signature || statusSignature(await getStatus().catch(() => null))
         return nextKnowledge
       }
 
       setKnowledge(null)
+      knowledgeSignatureRef.current = signature
       return null
     })()
 
@@ -302,7 +346,7 @@ export function useExtension() {
     } finally {
       knowledgeRefreshInFlight.current = null
     }
-  }, [bridgeDetected, getBootstrapStatus, getSnapshot, getStatus, useWebFallback])
+  }, [bridgeDetected, getBootstrapStatus, getSnapshot, getStatus, knowledge, useWebFallback])
 
   useEffect(() => {
     if (!bridgeDetected) {
@@ -399,6 +443,7 @@ export function useExtension() {
       getSnapshot,
       getBootstrapStatus,
       bootstrapHistory,
+      clearBootstrapImport,
       startBootstrapImport,
       refreshKnowledge,
       analyzeThought,
@@ -410,6 +455,7 @@ export function useExtension() {
       bootstrap,
       bootstrapHistory,
       bridgeDetected,
+      clearBootstrapImport,
       clearAllData,
       detected,
       environment,

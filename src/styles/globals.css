@@ -432,10 +432,48 @@ button {
   font-weight: 900;
 }
 
+.settings-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.settings-button--ghost {
+  width: 100%;
+  background: transparent;
+  color: var(--white-76);
+}
+
 .settings-button:hover,
 .settings-button:focus-visible {
   outline: none;
   background: var(--white-10);
+}
+
+.settings-status-pill {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 16px;
+  border: 1px solid var(--white-16);
+  border-radius: 999px;
+  background: var(--white-10);
+  color: var(--white);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.settings-checkmark {
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--bg);
+  font-size: 13px;
+  line-height: 1;
 }
 
 .settings-checkbox-row {
@@ -451,6 +489,10 @@ button {
   color: var(--white);
   font-size: 14px;
   font-weight: 900;
+}
+
+.settings-checkbox-row.is-checked {
+  background: var(--white-10);
 }
 
 .settings-checkbox-row input {

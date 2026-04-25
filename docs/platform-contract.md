@@ -146,3 +146,31 @@ It should implement or call these same boundaries:
 - Optional API receives `memact.api_explanation_request`.
 
 This keeps Website, Android, and API output aligned.
+
+## Sync Boundary
+
+Clients should not pull the full Capture snapshot on every screen load.
+Capture exposes a lightweight `memorySignature` in status.
+Website and future clients should only request a full snapshot when that signature changes.
+
+```json
+{
+  "eventCount": 120,
+  "sessionCount": 18,
+  "lastEventAt": "2026-04-25T05:00:00.000Z",
+  "memorySignature": "120|18|2026-04-25T05:00:00.000Z|complete|2026-04-25T04:58:00.000Z|54"
+}
+```
+
+This keeps the UI fast, avoids repeatedly transferring captured data, and gives Android/API clients the same clean sync strategy.
+
+## Graph Health Pattern
+
+Memact borrows one useful infrastructure pattern from local wiki systems:
+separate deterministic graph health from language generation.
+
+- cache by stable signatures or hashes
+- rebuild only changed knowledge
+- keep explicit edges separate from inferred edges
+- run structural checks without AI
+- let language format the result only after evidence is fixed

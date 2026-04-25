@@ -312,6 +312,7 @@ export default function Search({ extension }) {
   const [importDecision, setImportDecision] = useState('')
   const [setupPromptRequested, setSetupPromptRequested] = useState(false)
   const [bootstrapRequested, setBootstrapRequested] = useState(false)
+  const [clearImportBusy, setClearImportBusy] = useState(false)
   const [processingPaneCollapsed, setProcessingPaneCollapsed] = useState(false)
   const [thoughtPrompt] = useState(() => THOUGHT_PROMPTS[Math.floor(Math.random() * THOUGHT_PROMPTS.length)])
   const topActionsRef = useRef(null)
@@ -347,6 +348,9 @@ export default function Search({ extension }) {
   const captureEventCount = Number(search.stats?.eventCount || extension?.knowledge?.stats?.eventCount || 0)
   const hasBootstrapData =
     bootstrapState.status === 'complete' && Number(bootstrapState.imported_count || 0) > 0
+  const captureInstalled = Boolean(extension?.bridgeDetected && !extension?.requiresBridge)
+  const importRunning = bootstrapState.status === 'running' || bootstrapRequested
+  const browserImportChecked = hasBootstrapData || importRunning
   const shouldAskForImport =
     extension?.bridgeDetected &&
     !extension?.requiresBridge &&
@@ -391,6 +395,22 @@ export default function Search({ extension }) {
       }
     } catch {
       setBootstrapRequested(false)
+    }
+  }
+
+  const clearBrowserImport = async () => {
+    if (clearImportBusy || importRunning) return
+    setClearImportBusy(true)
+    try {
+      const response = await extension?.clearBootstrapImport?.()
+      if (response?.ok || response?.response?.ok) {
+        setImportDecision('')
+        setBootstrapRequested(false)
+        writeStoredValue(IMPORT_DECISION_KEY, '')
+        await extension?.refreshKnowledge?.()
+      }
+    } finally {
+      setClearImportBusy(false)
     }
   }
 
@@ -573,6 +593,10 @@ export default function Search({ extension }) {
               className="memact-modal__button memact-modal__button--primary"
               href="/memact-extension.zip"
               download="memact-extension.zip"
+              onClick={() => {
+                setInstallPromptDismissed(true)
+                writeStoredValue(INSTALL_PROMPT_DISMISSED_KEY, '1')
+              }}
             >
               Download extension zip
             </a>
@@ -726,50 +750,60 @@ export default function Search({ extension }) {
             <p className="settings-copy">
               Keep Capture connected so Memact can use your activity here.
             </p>
-            <a
-              className="settings-button"
-              href="/memact-extension.zip"
-              download="memact-extension.zip"
-            >
-              Install local extension
-            </a>
+            {captureInstalled ? (
+              <div className="settings-status-pill" aria-label="Capture installed">
+                <span className="settings-checkmark" aria-hidden="true">✓</span>
+                <span>Capture installed</span>
+              </div>
+            ) : (
+              <a
+                className="settings-button"
+                href="/memact-extension.zip"
+                download="memact-extension.zip"
+                onClick={() => setSettingsOpen(false)}
+              >
+                Install local extension
+              </a>
+            )}
           </div>
 
-          {!extension?.requiresBridge ? (
-            <div className="settings-popover__section">
-              <p className="settings-label">Capture status</p>
-              <p className="settings-helper">
-                {extension?.bridgeDetected ? 'Capture is connected.' : 'Waiting for Capture.'}
-              </p>
-            </div>
-          ) : null}
-
-          {importDecision === 'denied' && !hasBootstrapData && bootstrapState.status !== 'running' && !bootstrapRequested ? (
-            <div className="settings-popover__section">
-              <p className="settings-label">Local import</p>
-              <label className="settings-checkbox-row">
-                <input
-                  type="checkbox"
-                  onChange={() => {
+          <div className="settings-popover__section">
+            <p className="settings-label">Browser activity import</p>
+            <label className={`settings-checkbox-row ${browserImportChecked ? 'is-checked' : ''}`}>
+              <input
+                type="checkbox"
+                checked={browserImportChecked}
+                disabled={!captureInstalled || browserImportChecked || importRunning}
+                onChange={() => {
+                  if (!browserImportChecked) {
                     requestBootstrapImport()
-                  }}
-                />
-                <span>Allow local import</span>
-              </label>
-              <p className="settings-helper">
-                Let Memact use some recent activity on this device to get started faster.
-              </p>
-            </div>
-          ) : null}
-
-          {(bootstrapRequested || bootstrapState.status === 'running') ? (
-            <div className="settings-popover__section">
-              <p className="settings-label">Local import</p>
-              <p className="settings-helper">
-                Memact is bringing in recent activity now.
-              </p>
-            </div>
-          ) : null}
+                  }
+                }}
+              />
+              <span>
+                {hasBootstrapData
+                  ? `Imported ${Number(bootstrapState.imported_count || 0)} items`
+                  : importRunning
+                    ? 'Importing recent activity'
+                    : 'Import recent browser activity'}
+              </span>
+            </label>
+            <p className="settings-helper">
+              {captureInstalled
+                ? 'This helps Memact form first suggestions without waiting for new activity.'
+                : 'Install Capture first, then this can be turned on.'}
+            </p>
+            {hasBootstrapData ? (
+              <button
+                className="settings-button settings-button--ghost"
+                type="button"
+                disabled={clearImportBusy}
+                onClick={clearBrowserImport}
+              >
+                {clearImportBusy ? 'Clearing import...' : 'Clear browser imported memories'}
+              </button>
+            ) : null}
+          </div>
         </aside>
       ) : null}
 
