@@ -752,7 +752,7 @@ export default function Search({ extension }) {
             </p>
             {captureInstalled ? (
               <div className="settings-status-pill" aria-label="Capture installed">
-                <span className="settings-checkmark" aria-hidden="true">✓</span>
+                <span className="settings-checkmark" aria-hidden="true" />
                 <span>Capture installed</span>
               </div>
             ) : (
@@ -771,6 +771,7 @@ export default function Search({ extension }) {
             <p className="settings-label">Browser activity import</p>
             <label className={`settings-checkbox-row ${browserImportChecked ? 'is-checked' : ''}`}>
               <input
+                className="settings-checkbox-input"
                 type="checkbox"
                 checked={browserImportChecked}
                 disabled={!captureInstalled || browserImportChecked || importRunning}
@@ -779,6 +780,10 @@ export default function Search({ extension }) {
                     requestBootstrapImport()
                   }
                 }}
+              />
+              <span
+                className={`settings-checkmark ${browserImportChecked ? '' : 'is-empty'}`}
+                aria-hidden="true"
               />
               <span>
                 {hasBootstrapData
