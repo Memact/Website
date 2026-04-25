@@ -9,6 +9,10 @@
     "url": "https://github.com/Memact/Website.git"
   },
   "homepage": "https://github.com/Memact/Website",
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
