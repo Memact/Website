@@ -29,7 +29,6 @@ const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 const MAX_OUTPUT_TOKENS = Number(process.env.GEMINI_MAX_OUTPUT_TOKENS || 180)
 const TEMPERATURE = Number(process.env.GEMINI_TEMPERATURE || 0.1)
 const MAX_REQUEST_BYTES = Number(process.env.MEMACT_GEMINI_MAX_REQUEST_BYTES || 14000)
-const GEMINI_TIMEOUT_MS = Number(process.env.MEMACT_GEMINI_TIMEOUT_MS || 3000)
 const ALLOWED_ORIGINS = new Set(
   String(process.env.MEMACT_ALLOWED_ORIGINS || 'http://localhost:5173,https://memact.com,https://www.memact.com')
     .split(',')
@@ -177,8 +176,6 @@ async function handleGeminiAnswer(request, response, origin) {
     return
   }
 
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS)
   const geminiResponse = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`,
     {
@@ -200,9 +197,8 @@ async function handleGeminiAnswer(request, response, origin) {
           responseMimeType: 'application/json',
         },
       }),
-      signal: controller.signal,
     }
-  ).finally(() => clearTimeout(timer))
+  )
 
   const geminiJson = await geminiResponse.json().catch(() => ({}))
   if (!geminiResponse.ok) {

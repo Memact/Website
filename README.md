@@ -46,6 +46,8 @@ docs/platform-contract.md
 ```
 
 The important rule is simple:
+Memact first filters captured activity into meaningful packets through Inference.
+Schema, Origin, and Influence work from those packets instead of raw browsing noise.
 Gemini can answer from a small evidence packet, but the evidence must already come from deterministic Memact engines.
 Memact sends only the query, selected schema/origin/influence signals, and a few source summaries, not the full Capture snapshot.
 
@@ -54,6 +56,7 @@ The pulse only says that memory changed; it does not contain captured page conte
 That means Website does not keep downloading captured memory when nothing changed.
 Search still talks to Capture directly, and Capture ranks results with local sentence-transformer embeddings.
 Capture keeps collecting automatically through the extension bridge; it no longer relies on repeated snapshot downloads.
+Gemini is not cut off by a short client/server timer; if it is slow, the deterministic answer remains visible while the cloud answer is optional polish.
 
 ## First-Time Setup
 

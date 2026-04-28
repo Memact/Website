@@ -301,7 +301,8 @@ export function analyzeThoughtQuery(query, knowledge) {
   }
 
   const origin = detectOriginCandidates(normalizedQuery, knowledge.inference, {
-    minScore: 0.18,
+    minScore: 0.28,
+    minimumMeaningfulScore: 0.38,
     top: 4,
   })
   const relevantSchemas = relevantSchemaSignals(origin, knowledge.schema || {})
@@ -314,7 +315,7 @@ export function analyzeThoughtQuery(query, knowledge) {
     { label: 'Origin matches', value: String(origin.candidates?.length || 0) },
     { label: 'Schema signals', value: String(relevantSchemas.length) },
     { label: 'Influence patterns', value: String(relevantInfluence.length) },
-    { label: 'Captured events', value: String(knowledge.stats?.eventCount || 0) },
+    { label: 'Meaning packets', value: String(knowledge.stats?.meaningfulActivityCount || knowledge.inference?.records?.length || 0) },
   ]
 
   const signals = [
