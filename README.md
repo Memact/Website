@@ -50,6 +50,7 @@ Survey Mode builds its questions from what Memact already knows about the user's
 Survey results do not pretend every answer has source links. If Memact has links, it shows them. If not, it gives an answer or asks a few more questions.
 
 Prompt Mode also avoids dead ends. When a typed thought has too little context, Memact moves into Survey Mode instead of showing a failed result.
+The extra questions are progressive. Memact should not keep asking the same set again and again.
 
 ## Infrastructure Contract
 

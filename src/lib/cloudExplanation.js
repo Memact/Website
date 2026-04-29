@@ -285,7 +285,13 @@ function normalizeFollowUpQuestions(value) {
     .slice(0, 3)
 }
 
-export async function requestCloudFollowUpQuestions({ query, mode = 'prompt', reason = 'weak_context' }) {
+export async function requestCloudFollowUpQuestions({
+  query,
+  mode = 'prompt',
+  reason = 'weak_context',
+  round = 0,
+  avoidQuestions = [],
+}) {
   const endpoint = followUpEndpoint()
   if (!endpoint) {
     return []
@@ -301,6 +307,10 @@ export async function requestCloudFollowUpQuestions({ query, mode = 'prompt', re
         query: normalize(query, 180),
         mode: normalize(mode, 40),
         reason: normalize(reason, 80),
+        round: Number(round) || 0,
+        avoid_questions: compactArray(avoidQuestions, 8)
+          .map((question) => normalize(question, 96))
+          .filter(Boolean),
       }),
     })
 

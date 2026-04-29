@@ -171,6 +171,8 @@ function buildFollowUpPrompt(payload = {}) {
     'You are Memact. Write short follow-up survey questions for a thought when local evidence is weak.',
     'Use only the user thought below. Do not ask for private details, credentials, medical data, or financial data.',
     'The goal is to clarify where Memact should look next, not to diagnose the user.',
+    'Do not repeat any avoid_questions.',
+    'If round is greater than 0, ask sharper follow-up questions than the first round.',
     'Return strict JSON only with key: questions.',
     'questions: exactly 3 objects.',
     'Each object must have: id, title, options.',
@@ -181,6 +183,11 @@ function buildFollowUpPrompt(payload = {}) {
       query: normalize(payload.query, MAX_QUERY_LENGTH),
       mode: normalize(payload.mode, 40),
       reason: normalize(payload.reason, 80),
+      round: Number(payload.round || 0),
+      avoid_questions: (Array.isArray(payload.avoid_questions) ? payload.avoid_questions : [])
+        .slice(0, 8)
+        .map((question) => normalize(question, 96))
+        .filter(Boolean),
     }),
   ].join('\n')
 }
