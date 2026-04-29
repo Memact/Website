@@ -173,6 +173,36 @@ export function createApiExplanationRequest({
             contract: normalize(ragContext.contract),
             version: normalize(ragContext.version),
             policy: ragContext.policy || {},
+            retrieval_steps: compactArray(ragContext.retrieval_steps, 6).map(normalize),
+            memory_lanes: {
+              cognitive_schema: compactArray(ragContext.memory_lanes?.cognitive_schema, 4).map((item) => ({
+                id: normalize(item?.id),
+                label: normalize(item?.label),
+                strength: Number(item?.strength || 0),
+                retrieval_score: Number(item?.retrieval_score || 0),
+              })),
+              activity: compactArray(ragContext.memory_lanes?.activity, 4).map((item) => ({
+                id: normalize(item?.id),
+                label: normalize(item?.label),
+                strength: Number(item?.strength || 0),
+                retrieval_score: Number(item?.retrieval_score || 0),
+              })),
+              relation: compactArray(ragContext.memory_lanes?.relation, 6).map((item) => ({
+                type: normalize(item?.type),
+                from: normalize(item?.from),
+                to: normalize(item?.to),
+                weight: Number(item?.weight || 0),
+              })),
+            },
+            relation_trails: compactArray(ragContext.relation_trails, 8).map((relation) => ({
+              type: normalize(relation?.type),
+              category: normalize(relation?.category),
+              from: normalize(relation?.from),
+              to: normalize(relation?.to),
+              weight: Number(relation?.weight || 0),
+              confidence: Number(relation?.confidence || 0),
+              reason: normalize(relation?.evidence?.reason),
+            })),
             context_items: compactArray(ragContext.context_items, 6).map((item) => ({
               id: normalize(item?.id),
               type: normalize(item?.type),

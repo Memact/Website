@@ -435,6 +435,7 @@ export function analyzeThoughtQuery(query, knowledge) {
       origin,
       relevantSchemas,
       relevantCognitiveSchemas: cognitiveSchemas,
+      relevantMemories,
       ragContext,
       relevantInfluence,
       answer,

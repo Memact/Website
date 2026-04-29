@@ -130,6 +130,36 @@ function cleanExplanationRequest(explanationRequest = {}) {
             contract: normalize(evidence.rag_context.contract, 80),
             version: normalize(evidence.rag_context.version, 24),
             policy: evidence.rag_context.policy || {},
+            retrieval_steps: compactArray(evidence.rag_context.retrieval_steps, 6)
+              .map((step) => normalize(step, 90))
+              .filter(Boolean),
+            memory_lanes: {
+              cognitive_schema: compactArray(evidence.rag_context.memory_lanes?.cognitive_schema, 3).map((item) => ({
+                label: normalize(item?.label, 120),
+                strength: Number(item?.strength || 0),
+                retrieval_score: Number(item?.retrieval_score || 0),
+              })),
+              activity: compactArray(evidence.rag_context.memory_lanes?.activity, 3).map((item) => ({
+                label: normalize(item?.label, 120),
+                strength: Number(item?.strength || 0),
+                retrieval_score: Number(item?.retrieval_score || 0),
+              })),
+              relation: compactArray(evidence.rag_context.memory_lanes?.relation, 5).map((item) => ({
+                type: normalize(item?.type, 60),
+                from: normalize(item?.from, 120),
+                to: normalize(item?.to, 120),
+                weight: Number(item?.weight || 0),
+              })),
+            },
+            relation_trails: compactArray(evidence.rag_context.relation_trails, 6).map((relation) => ({
+              type: normalize(relation?.type, 60),
+              category: normalize(relation?.category, 60),
+              from: normalize(relation?.from, 120),
+              to: normalize(relation?.to, 120),
+              weight: Number(relation?.weight || 0),
+              confidence: Number(relation?.confidence || 0),
+              reason: normalize(relation?.reason, 160),
+            })),
             context_items: compactArray(evidence.rag_context.context_items, 6).map((item) => ({
               id: normalize(item?.id, 120),
               type: normalize(item?.type, 60),
