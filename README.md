@@ -47,7 +47,8 @@ docs/platform-contract.md
 
 The important rule is simple:
 Memact first filters captured activity into meaningful packets through Inference.
-Schema, Origin, and Influence work from those packets instead of raw browsing noise.
+Memory decides which meaning packets and virtual schema packets survive across future interactions.
+Schema, Origin, and Influence work from that retained memory instead of raw browsing noise.
 Gemini can answer from a small evidence packet, but the evidence must already come from deterministic Memact engines.
 Memact sends only the query, selected schema/origin/influence signals, and a few source summaries, not the full Capture snapshot.
 
@@ -200,6 +201,7 @@ After verification, the normal next steps are:
 
 - [Capture](https://github.com/Memact/Capture)
 - [Inference](https://github.com/Memact/Inference)
+- [Memory](https://github.com/Memact/Memory)
 - [Schema](https://github.com/Memact/Schema)
 - [Origin](https://github.com/Memact/Origin)
 - [Influence](https://github.com/Memact/Influence)

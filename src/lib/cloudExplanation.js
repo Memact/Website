@@ -1,4 +1,5 @@
 const MAX_SOURCES = 4
+const MAX_MEMORY_SIGNALS = 5
 const MAX_SCHEMA_SIGNALS = 3
 const MAX_INFLUENCE_SIGNALS = 3
 
@@ -86,6 +87,22 @@ function cleanExplanationRequest(explanationRequest = {}) {
           .map((theme) => normalize(theme, 40))
           .filter(Boolean),
       })),
+      memory_signals: compactArray(evidence.memory_signals, MAX_MEMORY_SIGNALS).map((item) => ({
+        id: normalize(item?.id, 120),
+        type: normalize(item?.type, 60),
+        label: normalize(item?.label, 140),
+        summary: normalize(item?.summary, 220),
+        strength: Number(item?.strength || 0),
+        retrieval_score: Number(item?.retrieval_score || 0),
+        themes: compactArray(item?.themes, 8)
+          .map((theme) => normalize(theme, 40))
+          .filter(Boolean),
+        sources: compactArray(item?.sources, 3).map((source) => ({
+          title: normalize(source?.title, 120),
+          domain: normalize(source?.domain, 80),
+          url: normalize(source?.url, 220),
+        })),
+      })),
       influence_signals: compactArray(evidence.influence_signals, MAX_INFLUENCE_SIGNALS).map((chain) => ({
         from: normalize(chain?.from, 80),
         to: normalize(chain?.to, 80),
@@ -97,6 +114,7 @@ function cleanExplanationRequest(explanationRequest = {}) {
     stats: {
       eventCount: Number(explanationRequest.stats?.eventCount || 0),
       schemaCount: Number(explanationRequest.stats?.schemaCount || 0),
+      memoryCount: Number(explanationRequest.stats?.memoryCount || 0),
       influenceCount: Number(explanationRequest.stats?.influenceCount || 0),
     },
   }

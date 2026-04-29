@@ -1,4 +1,5 @@
 import { analyzeCaptureSnapshot } from "../../../inference/src/engine.mjs"
+import { buildMemoryStore, retrieveMemories } from "../../../memory/src/engine.mjs"
 import { detectSchemas } from "../../../schema/src/engine.mjs"
 import { detectOriginCandidates } from "../../../origin/src/engine.mjs"
 import { analyzeInfluenceSnapshot } from "../../../influence/src/engine.mjs"
@@ -60,6 +61,7 @@ export function buildMemactKnowledge(snapshot) {
   const safeSnapshot = snapshot && typeof snapshot === 'object' ? snapshot : { events: [], sessions: [], activities: [] }
   const inference = analyzeCaptureSnapshot(safeSnapshot)
   const schema = detectSchemas(inference, { minSupport: 2 })
+  const memory = buildMemoryStore({ inference, schema })
   const influence = analyzeInfluenceSnapshot(safeSnapshot, {
     minCount: 2,
     minSourceCount: 2,
@@ -119,6 +121,7 @@ export function buildMemactKnowledge(snapshot) {
   return createKnowledgeEnvelope({
     snapshot: safeSnapshot,
     inference,
+    memory,
     schema,
     influence,
     suggestionSeed: suggestionSeed.slice(0, 12),
@@ -265,6 +268,13 @@ function relevantSchemaSignals(origin, schemaResult) {
     .slice(0, 2)
 }
 
+function relevantMemorySignals(query, knowledge) {
+  return retrieveMemories(query, knowledge.memory || {}, {
+    top: 4,
+    minScore: 0.18,
+  })
+}
+
 function relevantInfluenceSignals(query, origin, influenceResult) {
   const themeSet = new Set((origin.candidates || []).flatMap((candidate) => candidate.canonical_themes || []))
   const queryTokens = new Set(tokenize(query))
@@ -305,6 +315,7 @@ export function analyzeThoughtQuery(query, knowledge) {
     minimumMeaningfulScore: 0.38,
     top: 4,
   })
+  const relevantMemories = relevantMemorySignals(normalizedQuery, knowledge)
   const relevantSchemas = relevantSchemaSignals(origin, knowledge.schema || {})
   const relevantInfluence = relevantInfluenceSignals(normalizedQuery, origin, knowledge.influence || {})
 
@@ -315,11 +326,12 @@ export function analyzeThoughtQuery(query, knowledge) {
     { label: 'Origin matches', value: String(origin.candidates?.length || 0) },
     { label: 'Schema signals', value: String(relevantSchemas.length) },
     { label: 'Influence patterns', value: String(relevantInfluence.length) },
-    { label: 'Meaning packets', value: String(knowledge.stats?.meaningfulActivityCount || knowledge.inference?.records?.length || 0) },
+    { label: 'Memories', value: String(knowledge.stats?.memoryCount || knowledge.memory?.memories?.length || 0) },
   ]
 
   const signals = [
     ...relevantSchemas.map((item) => `${item.label} (${item.state_label || 'schema signal'})`),
+    ...relevantMemories.slice(0, 2).map((item) => `${item.label} (${item.type})`),
     ...relevantInfluence.map((item) => `${titleCase(item.from)} -> ${titleCase(item.to)} (${item.count})`),
   ].slice(0, 6)
 
@@ -346,6 +358,13 @@ export function analyzeThoughtQuery(query, knowledge) {
       label: schema.label,
       state: schema.state,
     })),
+    memorySignals: relevantMemories.map((memory) => ({
+      id: memory.id,
+      type: memory.type,
+      label: memory.label,
+      strength: memory.strength,
+      retrieval_score: memory.retrieval_score,
+    })),
     influenceSignals: relevantInfluence.map((chain) => ({
       from: chain.from,
       to: chain.to,
@@ -357,6 +376,7 @@ export function analyzeThoughtQuery(query, knowledge) {
   return {
     origin,
     relevantSchemas,
+    relevantMemories,
     relevantInfluence,
     answer,
     explanation: createThoughtExplanationEnvelope({
