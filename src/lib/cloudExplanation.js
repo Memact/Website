@@ -1,3 +1,5 @@
+import { filterCloudPayloadForPrivacy } from './privacyFilter.js'
+
 const MAX_SOURCES = 4
 const MAX_MEMORY_SIGNALS = 5
 const MAX_SCHEMA_SIGNALS = 3
@@ -233,7 +235,7 @@ export async function requestCloudExplanation({ query, explanation, answerMeta, 
     return null
   }
 
-  const payload = buildPayload({ query, explanation, answerMeta, results })
+  const payload = filterCloudPayloadForPrivacy(buildPayload({ query, explanation, answerMeta, results }))
 
   try {
     const response = await fetch(endpoint, {
