@@ -42,6 +42,11 @@ const webDb = new Dexie(WEB_DB_NAME)
 webDb.version(1).stores({
   memories: 'id, &fingerprint, occurred_at, domain, month_key, title, page_type, application',
 })
+webDb.version(2).stores({
+  memories: 'id, &fingerprint, occurred_at, domain, month_key, title, page_type, application',
+  memory_nodes: 'id, type, updated_at, label',
+  memory_edges: 'id, from, to, type, updated_at',
+})
 
 let initPromise = null
 let statePromise = null
@@ -156,6 +161,10 @@ function pluralize(count, singular, plural = `${singular}s`) {
   return `${count} ${count === 1 ? singular : plural}`
 }
 
+function nowIso() {
+  return new Date().toISOString()
+}
+
 function tokenize(value) {
   return Array.from(
     new Set(
@@ -176,6 +185,37 @@ function memoryFingerprint(memory) {
   ]
     .filter(Boolean)
     .join('|')
+}
+
+function normalizeMemoryNode(node = {}) {
+  const id = normalize(node.id)
+  if (!id) return null
+  return {
+    ...node,
+    id,
+    type: normalize(node.type || 'memory_node'),
+    label: normalize(node.label || node.title || node.summary || id, 240),
+    updated_at: normalize(node.updated_at || node.last_seen_at || node.created_at) || nowIso(),
+    stored_at: nowIso(),
+  }
+}
+
+function normalizeMemoryEdge(edge = {}) {
+  const from = normalize(edge.from || edge.source)
+  const to = normalize(edge.to || edge.target)
+  const type = normalize(edge.type || edge.relation || 'related')
+  if (!from || !to || !type) return null
+  return {
+    ...edge,
+    id: normalize(edge.id) || `${from}:${type}:${to}`,
+    from,
+    to,
+    type,
+    weight: Number.isFinite(Number(edge.weight)) ? Number(edge.weight) : 0.5,
+    confidence: Number.isFinite(Number(edge.confidence)) ? Number(edge.confidence) : Number(edge.weight || 0.5),
+    updated_at: normalize(edge.updated_at || edge.created_at) || nowIso(),
+    stored_at: nowIso(),
+  }
 }
 
 function readLegacyMemories() {
@@ -832,11 +872,75 @@ export async function webMemorySearch(query, limit = 20, environment) {
 export async function clearWebMemories() {
   await ensureInitialized()
   try {
-    await webDb.memories.clear()
+    await webDb.transaction('rw', webDb.memories, webDb.memory_nodes, webDb.memory_edges, async () => {
+      await webDb.memories.clear()
+      await webDb.memory_nodes.clear()
+      await webDb.memory_edges.clear()
+    })
     invalidateState()
     clearLegacyMemories()
     return { ok: true }
   } catch (error) {
     return { ok: false, error: String(error?.message || error || 'Could not clear local memories.') }
+  }
+}
+
+export async function saveDurableMemoryGraph(memoryStore = {}) {
+  await ensureInitialized()
+  const graph = memoryStore?.graph || {}
+  const memories = Array.isArray(memoryStore?.memories) ? memoryStore.memories : []
+  const graphNodes = Array.isArray(graph.nodes) ? graph.nodes : []
+  const graphEdges = Array.isArray(graph.edges) ? graph.edges : []
+  const relationEdges = Array.isArray(memoryStore?.relations) ? memoryStore.relations : []
+  const nodes = [
+    ...memories.map((memory) => normalizeMemoryNode({
+      ...memory,
+      source_memory: memory,
+    })),
+    ...graphNodes.map(normalizeMemoryNode),
+  ].filter(Boolean)
+  const edges = [
+    ...graphEdges.map(normalizeMemoryEdge),
+    ...relationEdges.map(normalizeMemoryEdge),
+  ].filter(Boolean)
+
+  await webDb.transaction('rw', webDb.memory_nodes, webDb.memory_edges, async () => {
+    if (nodes.length) {
+      await webDb.memory_nodes.bulkPut(nodes)
+    }
+    if (edges.length) {
+      await webDb.memory_edges.bulkPut(edges)
+    }
+  })
+
+  return {
+    nodeCount: nodes.length,
+    edgeCount: edges.length,
+  }
+}
+
+export async function loadDurableMemoryGraph() {
+  await ensureInitialized()
+  const [nodes, edges] = await Promise.all([
+    webDb.memory_nodes.toArray(),
+    webDb.memory_edges.toArray(),
+  ])
+  const memoryNodes = nodes
+    .map((node) => node.source_memory || node)
+    .filter((node) => node?.id)
+  return {
+    schema_version: 'memact.memory.durable.v1',
+    generated_at: nowIso(),
+    memories: memoryNodes,
+    relations: edges,
+    graph: {
+      nodes,
+      edges,
+    },
+    stats: {
+      memoryCount: memoryNodes.length,
+      nodeCount: nodes.length,
+      edgeCount: edges.length,
+    },
   }
 }

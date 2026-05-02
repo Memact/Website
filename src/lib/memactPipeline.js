@@ -57,11 +57,15 @@ function influencePrompt(chain) {
   return `How did ${from.toLowerCase()} keep pulling me toward ${to.toLowerCase()}?`
 }
 
-export function buildMemactKnowledge(snapshot) {
+export function buildMemactKnowledge(snapshot, options = {}) {
   const safeSnapshot = snapshot && typeof snapshot === 'object' ? snapshot : { events: [], sessions: [], activities: [] }
   const inference = analyzeCaptureSnapshot(safeSnapshot)
   const schema = detectSchemas(inference, { minSupport: 2 })
-  const memory = buildMemoryStore({ inference, schema })
+  const memory = buildMemoryStore({
+    inference,
+    schema,
+    previousMemory: options.durableMemory || null,
+  })
   const influence = analyzeInfluenceSnapshot(safeSnapshot, {
     minCount: 2,
     minSourceCount: 2,

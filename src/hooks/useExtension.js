@@ -5,6 +5,8 @@ import { analyzeThoughtQuery, buildMemactKnowledge } from '../lib/memactPipeline
 import {
   clearWebMemories,
   initializeWebMemoryStore,
+  loadDurableMemoryGraph,
+  saveDurableMemoryGraph,
   webMemorySearch,
   webMemoryStats,
   webMemoryStatus,
@@ -340,7 +342,11 @@ export function useExtension() {
 
       const snapshot = snapshotResponse?.snapshot || snapshotResponse || null
       if (hasKnowledgeSnapshot(snapshot)) {
-        const nextKnowledge = buildMemactKnowledge(snapshot)
+        const durableMemory = await loadDurableMemoryGraph().catch(() => null)
+        const nextKnowledge = buildMemactKnowledge(snapshot, {
+          durableMemory: durableMemory?.memories?.length ? durableMemory : null,
+        })
+        await saveDurableMemoryGraph(nextKnowledge.memory).catch(() => null)
         setKnowledge(nextKnowledge)
         knowledgeSignatureRef.current = signature || statusSignature(await getStatus().catch(() => null))
         return nextKnowledge
