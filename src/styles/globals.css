@@ -1669,6 +1669,52 @@ blockquote {
   line-height: 1.65;
 }
 
+.influence-feedback {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--white-16);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.influence-feedback__title {
+  margin: 0;
+  color: var(--white-62);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.influence-feedback__row {
+  display: grid;
+  gap: 10px;
+}
+
+.influence-feedback__row > span {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.influence-feedback__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.influence-feedback__actions button {
+  min-height: 34px;
+  border: 1px solid var(--white-16);
+  border-radius: 999px;
+  background: var(--white-06);
+  color: var(--white);
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
 .survey-map-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

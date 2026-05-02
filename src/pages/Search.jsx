@@ -3,6 +3,7 @@ import MathRichText from '../components/MathRichText'
 import SearchBar from '../components/SearchBar'
 import { useSearch } from '../hooks/useSearch'
 import { requestCloudFollowUpQuestions } from '../lib/cloudExplanation'
+import { applyFeedbackToAnswerMeta, upsertInfluenceFeedback } from '../lib/feedbackStore'
 import { buildSurveyDeck, createSurveyPacket, saveSurveyPacket } from '../lib/surveyMode'
 
 const INSTALL_PROMPT_DISMISSED_KEY = 'memact.install-prompt-dismissed'
@@ -628,6 +629,60 @@ function SourceCard({ result, index }) {
   )
 }
 
+function InfluenceCorrectionPanel({ signals = [], onChange }) {
+  if (!signals.length) return null
+
+  const update = (signal, patch) => {
+    upsertInfluenceFeedback(signal, patch)
+    onChange?.()
+  }
+
+  return (
+    <div className="influence-feedback" aria-label="Influence corrections">
+      <p className="influence-feedback__title">Correct this path</p>
+      {signals.slice(0, 3).map((signal) => {
+        const from = normalize(signal.from_human_label || signal.from_label || signal.from)
+        const to = normalize(signal.to_human_label || signal.to_label || signal.to)
+        const label = [from, to].filter(Boolean).join(' -> ')
+        return (
+          <div className="influence-feedback__row" key={`${signal.from}-${signal.to}`}>
+            <span>{label || 'Possible influence link'}</span>
+            <div className="influence-feedback__actions">
+              <button type="button" onClick={() => update(signal, { status: 'confirmed' })}>
+                Confirm
+              </button>
+              <button type="button" onClick={() => update(signal, { status: 'rejected' })}>
+                Reject
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const source = window.prompt('Edit source association', signal.edited_source || from || '')
+                  if (source !== null) update(signal, { source: normalize(source) })
+                }}
+              >
+                Edit source
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const schemaLabel = window.prompt('Edit schema label', signal.edited_schema_label || to || '')
+                  if (schemaLabel !== null) update(signal, { schema_label: normalize(schemaLabel) })
+                }}
+              >
+                Edit schema
+              </button>
+              <button type="button" onClick={() => update(signal, { status: 'removed' })}>
+                Remove
+              </button>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function ModeSwitch({ mode, onChange }) {
   return (
     <div className="mode-switch" role="tablist" aria-label="Input mode">
@@ -781,6 +836,7 @@ export default function Search({ extension }) {
   const [bootstrapRequested, setBootstrapRequested] = useState(false)
   const [clearImportBusy, setClearImportBusy] = useState(false)
   const [processingPaneCollapsed, setProcessingPaneCollapsed] = useState(false)
+  const [feedbackRevision, setFeedbackRevision] = useState(0)
   const [thoughtPrompt] = useState(() => THOUGHT_PROMPTS[Math.floor(Math.random() * THOUGHT_PROMPTS.length)])
   const topActionsRef = useRef(null)
   const historyPopoverRef = useRef(null)
@@ -793,8 +849,12 @@ export default function Search({ extension }) {
   const suggestions = useMemo(() => buildActivitySuggestions(search), [search])
   const emptySuggestionMessage = buildEmptySuggestionMessage(extension, importDecision)
   const status = buildStatus(extension, search, submittedQuery, voiceState)
-  const answerHeadline = buildAnswerHeadline(submittedQuery, search.answerMeta)
-  const answerText = buildAnswerText(submittedQuery, search.answerMeta, search.results)
+  const answerMeta = useMemo(
+    () => applyFeedbackToAnswerMeta(search.answerMeta),
+    [search.answerMeta, feedbackRevision]
+  )
+  const answerHeadline = buildAnswerHeadline(submittedQuery, answerMeta)
+  const answerText = buildAnswerText(submittedQuery, answerMeta, search.results)
   const bootstrapState = extension?.bootstrap || {}
   const bootstrapStatus = normalize(bootstrapState.status || 'idle').toLowerCase()
   const isBootstrapRunning = bootstrapStatus === 'running'
@@ -1713,6 +1773,10 @@ export default function Search({ extension }) {
               <div className="answer-copy">
                 <MathRichText text={answerText} />
               </div>
+              <InfluenceCorrectionPanel
+                signals={answerMeta?.influenceSignals || []}
+                onChange={() => setFeedbackRevision((value) => value + 1)}
+              />
               {!search.results.length ? (
                 <button
                   className="answer-context-button"

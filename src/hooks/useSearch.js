@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { requestCloudExplanation, requestCloudHistoryTitle } from '../lib/cloudExplanation'
+import { applyFeedbackToAnswerMeta } from '../lib/feedbackStore'
 
 const RECENT_SEARCHES_KEY = 'memact.recent-searches'
 const MAX_RECENTS = 10
@@ -484,7 +485,7 @@ function normalizeAnswerMeta(item) {
     ? item.sessionPrompts.map((value) => normalize(value)).filter(Boolean)
     : []
 
-  return {
+  return applyFeedbackToAnswerMeta({
     overview: normalize(item.overview),
     answer: normalize(item.answer),
     summary: normalize(item.summary),
@@ -497,7 +498,10 @@ function normalizeAnswerMeta(item) {
     needsMoreContext: Boolean(item.needsMoreContext),
     evidenceState: normalize(item.evidenceState),
     answerMode: normalize(item.answerMode),
-  }
+    influenceSignals: Array.isArray(item.influenceSignals) ? item.influenceSignals : [],
+    cognitiveSchemaSignals: Array.isArray(item.cognitiveSchemaSignals) ? item.cognitiveSchemaSignals : [],
+    memorySignals: Array.isArray(item.memorySignals) ? item.memorySignals : [],
+  })
 }
 
 function resultFromOriginCandidate(candidate, index = 0) {
