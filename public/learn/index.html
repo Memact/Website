@@ -535,7 +535,8 @@
           <li>After approval, store the returned connection id for the user.</li>
           <li>Keep the API key in server environment config, not in client code.</li>
           <li>Verify before requesting intent or context.</li>
-          <li>Use only the approved intent or context Memact returns.</li>
+          <li>For intent predictions, call the backend intent endpoint with the connection id, required scopes, approved categories, and approved activity.</li>
+          <li>Use only the evidence-backed hypotheses Memact returns.</li>
         </ol>
       </div>
     </details>

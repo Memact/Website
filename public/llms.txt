@@ -34,8 +34,9 @@ Apps use Memact when they need to understand what users are trying to do from ap
 - Store the returned `connection_id` for that user.
 - Keep the raw Memact API key in server environment config, such as `MEMACT_API_KEY` in `.env` locally and a secret manager in production. This is the private app key created in the Memact portal and usually starts with `mka_`.
 - App developers should not configure Supabase keys. Supabase belongs to Memact's access infrastructure, not customer apps.
-- Verify `api_key + connection_id + required_scopes + activity_categories` through the Memact verification endpoint before requesting Memact context.
-- Use only the intent, context, scopes, and categories returned by verification.
+- Verify `api_key + connection_id + required_scopes + activity_categories` through Memact before requesting context or intent.
+- For intent prediction, call Memact from the backend with approved activity only.
+- Use only the evidence-backed intent hypotheses, context, scopes, and categories returned by Memact.
 
 ## For AI Coding Agents
 
@@ -45,7 +46,7 @@ If a developer asks an agent to "use Memact", build the same integration a human
 - Add the matching Data Transparency link so the user can inspect approved activity, evidence fields, intended context, retention, and revocation before and after consent.
 - Handle the redirect from Memact and store the returned `connection_id` for that user and app.
 - Keep the raw Memact API key in a server environment variable or secret manager. Do not ask users to paste it into UI, and do not place it in browser JavaScript, mobile bundles, public repos, logs, screenshots, or emails.
-- Before requesting Memact context, call the Memact verification endpoint server-side with the API key, connection id, required scopes, and activity categories.
+- Before requesting Memact context or intent, call Memact server-side with the API key, connection id, required scopes, activity categories, and approved activity.
 - Treat scopes and activity categories as hard limits. If access is missing, send the user back through consent instead of silently widening data use.
 
 ## Short Definition

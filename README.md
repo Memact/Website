@@ -41,6 +41,11 @@ Apps use Memact for permissioned intent and context. Each app must stay inside
 the scopes, categories, consent, and Data Transparency disclosure attached to
 that app.
 
+Intent prediction is backend-only by default. After consent, an app backend can
+ask Memact for an evidence-backed intent hypothesis using the approved
+`connection_id`, required scopes, approved activity categories, and approved
+activity. The browser should not run raw prediction over private activity.
+
 ## Current UI
 
 The current UI is a minimal dark console built around `#00011B`, IBM Plex Sans,

@@ -44,6 +44,10 @@ export function ConnectPage({ connectRequest, connectDetails, loading, notice, o
               <strong>Raw private data is not shared by default.</strong>
               <small>Data Transparency shows the activity and intent context the app is asking for.</small>
             </div>
+            <div className="mini-row">
+              <strong>Intent predictions are hypotheses.</strong>
+              <small>After consent, the app can ask Memact for evidence-backed intent signals only inside approved scopes and categories.</small>
+            </div>
           </div>
           <div className="connect-link-row">
             <button type="button" className="learn-more-link connect-learn-more" onClick={onLearnMore}>Learn more</button>

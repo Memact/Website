@@ -3,7 +3,8 @@ export const DEFAULT_SCOPES = [
   "schema:write",
   "graph:write",
   "memory:write",
-  "memory:read_summary"
+  "memory:read_summary",
+  "intent:predict"
 ]
 
 export const DEFAULT_CATEGORIES = [
@@ -52,6 +53,7 @@ export function suggestedScopesForCategories(policy, categories = []) {
     suggested.add("capture:webpage")
     suggested.add("schema:write")
     suggested.add("memory:read_summary")
+    suggested.add("intent:predict")
   }
 
   if (selectedCategories.has("web:news") || selectedCategories.has("web:social") || selectedCategories.has("web:research")) {
@@ -85,7 +87,7 @@ export function permissionSuggestionForCategories(policy, categories = []) {
 export function presetSuggestionsForPolicy(policy, categories = [], appPurpose = "") {
   const selectedCategories = normalizeSelectedCategories(categories, policy)
   const primary = permissionSuggestionForCategories(policy, selectedCategories)
-  const leanScopes = normalizeSelectedScopes(["capture:webpage", selectedCategories.some((category) => category.startsWith("media:")) ? "capture:media" : "", "schema:write", "memory:read_summary"], policy)
+  const leanScopes = normalizeSelectedScopes(["capture:webpage", selectedCategories.some((category) => category.startsWith("media:")) ? "capture:media" : "", "schema:write", "memory:read_summary", "intent:predict"], policy)
   const explainableScopes = normalizeSelectedScopes([...primary.scopes, "memory:read_evidence"], policy)
   const purpose = String(appPurpose || "").toLowerCase()
   const purposeBoostedScopes = /debug|audit|source|citation|evidence|explain|why/.test(purpose)
