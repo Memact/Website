@@ -102,7 +102,7 @@ test("permissionSuggestionForCategories creates category-specific selected scope
 
   const suggestion = permissionSuggestionForCategories(policy, ["web:news", "media:video"])
 
-  assert.equal(suggestion.label, "Suggested for article understanding")
+  assert.equal(suggestion.label, "Article intent preset")
   assert.ok(suggestion.scopes.includes("capture:webpage"))
   assert.ok(suggestion.scopes.includes("capture:media"))
   assert.ok(suggestion.scopes.includes("memory:write"))
@@ -136,6 +136,6 @@ test("presetSuggestionsForPolicy creates clickable generated presets", () => {
   const presets = presetSuggestionsForPolicy(policy, ["web:news"], "explain article sources")
 
   assert.ok(presets.length >= 2)
-  assert.equal(presets[0].label, "Article understanding preset")
+  assert.equal(presets[0].label, "Article intent preset")
   assert.ok(presets[0].scopes.includes("memory:read_evidence"))
 })

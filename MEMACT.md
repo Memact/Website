@@ -30,7 +30,7 @@ Use:
 
 Avoid:
 
-- generic AI wrapper language
+- generic wrapper language
 - vague memory-plugin language
 - raw-data export framing
 - claims that apps receive private data by default
