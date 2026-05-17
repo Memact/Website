@@ -1205,6 +1205,33 @@ function App() {
   const statusNeedsAttention = /missing|failed|offline/i.test(status)
   const showStatusPill = !showAuth && Boolean(error || statusNeedsAttention)
   const showExternalBackHeader = session && (currentPage === "connect" || currentPage === "data")
+  const [isMobileTabsOpen, setIsMobileTabsOpen] = useState(false)
+  const tabsRef = useRef(null)
+
+  const handleTabSelect = (page) => {
+    navigateToPage(page)
+    setIsMobileTabsOpen(false)
+  }
+
+  const toggleMobileTabs = () => {
+    setIsMobileTabsOpen((open) => !open)
+  }
+
+
+  useEffect(() => {
+    setIsMobileTabsOpen(false)
+  }, [currentPage])
+
+  useEffect(() => {
+    if (!isMobileTabsOpen) return
+    const handlePointerDown = (event) => {
+      if (!tabsRef.current?.contains(event.target)) {
+        setIsMobileTabsOpen(false)
+      }
+    }
+    document.addEventListener("pointerdown", handlePointerDown)
+    return () => document.removeEventListener("pointerdown", handlePointerDown)
+  }, [isMobileTabsOpen])
 
   if (isInitialLoading) {
     return (
@@ -1230,11 +1257,11 @@ function App() {
             </button>
           </nav>
         ) : session ? (
-          <nav className="tabs" aria-label="Memact portal tabs">
-            <button type="button" className={currentPage === "access" ? "tab is-active" : "tab"} onClick={() => navigateToPage("access")}>Dashboard</button>
-            <button type="button" className={currentPage === "account" ? "tab is-active" : "tab"} onClick={() => navigateToPage("account")}>Account</button>
-            <button type="button" className={currentPage === "help" ? "tab is-active" : "tab"} onClick={() => navigateToPage("help")}>Help</button>
-            <span className="faq-chevron revoked-chevron nav-dropdown-chevron" aria-hidden="true">v</span>
+          <nav ref={tabsRef} className={isMobileTabsOpen ? "tabs is-open" : "tabs"} aria-label="Memact portal tabs">
+            <button type="button" className={currentPage === "access" ? "tab is-active" : "tab"} onClick={() => handleTabSelect("access")}>Dashboard</button>
+            <button type="button" className={currentPage === "account" ? "tab is-active" : "tab"} onClick={() => handleTabSelect("account")}>Account</button>
+            <button type="button" className={currentPage === "help" ? "tab is-active" : "tab"} onClick={() => handleTabSelect("help")}>Help</button>
+            <button type="button" className="faq-chevron revoked-chevron nav-dropdown-chevron nav-dropdown-toggle" aria-label="Toggle tabs menu" aria-expanded={isMobileTabsOpen} onClick={toggleMobileTabs}>v</button>
           </nav>
         ) : null}
         {showStatusPill ? <span className="status-pill" aria-live="polite">{status}</span> : null}

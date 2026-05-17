@@ -226,6 +226,8 @@
   background: var(--surface-2);
   font-size: 0;
   line-height: 0;
+  text-indent: -9999px;
+  overflow: hidden;
   transition: color 140ms ease, border-color 140ms ease, background 140ms ease;
 }
 

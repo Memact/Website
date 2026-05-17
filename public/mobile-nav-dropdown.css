@@ -6,6 +6,7 @@
     align-items: center !important;
     justify-self: end !important;
     width: min(178px, 48vw) !important;
+    min-height: 42px !important;
     min-width: 0 !important;
     overflow: visible !important;
     gap: 0 !important;
@@ -17,7 +18,8 @@
   }
 
   .page:not(.page-auth) .tabs:hover,
-  .page:not(.page-auth) .tabs:focus-within {
+  .page:not(.page-auth) .tabs:focus-within,
+  .page:not(.page-auth) .tabs.is-open {
     border-color: var(--border-strong) !important;
     background: var(--surface-2) !important;
   }
@@ -29,24 +31,26 @@
     z-index: 4 !important;
     width: 30px !important;
     height: 30px !important;
-    pointer-events: none !important;
+    pointer-events: auto !important;
     transition: transform 140ms ease !important;
   }
 
   .page:not(.page-auth) .tabs:hover .nav-dropdown-chevron,
-  .page:not(.page-auth) .tabs:focus-within .nav-dropdown-chevron {
+  .page:not(.page-auth) .tabs:focus-within .nav-dropdown-chevron,
+  .page:not(.page-auth) .tabs.is-open .nav-dropdown-chevron {
     border-color: rgba(255, 255, 255, 0.36) !important;
     color: var(--text) !important;
     background: var(--surface-3) !important;
   }
 
-  .page:not(.page-auth) .tabs:focus-within .nav-dropdown-chevron {
+  .page:not(.page-auth) .tabs.is-open .nav-dropdown-chevron {
     transform: rotate(180deg) !important;
   }
 
   .page:not(.page-auth) .tab {
     display: none !important;
     grid-column: 1 / -1 !important;
+    position: relative !important;
     justify-content: flex-start !important;
     width: 100% !important;
     min-height: 42px !important;
@@ -67,19 +71,27 @@
     background: transparent !important;
   }
 
-  .page:not(.page-auth) .tabs:focus-within .tab,
-  .page:not(.page-auth) .tabs:hover .tab {
+  .page:not(.page-auth) .tabs.is-open .tab {
     display: flex !important;
   }
 
-  .page:not(.page-auth) .tabs:focus-within .tab:first-child,
-  .page:not(.page-auth) .tabs:hover .tab:first-child {
+  .page:not(.page-auth) .tabs.is-open .tab:not(.is-active) {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 5 !important;
+    background: var(--surface-2) !important;
+  }
+
+  .page:not(.page-auth) .tabs.is-open .tab:nth-of-type(2) { top: 42px !important; }
+  .page:not(.page-auth) .tabs.is-open .tab:nth-of-type(3) { top: 84px !important; }
+
+  .page:not(.page-auth) .tabs.is-open .tab:first-child {
     border-top-left-radius: var(--radius-md) !important;
     border-top-right-radius: var(--radius-md) !important;
   }
 
-  .page:not(.page-auth) .tabs:focus-within .tab:last-child,
-  .page:not(.page-auth) .tabs:hover .tab:last-child {
+  .page:not(.page-auth) .tabs.is-open .tab:last-child {
     border-bottom-left-radius: var(--radius-md) !important;
     border-bottom-right-radius: var(--radius-md) !important;
   }
