@@ -29,7 +29,7 @@
   width: 10px;
   height: 2px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 0;
   background: currentColor;
   transform-origin: center;
   transition: transform 140ms ease;
