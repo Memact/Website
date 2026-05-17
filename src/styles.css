@@ -193,12 +193,14 @@ summary:focus-visible {
 }
 
 .topbar {
-  position: sticky;
+  position: fixed;
   top: var(--topbar-gap);
+  left: 50%;
   z-index: 20;
-  margin: var(--topbar-gap) auto 16px;
+  margin: 0;
   width: min(1120px, calc(100% - 32px));
   min-height: var(--topbar-height);
+  transform: translateX(-50%);
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
@@ -1764,16 +1766,19 @@ input:-webkit-autofill:focus {
     width: min(1440px, calc(100% - 40px));
     max-width: 1440px;
     margin: 0 auto;
+    padding-top: calc(var(--topbar-height) + (var(--topbar-gap) * 2));
   }
 
   .page:not(.page-auth) .topbar {
-    position: sticky;
+    position: fixed;
     top: var(--topbar-gap);
+    left: 50%;
     z-index: 20;
-    margin: var(--topbar-gap) auto 18px;
+    margin: 0;
     width: min(1440px, calc(100% - 40px));
     min-height: var(--topbar-height);
     height: auto;
+    transform: translateX(-50%);
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-content: center;
@@ -1836,17 +1841,23 @@ input:-webkit-autofill:focus {
     width: min(100% - 24px, 720px);
   }
 
+  .page:not(.page-auth) {
+    padding-top: calc(var(--topbar-height) + (var(--topbar-gap) * 2));
+  }
+
   .page-auth {
     padding-top: max(18px, env(safe-area-inset-top));
   }
 
   .topbar {
-    position: sticky;
+    position: fixed;
     top: var(--topbar-gap);
+    left: 50%;
     z-index: 20;
-    margin: var(--topbar-gap) auto 14px;
+    margin: 0;
     width: min(100% - 24px, 720px);
     min-height: var(--topbar-height);
+    transform: translateX(-50%);
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 10px;
@@ -2068,11 +2079,14 @@ input:-webkit-autofill:focus {
     width: min(100% - 20px, 720px);
   }
 
+  .page:not(.page-auth) {
+    padding-top: calc(var(--topbar-height) + (var(--topbar-gap) * 2));
+  }
+
   .topbar {
     width: min(100% - 20px, 720px);
     gap: 9px;
     padding: 10px var(--page-inline) 12px;
-    margin-bottom: 14px;
   }
 
   .logo-img {

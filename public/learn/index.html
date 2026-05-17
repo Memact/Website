@@ -92,16 +92,18 @@
       .page {
         width: min(1440px, calc(100% - 40px));
         margin: 0 auto;
-        padding: 0 0 56px;
+        padding: calc(var(--topbar-height) + (var(--topbar-gap) * 2)) 0 56px;
       }
 
       .topbar {
-        position: sticky;
+        position: fixed;
         top: var(--topbar-gap);
+        left: 50%;
         z-index: 20;
-        margin: var(--topbar-gap) auto;
+        margin: 0;
         width: min(1440px, calc(100% - 40px));
         min-height: var(--topbar-height);
+        transform: translateX(-50%);
         display: grid;
         grid-template-columns: auto minmax(0, 1fr);
         align-items: center;
@@ -403,7 +405,7 @@
         .topbar {
           grid-template-columns: auto minmax(0, 1fr);
           width: min(100% - 24px, 720px);
-          margin: var(--topbar-gap) auto 16px;
+          margin: 0;
           align-items: center;
           padding: 10px var(--page-inline) 11px;
         }
