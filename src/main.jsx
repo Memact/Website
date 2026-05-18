@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { createRoot } from "react-dom/client"
 import "./styles.css"
+import "./faq-chevron.css"
 import {
   AccessClient,
   AccessApiError,
@@ -11,6 +12,7 @@ import { getAuthRedirectUrl, isSupabaseConfigured, requireSupabase, supabase } f
 import { hasDuplicateAppName } from "./app-name.js"
 import { defaultCategoriesForPolicy, defaultScopesForPolicy, normalizeSelectedCategories, normalizeSelectedScopes, permissionSuggestionForCategories } from "./access-policy.js"
 import { ConnectPage } from "./components/ConnectPage.jsx"
+import { Chevron } from "./components/Chevron.jsx"
 import { DataTransparencyPage } from "./components/DataTransparencyPage.jsx"
 import { Dashboard } from "./components/Dashboard.jsx"
 import { HelpPanel } from "./components/HelpPanel.jsx"
@@ -1205,6 +1207,7 @@ function App() {
   const statusNeedsAttention = /missing|failed|offline/i.test(status)
   const showStatusPill = !showAuth && Boolean(error || statusNeedsAttention)
   const showExternalBackHeader = session && (currentPage === "connect" || currentPage === "data")
+  const activePortalTabLabel = currentPage === "account" ? "Account" : currentPage === "help" ? "Help" : "Dashboard"
   const [isMobileTabsOpen, setIsMobileTabsOpen] = useState(false)
   const tabsRef = useRef(null)
 
@@ -1253,15 +1256,20 @@ function App() {
         {showExternalBackHeader ? (
           <nav className="nav back-nav" aria-label="Return navigation">
             <button type="button" className="button back-button" onClick={handleExternalBack} aria-label="Back to app">
-              <span className="faq-chevron back-chevron" aria-hidden="true">v</span>
+              <Chevron className="back-chevron" />
             </button>
           </nav>
         ) : session ? (
           <nav ref={tabsRef} className={isMobileTabsOpen ? "tabs is-open" : "tabs"} aria-label="Memact portal tabs">
-            <button type="button" className={currentPage === "access" ? "tab is-active" : "tab"} onClick={() => handleTabSelect("access")}>Dashboard</button>
-            <button type="button" className={currentPage === "account" ? "tab is-active" : "tab"} onClick={() => handleTabSelect("account")}>Account</button>
-            <button type="button" className={currentPage === "help" ? "tab is-active" : "tab"} onClick={() => handleTabSelect("help")}>Help</button>
-            <button type="button" className="faq-chevron revoked-chevron nav-dropdown-chevron nav-dropdown-toggle" aria-label="Toggle tabs menu" aria-expanded={isMobileTabsOpen} onClick={toggleMobileTabs}>v</button>
+            <button type="button" className="tab tab-current" onClick={toggleMobileTabs} aria-expanded={isMobileTabsOpen}>{activePortalTabLabel}</button>
+            <div className="tabs-list">
+              <button type="button" className={currentPage === "access" ? "tab is-active" : "tab"} onClick={() => handleTabSelect("access")}>Dashboard</button>
+              <button type="button" className={currentPage === "account" ? "tab is-active" : "tab"} onClick={() => handleTabSelect("account")}>Account</button>
+              <button type="button" className={currentPage === "help" ? "tab is-active" : "tab"} onClick={() => handleTabSelect("help")}>Help</button>
+            </div>
+            <button type="button" className="nav-dropdown-toggle" aria-label="Toggle tabs menu" aria-expanded={isMobileTabsOpen} onClick={toggleMobileTabs}>
+              <Chevron className={isMobileTabsOpen ? "nav-dropdown-chevron is-open" : "nav-dropdown-chevron"} />
+            </button>
           </nav>
         ) : null}
         {showStatusPill ? <span className="status-pill" aria-live="polite">{status}</span> : null}

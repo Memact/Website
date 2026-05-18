@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { CategoryGrid } from "./CategoryGrid.jsx"
+import { Chevron } from "./Chevron.jsx"
 import { HelpPanel } from "./HelpPanel.jsx"
 import { presetSuggestionsForPolicy } from "../access-policy.js"
 import { getAvatarUrl, getInitials, getUserEmail, getUserProvider } from "../user-display.js"
@@ -133,36 +134,8 @@ export function Dashboard({
           <div>
             <p className="eyebrow">Dashboard</p>
             <h2>{`Welcome${displayName ? `, ${displayName}` : ""}!`}</h2>
-            <button
-              type="button"
-              className="ghost dashboard-tutorial-button"
-              onClick={() => setShowDashboardTutorial((current) => !current)}
-              aria-expanded={showDashboardTutorial}
-            >
-              {showDashboardTutorial ? "Hide tutorial" : "Open quick tutorial"}
-            </button>
           </div>
         </div>
-      ) : null}
-
-      {activeTab === "access" && showDashboardTutorial ? (
-        <section className="panel dashboard-tutorial-panel" aria-label="Dashboard quick tutorial">
-          <p className="eyebrow">Quick tutorial</p>
-          <div className="dashboard-tutorial-steps">
-            <div className="mini-row">
-              <strong>1. Create an app</strong>
-              <small>Name the app and choose the activity categories it can use.</small>
-            </div>
-            <div className="mini-row">
-              <strong>2. Save permissions</strong>
-              <small>Pick the scopes that match what the app should understand.</small>
-            </div>
-            <div className="mini-row">
-              <strong>3. Create a key</strong>
-              <small>Copy the key once and keep it on your server.</small>
-            </div>
-          </div>
-        </section>
       ) : null}
 
       {activeTab === "help" ? (
@@ -188,7 +161,7 @@ export function Dashboard({
                 <span className="account-change-label">Settings</span>
                 <strong>{activeChangeLabel}</strong>
               </span>
-              <span className="faq-chevron" aria-hidden="true">v</span>
+              <Chevron />
             </summary>
             <div className="faq-answer settings-menu">
               {changeOptions.map((option) => (
@@ -355,6 +328,33 @@ export function Dashboard({
         <>
           <section id="app-panel" className="panel app-workspace">
             <p className="eyebrow">APPS</p>
+            <details
+              className="dashboard-tutorial-panel"
+              open={showDashboardTutorial}
+              onToggle={(event) => setShowDashboardTutorial(event.currentTarget.open)}
+            >
+              <summary className="dashboard-tutorial-summary">
+                <span>
+                  <span className="eyebrow">Quick tutorial</span>
+                  <strong>Set up app access</strong>
+                </span>
+                <Chevron />
+              </summary>
+              <div className="dashboard-tutorial-steps">
+                <div className="mini-row">
+                  <strong>1. Create an app</strong>
+                  <small>Name the app and choose the activity categories it can use.</small>
+                </div>
+                <div className="mini-row">
+                  <strong>2. Save permissions</strong>
+                  <small>Pick the scopes that match what the app should understand.</small>
+                </div>
+                <div className="mini-row">
+                  <strong>3. Create a key</strong>
+                  <small>Copy the key once and keep it on your server.</small>
+                </div>
+              </div>
+            </details>
             <div className="current-app-block">
               <div>
                 <p className="eyebrow">App</p>
@@ -530,7 +530,7 @@ export function Dashboard({
                       <details className="revoked-history">
                         <summary>
                           <span>Revoked history ({revokedKeys.length})</span>
-                          <span className="faq-chevron revoked-chevron" aria-hidden="true">v</span>
+                          <Chevron className="revoked-chevron" />
                         </summary>
                         <div className="revoked-history-list">
                           {revokedKeys.map((key) => (

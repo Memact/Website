@@ -1,3 +1,13 @@
+.tabs-list {
+  display: flex;
+  gap: 8px;
+}
+
+.tab-current,
+.nav-dropdown-toggle {
+  display: none;
+}
+
 @media (max-width: 900px) {
   .page:not(.page-auth) .tabs {
     position: relative !important;
@@ -24,93 +34,104 @@
     background: var(--surface-2) !important;
   }
 
-  .page:not(.page-auth) .nav-dropdown-chevron {
-    position: absolute !important;
-    top: 5px !important;
-    right: 5px !important;
-    z-index: 4 !important;
-    width: 30px !important;
-    height: 30px !important;
-    box-sizing: border-box !important;
-    pointer-events: auto !important;
-    transition: transform 140ms ease !important;
-  }
-
-  .page:not(.page-auth) .tabs:hover .nav-dropdown-chevron,
-  .page:not(.page-auth) .tabs:focus-within .nav-dropdown-chevron,
-  .page:not(.page-auth) .tabs.is-open .nav-dropdown-chevron {
-    border-color: rgba(255, 255, 255, 0.36) !important;
-    color: var(--text) !important;
-    background: var(--surface-3) !important;
-  }
-
-  .page:not(.page-auth) .tabs.is-open .nav-dropdown-chevron {
-    transform: rotate(180deg) !important;
-  }
-
-  .page:not(.page-auth) .tab {
-    display: none !important;
-    grid-column: 1 / -1 !important;
-    position: relative !important;
+  .page:not(.page-auth) .tab-current {
+    display: flex !important;
+    grid-column: 1 !important;
     justify-content: flex-start !important;
     width: 100% !important;
     min-height: 42px !important;
     border: 0 !important;
-    border-radius: 0 !important;
-    padding: 8px 44px 8px 12px !important;
+    border-radius: var(--radius-md) 0 0 var(--radius-md) !important;
+    padding: 8px 10px 8px 12px !important;
+    color: var(--text) !important;
+    background: transparent !important;
+    text-align: left !important;
+    font-size: 13px !important;
+  }
+
+  .page:not(.page-auth) .nav-dropdown-toggle {
+    display: grid !important;
+    place-items: center !important;
+    grid-column: 2 !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    min-height: 42px !important;
+    border: 0 !important;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    color: var(--muted) !important;
+  }
+
+  .page:not(.page-auth) .nav-dropdown-toggle:hover,
+  .page:not(.page-auth) .nav-dropdown-toggle:focus-visible {
+    color: var(--text) !important;
+    background: var(--surface-3) !important;
+  }
+
+  .page:not(.page-auth) .nav-dropdown-chevron {
+    width: 30px !important;
+    height: 30px !important;
+    border-color: transparent !important;
+    background: transparent !important;
+    pointer-events: none !important;
+  }
+
+  .page:not(.page-auth) .nav-dropdown-toggle:hover .nav-dropdown-chevron,
+  .page:not(.page-auth) .tabs.is-open .nav-dropdown-chevron {
+    border-color: rgba(255, 255, 255, 0.28) !important;
+    background: var(--surface-3) !important;
+    color: var(--text) !important;
+  }
+
+  .page:not(.page-auth) .tabs-list {
+    position: absolute !important;
+    top: calc(100% + 8px) !important;
+    right: 0 !important;
+    z-index: 80 !important;
+    display: none !important;
+    width: 100% !important;
+    min-width: 178px !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 6px !important;
+    background: #00011b !important;
+    box-shadow: 0 18px 52px rgba(0, 0, 0, 0.34) !important;
+  }
+
+  .page:not(.page-auth) .tabs.is-open .tabs-list {
+    display: grid !important;
+    gap: 4px !important;
+  }
+
+  .page:not(.page-auth) .tabs-list .tab {
+    display: flex !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    min-height: 38px !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    padding: 8px 10px !important;
     color: var(--muted) !important;
     background: transparent !important;
     text-align: left !important;
     font-size: 13px !important;
   }
 
-  .page:not(.page-auth) .tab.is-active {
-    display: flex !important;
-    grid-row: 1 !important;
-    border-radius: var(--radius-md) !important;
-    color: var(--text) !important;
-    background: transparent !important;
-  }
-
-  .page:not(.page-auth) .tabs.is-open {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
-    width: min(178px, 48vw) !important;
-  }
-
-  .page:not(.page-auth) .tabs.is-open .tab {
-    display: flex !important;
-    position: relative !important;
-    z-index: 1 !important;
-    background: var(--surface-2) !important;
-  }
-
-  .page:not(.page-auth) .tabs.is-open .tab:first-child {
-    border-top-left-radius: var(--radius-md) !important;
-    border-top-right-radius: var(--radius-md) !important;
-  }
-
-  .page:not(.page-auth) .tabs.is-open .tab:last-child {
-    border-bottom-left-radius: var(--radius-md) !important;
-    border-bottom-right-radius: var(--radius-md) !important;
-  }
-
-  .page:not(.page-auth) .tabs.is-open .tab.is-active {
-    color: var(--text) !important;
-    background: var(--surface-3) !important;
-  }
-
-  .page:not(.page-auth) .tab:hover:not(:disabled),
-  .page:not(.page-auth) .tab:focus-visible {
+  .page:not(.page-auth) .tabs-list .tab.is-active,
+  .page:not(.page-auth) .tabs-list .tab:hover,
+  .page:not(.page-auth) .tabs-list .tab:focus-visible {
     color: var(--text) !important;
     background: var(--surface-3) !important;
   }
 }
 
 @media (max-width: 520px) {
-  .page:not(.page-auth) .tabs,
-  .page:not(.page-auth) .tabs.is-open {
+  .page:not(.page-auth) .tabs {
     width: min(160px, 46vw) !important;
+  }
+
+  .page:not(.page-auth) .tabs-list {
+    min-width: 160px !important;
   }
 }

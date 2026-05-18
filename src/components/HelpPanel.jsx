@@ -1,6 +1,7 @@
 import React from "react"
 import "../memact-ui.css"
 import "../faq-chevron.css"
+import { Chevron } from "./Chevron.jsx"
 
 const BASIC_FAQS = [
   {
@@ -129,7 +130,7 @@ function FaqItem({ faq, open = false }) {
     <details className="faq-item" open={open}>
       <summary className="faq-trigger">
         <span className="faq-question">{faq.question}</span>
-        <span className="faq-chevron" aria-hidden="true">v</span>
+        <Chevron />
       </summary>
       <div className="faq-answer">
         {typeof faq.answer === "string" ? <p>{faq.answer}</p> : <div className="faq-answer-content">{faq.answer}</div>}

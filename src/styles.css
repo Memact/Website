@@ -275,7 +275,7 @@ summary:focus-visible {
 .back-button .faq-chevron {
   width: 36px;
   height: 36px;
-  transform: rotate(90deg);
+  transform: none;
 }
 
 .back-button .faq-chevron:hover {
@@ -695,21 +695,39 @@ p { margin-top: 0; }
   gap: 10px;
 }
 
-.dashboard-tutorial-button {
-  justify-self: start;
-  min-height: 40px;
-  padding: 8px 12px;
+.dashboard-tutorial-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+  overflow: hidden;
 }
 
-.dashboard-tutorial-panel {
+.dashboard-tutorial-panel summary {
+  list-style: none;
+}
+
+.dashboard-tutorial-panel summary::-webkit-details-marker { display: none; }
+
+.dashboard-tutorial-summary {
   display: grid;
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 14px;
+  min-height: 58px;
+  padding: 12px 16px;
+  cursor: pointer;
+}
+
+.dashboard-tutorial-summary > span {
+  display: grid;
+  gap: 3px;
 }
 
 .dashboard-tutorial-steps {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
+  padding: 0 16px 16px;
 }
 
 .panel-external-label {

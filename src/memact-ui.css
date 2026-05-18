@@ -226,20 +226,13 @@
   background: var(--surface-2);
   font-size: 0;
   line-height: 0;
-  text-indent: -9999px;
+  text-indent: 0;
   overflow: hidden;
-  transition: color 140ms ease, border-color 140ms ease, background 140ms ease;
+  transition: color 140ms ease, border-color 140ms ease, background 140ms ease, transform 140ms ease;
 }
 
 .faq-chevron::before {
-  content: "";
-  width: 9px;
-  height: 9px;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: translateY(-2px) rotate(45deg);
-  transform-origin: center;
-  transition: transform 140ms ease;
+  content: none;
 }
 
 .faq-item[open] .faq-chevron {
@@ -249,7 +242,7 @@
 }
 
 .faq-item[open] .faq-chevron::before {
-  transform: translateY(2px) rotate(225deg);
+  content: none;
 }
 
 .faq-answer {
