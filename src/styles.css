@@ -695,6 +695,12 @@ p { margin-top: 0; }
   gap: 10px;
 }
 
+.dashboard-overview {
+  display: grid;
+  align-items: stretch;
+  gap: 14px;
+}
+
 .dashboard-tutorial-panel {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);

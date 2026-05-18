@@ -130,11 +130,38 @@ export function Dashboard({
   return (
     <section className="dashboard">
       {activeTab === "access" ? (
-        <div className="dashboard-head panel slim-panel">
+        <div className="dashboard-head dashboard-overview panel slim-panel">
           <div>
             <p className="eyebrow">Dashboard</p>
             <h2>{`Welcome${displayName ? `, ${displayName}` : ""}!`}</h2>
           </div>
+          <details
+            className="dashboard-tutorial-panel"
+            open={showDashboardTutorial}
+            onToggle={(event) => setShowDashboardTutorial(event.currentTarget.open)}
+          >
+            <summary className="dashboard-tutorial-summary">
+              <span>
+                <span className="eyebrow">Quick tutorial</span>
+                <strong>Set up app access</strong>
+              </span>
+              <Chevron />
+            </summary>
+            <div className="dashboard-tutorial-steps">
+              <div className="mini-row">
+                <strong>1. Create an app</strong>
+                <small>Name the app and choose the activity categories it can use.</small>
+              </div>
+              <div className="mini-row">
+                <strong>2. Save permissions</strong>
+                <small>Pick the scopes that match what the app should understand.</small>
+              </div>
+              <div className="mini-row">
+                <strong>3. Create a key</strong>
+                <small>Copy the key once and keep it on your server.</small>
+              </div>
+            </div>
+          </details>
         </div>
       ) : null}
 
@@ -328,33 +355,6 @@ export function Dashboard({
         <>
           <section id="app-panel" className="panel app-workspace">
             <p className="eyebrow">APPS</p>
-            <details
-              className="dashboard-tutorial-panel"
-              open={showDashboardTutorial}
-              onToggle={(event) => setShowDashboardTutorial(event.currentTarget.open)}
-            >
-              <summary className="dashboard-tutorial-summary">
-                <span>
-                  <span className="eyebrow">Quick tutorial</span>
-                  <strong>Set up app access</strong>
-                </span>
-                <Chevron />
-              </summary>
-              <div className="dashboard-tutorial-steps">
-                <div className="mini-row">
-                  <strong>1. Create an app</strong>
-                  <small>Name the app and choose the activity categories it can use.</small>
-                </div>
-                <div className="mini-row">
-                  <strong>2. Save permissions</strong>
-                  <small>Pick the scopes that match what the app should understand.</small>
-                </div>
-                <div className="mini-row">
-                  <strong>3. Create a key</strong>
-                  <small>Copy the key once and keep it on your server.</small>
-                </div>
-              </div>
-            </details>
             <div className="current-app-block">
               <div>
                 <p className="eyebrow">App</p>
