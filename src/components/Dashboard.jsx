@@ -430,7 +430,12 @@ export function Dashboard({
               <h2>What apps can use with Memact.</h2>
               <p className="muted">Capture, schemas, and Studio features stay behind the permissions you save for each app.</p>
             </div>
-            <div className="playground-list">
+            <div className="playground-table" role="table" aria-label="Memact playground capabilities">
+              <div className="playground-table-head" role="row">
+                <span role="columnheader">Layer</span>
+                <span role="columnheader">What apps can use</span>
+                <span role="columnheader">Boundary</span>
+              </div>
               <div className="playground-row">
                 <span>Capture sources</span>
                 <strong>Apps, imports, or extension</strong>

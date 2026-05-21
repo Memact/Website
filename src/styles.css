@@ -1435,22 +1435,37 @@ input:-webkit-autofill:focus {
   gap: 18px;
 }
 
-.playground-list {
+.playground-table {
   display: grid;
-  gap: 10px;
-}
-
-.playground-row {
-  display: grid;
-  grid-template-columns: minmax(130px, 0.7fr) minmax(220px, 1fr) minmax(280px, 1.4fr);
-  gap: 14px;
-  align-items: center;
+  overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 16px;
   background: var(--surface-1);
 }
 
+.playground-table-head,
+.playground-row {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.7fr) minmax(220px, 1fr) minmax(280px, 1.4fr);
+  column-gap: 14px;
+  align-items: center;
+  padding: 15px 18px;
+}
+
+.playground-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.playground-table-head {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.playground-table-head span,
 .playground-row span,
 .playground-row strong,
 .playground-row small {
@@ -1493,9 +1508,14 @@ input:-webkit-autofill:focus {
 }
 
 @media (max-width: 900px) {
+  .playground-table-head {
+    display: none;
+  }
+
   .playground-row {
     grid-template-columns: 1fr;
     gap: 8px;
+    padding: 16px;
   }
 }
 

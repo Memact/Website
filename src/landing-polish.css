@@ -77,6 +77,7 @@
   font-size: 0.68em;
   line-height: 1.02;
   letter-spacing: -0.052em;
+  margin-top: 10px;
 }
 
 .page-auth .hero-copy p:not(.eyebrow) {
@@ -157,6 +158,10 @@
 
   .page-auth .hero-copy h1.locked-tagline {
     max-width: 430px !important;
+  }
+
+  .locked-tagline .tagline-with {
+    margin-top: 7px;
   }
 
   .page-auth .hero-copy p:not(.eyebrow) {
