@@ -424,21 +424,28 @@ export function Dashboard({
             ) : null}
           </section>
 
-          <section className="panel dashboard-surface-grid" aria-label="Memact dashboard surfaces">
-            <div className="metric-card">
-              <span>Capture Sources</span>
-              <strong>Optional</strong>
-              <small>Apps can send signals after permission. The browser extension is optional.</small>
+          <section className="panel dashboard-playground-panel" aria-label="Memact playground surfaces">
+            <div className="section-copy">
+              <p className="eyebrow">Playground</p>
+              <h2>What apps can use with Memact.</h2>
+              <p className="muted">Capture, schemas, and Studio features stay behind the permissions you save for each app.</p>
             </div>
-            <div className="metric-card">
-              <span>Features</span>
-              <strong>3 Studio features</strong>
-              <small>Memory Wiki, Cognitive Load, and Research Map match the current Studio registry.</small>
-            </div>
-            <div className="metric-card">
-              <span>Schemas</span>
-              <strong>Developer view</strong>
-              <small>Schema packets, categories, and source trails are available for technical review when connected.</small>
+            <div className="playground-list">
+              <div className="playground-row">
+                <span>Capture sources</span>
+                <strong>Apps, imports, or extension</strong>
+                <small>Apps can send signals after permission. The browser extension is optional and lives in the Capture repo.</small>
+              </div>
+              <div className="playground-row">
+                <span>Studio features</span>
+                <strong>Memory Wiki, Cognitive Load, Research Map</strong>
+                <small>These match the current Studio feature registry and can run through Access when the runtime is connected.</small>
+              </div>
+              <div className="playground-row">
+                <span>Schemas</span>
+                <strong>Developer review</strong>
+                <small>Schema packets, categories, and source trails are shown for technical review when connected.</small>
+              </div>
             </div>
           </section>
 

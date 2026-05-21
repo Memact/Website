@@ -1430,18 +1430,47 @@ input:-webkit-autofill:focus {
   gap: 8px;
 }
 
-.dashboard-surface-grid {
+.dashboard-playground-panel {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.playground-list {
+  display: grid;
   gap: 10px;
 }
 
-.dashboard-surface-grid .metric-card {
+.playground-row {
   display: grid;
-  align-content: start;
-  gap: 8px;
-  min-height: 128px;
+  grid-template-columns: minmax(130px, 0.7fr) minmax(220px, 1fr) minmax(280px, 1.4fr);
+  gap: 14px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   padding: 16px;
+  background: var(--surface-1);
+}
+
+.playground-row span,
+.playground-row strong,
+.playground-row small {
+  min-width: 0;
+}
+
+.playground-row span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.playground-row strong {
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.playground-row small {
+  color: var(--muted);
+  line-height: 1.45;
 }
 
 .metric-card span {
@@ -1464,8 +1493,9 @@ input:-webkit-autofill:focus {
 }
 
 @media (max-width: 900px) {
-  .dashboard-surface-grid {
+  .playground-row {
     grid-template-columns: 1fr;
+    gap: 8px;
   }
 }
 
