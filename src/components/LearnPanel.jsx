@@ -3,48 +3,71 @@ import "../memact-ui.css"
 import "../faq-chevron.css"
 import { Chevron } from "./Chevron.jsx"
 
-const BASIC_FAQS = [
+const START_FAQS = [
   {
     question: "What is Memact?",
     answer: "Memact is a playground where apps personalize based on what users choose to share."
   },
   {
-    question: "How does it work?",
-    answer: "Apps ask to connect, send useful signals after permission, and receive only the memory or feature output their access allows."
+    question: "What problem is Memact solving?",
+    answer: "Apps usually guess quietly from clicks and isolated profiles. Users rarely see what is being used or why. Memact makes that memory visible and editable."
   },
   {
-    question: "What can I review?",
-    answer: "You can review what an app wants to use, what Memact may create from it, and what the app may receive back."
+    question: "What is the basic flow?",
+    answer: "An app asks first. If the user allows it, the app can send approved activity. Memact turns that into memory, and apps can use allowed features to personalize better."
+  }
+]
+
+const WIKI_FAQS = [
+  {
+    question: "What is Memact Wiki?",
+    answer: "It is the user’s editable memory page. Users can add context, apps can suggest entries, and Memact can create entries from approved activity."
   },
   {
-    question: "Can I disconnect an app?",
-    answer: "Yes. Disconnecting an app stops future access for that app."
+    question: "Why is Wiki important?",
+    answer: "It gives users a readable place to see and correct what apps know. Without it, personalization stays hidden inside each app."
+  },
+  {
+    question: "Can users edit app-added memory?",
+    answer: "Yes. Users can accept, edit, reject, delete, or change visibility for entries."
+  },
+  {
+    question: "What does “private, shareable, public” mean?",
+    answer: "Private stays only in the user’s Wiki. Shareable can be shared by link later. Public can appear on a public username page. Private should be the default."
+  }
+]
+
+const APP_FAQS = [
+  {
+    question: "Why would an app use Memact?",
+    answer: "Most apps only know what happens inside their own product. Memact can help an app use approved memory from other places too, so the user does not have to explain themselves again."
+  },
+  {
+    question: "What is Playground?",
+    answer: "Playground is where developers build Memact features. A feature might help an article app choose the right summary style, or help a shopping app understand preference patterns."
+  },
+  {
+    question: "What is Adaptive Article Overview?",
+    answer: "It is an example of a Playground feature. It helps article apps choose a summary style based on approved reading memory, like quick brief, key points, simple explainer, or deep dive."
   }
 ]
 
 const DEVELOPER_FAQS = [
   {
-    question: "How does a developer start?",
-    answer: "Register an app, keep the API key on the server, add a Connect Memact flow, then use the SDK/API to send capture events and run features after access is approved."
+    question: "What should developers build first?",
+    answer: "Small features. One feature should do one clear thing and use only the memory it is allowed to use."
   },
   {
-    question: "What does the SDK do?",
-    answer: "The SDK helps apps send capture events, verify access, list available features, run a feature, and retrieve permitted schemas or memory summaries."
+    question: "What should developers avoid?",
+    answer: "Hidden tracking, raw data leaks, fake conclusions, and features that make sensitive claims without support."
   },
   {
-    question: "What are schema packets?",
-    answer: "Schema packets are technical memory structures Memact features can use. They belong in developer docs and advanced surfaces, not basic user consent copy."
-  }
-]
-
-const FEATURE_FAQS = [
-  {
-    question: "What are Memact features?",
-    answer: "Features are tools built inside Memact. Adaptive Article Overview is the first real feature in Playground."
+    question: "What are schemas?",
+    answer: "Schemas are how Memact organizes memory for features. Most users do not need to think about them."
   },
   {
-    question: "Is the extension required?",
-    answer: "No. Apps can send signals directly through Memact. The extension is optional for extra capture where the user chooses to enable it."
+    question: "Does Memact need the extension?",
+    answer: "No. Apps can integrate with Memact through SDK/API. The extension is only an optional capture source."
   }
 ]
 
@@ -68,26 +91,33 @@ export function LearnPanel() {
       <div>
         <p className="eyebrow">Learn More</p>
         <h2>Personalization made better with Memact</h2>
-        <p className="muted">A playground where apps personalize based on what users choose to share.</p>
+        <p className="muted">A simple overview of how apps, Wiki, and Playground fit together.</p>
       </div>
 
       <div className="faq-section">
-        <p className="faq-section-title">Basics</p>
-        {BASIC_FAQS.map((faq, index) => (
+        <p className="faq-section-title">Start here</p>
+        {START_FAQS.map((faq, index) => (
           <FaqItem faq={faq} key={faq.question} open={index === 0} />
+        ))}
+      </div>
+
+      <div className="faq-section faq-section-advanced">
+        <p className="faq-section-title">Wiki</p>
+        {WIKI_FAQS.map((faq) => (
+          <FaqItem faq={faq} key={faq.question} />
+        ))}
+      </div>
+
+      <div className="faq-section faq-section-advanced">
+        <p className="faq-section-title">Apps and Playground</p>
+        {APP_FAQS.map((faq) => (
+          <FaqItem faq={faq} key={faq.question} />
         ))}
       </div>
 
       <div className="faq-section faq-section-advanced">
         <p className="faq-section-title">Developers</p>
         {DEVELOPER_FAQS.map((faq) => (
-          <FaqItem faq={faq} key={faq.question} />
-        ))}
-      </div>
-
-      <div className="faq-section faq-section-advanced">
-        <p className="faq-section-title">Features</p>
-        {FEATURE_FAQS.map((faq) => (
           <FaqItem faq={faq} key={faq.question} />
         ))}
       </div>

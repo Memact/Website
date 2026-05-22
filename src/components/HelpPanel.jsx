@@ -6,61 +6,61 @@ import { Chevron } from "./Chevron.jsx"
 const BASIC_FAQS = [
   {
     question: "What is Memact?",
-    answer: "Memact is a playground where apps personalize based on what users choose to share."
+    answer: "Memact helps apps personalize better using what users choose to share."
   },
   {
-    question: "Why would an app use Memact?",
-    answer: "An app can send useful signals to Memact and use features that help it personalize better, with your permission."
+    question: "What is Memact Wiki?",
+    answer: "Memact Wiki is your editable memory page. You can add things yourself, approve what apps suggest, edit entries, delete them, or share selected parts later."
+  },
+  {
+    question: "Why do apps ask first?",
+    answer: "Because an app should not use or add memory about you without permission."
+  },
+  {
+    question: "Is the browser extension required?",
+    answer: "No. Apps can use Memact through the SDK/API. The extension is optional."
   },
   {
     question: "Does an app get all my data?",
     answer: "No. An app only gets what you allow. You can review access and disconnect it."
-  },
-  {
-    question: "What does Memact store?",
-    answer: "Memact stores useful memory created from app signals, user choices, and optional capture sources."
-  },
-  {
-    question: "Is the browser extension required?",
-    answer: "No. Apps that use Memact can work without it. The extension is optional for extra capture where you choose to use it."
   }
 ]
 
 const CONTROL_FAQS = [
   {
     question: "What can I control?",
-    answer: "Which apps are connected, what they can use, and whether they keep access."
+    answer: "You can control which apps are connected, what they can use, what they can add, and whether they keep access."
   },
   {
-    question: "What is Memact Wiki?",
-    answer: "It is the private user wiki created from apps, Memact, and user edits. Apps can use it only inside what you allow."
+    question: "Can apps write to my Wiki?",
+    answer: "Only if you allow it. Important entries can stay pending until you accept, edit, or reject them."
+  },
+  {
+    question: "Can I add my own context?",
+    answer: "Yes. You can add entries like “I prefer short summaries” or “I am working on Memact.” User-added entries are treated as stronger than app guesses."
   },
   {
     question: "Can I share my Wiki?",
-    answer: "Not by default. Your Wiki should stay private unless you create a username-based share link yourself."
+    answer: "Only selected entries. Private entries stay private by default."
   },
   {
-    question: "What is Playground?",
-    answer: "Playground is where Memact features live. Apps can use a feature with an API key, and you can disconnect it later."
-  },
-  {
-    question: "How does Adaptive Article Overview work?",
-    answer: "An article app can send allowed reading activity. Memact turns that into reading memory, then the feature chooses an overview style the user is more likely to read."
+    question: "What happens when an app is wrong?",
+    answer: "You can edit the entry, reject it, delete it, or block the app from writing more memory."
   }
 ]
 
 const DEVELOPER_FAQS = [
   {
     question: "How does an app connect to Memact?",
-    answer: "Register an app, use the SDK/API, send capture events, and request features only after access is approved."
+    answer: "Register an app, ask the user for access, keep the API key on your server, then use the SDK/API to send approved activity or run features."
+  },
+  {
+    question: "What are Playground features?",
+    answer: "Playground features are small tools developers build using Memact memory. For example, a feature could help a news app choose whether to show a quick brief, key points, or a deeper article overview."
   },
   {
     question: "Where does the API key live?",
-    answer: "On the server. Never in browser code, public repos, logs, or user-facing settings."
-  },
-  {
-    question: "What are features?",
-    answer: "Features are tools built inside Memact, like a memory wiki, research map, or cognitive load estimate."
+    answer: "On your server. Never put a Memact API key in browser code, public repos, logs, or user-facing settings."
   }
 ]
 
@@ -72,7 +72,7 @@ const LEGAL_FAQS = [
         Memact is a project by{" "}
         <a className="inline-help-link" href="https://github.com/keepsloading" target="_blank" rel="noreferrer">Keeps Loading</a>.
         Core repos are source-available under their repository licenses.
-        Memact branding assets are not licensed with the code.
+        Memact branding assets are separate from the code licenses.
       </>
     )
   },
@@ -108,7 +108,7 @@ export function HelpPanel() {
       <div>
         <p className="eyebrow">Help</p>
         <h2>Frequently asked questions</h2>
-        <p className="muted">Clear answers about apps, consent, Wiki, Playground, and developer setup.</p>
+        <p className="muted">Common questions about apps, consent, Wiki, Playground, and developer setup.</p>
       </div>
 
       <div className="faq-section">
