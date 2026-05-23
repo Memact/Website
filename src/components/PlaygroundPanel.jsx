@@ -4,12 +4,32 @@ const FEATURES = [
   {
     id: "adaptive-article-overview",
     name: "Adaptive Article Overview",
-    type: "Reading",
+    type: "Media service",
     summary: "Helps article apps choose the overview style a user is more likely to read.",
     details: "Uses reading memory the user allowed, such as scroll depth, finish rate, repeated topics, skipped topics, and summary style.",
     inputs: ["article content", "reading memory", "recent reading events"],
     output: "quick brief, key points, deep dive, or simple explainer",
     status: "Available"
+  },
+  {
+    id: "community-context-brief",
+    name: "Community Context Brief",
+    type: "Community service",
+    summary: "Helps apps and platform bots summarize approved community memory without raw private activity.",
+    details: "Uses allowed Wiki context, approved community summaries, platform labels, and topic signals. It returns moderation-safe notes and confidence.",
+    inputs: ["approved community activity", "allowed Wiki context", "platform metadata"],
+    output: "topics, response style, community interests, collaboration signals, and source trail summary",
+    status: "Available"
+  },
+  {
+    id: "discord-channel-personalizer",
+    name: "Discord Channel Personalizer",
+    type: "Community service",
+    summary: "Helps Discord bots suggest useful server channels after the Discord user connects Memact.",
+    details: "Uses approved Wiki memory, server channel names/topics, and optional allowed server activity summaries. It does not need private messages by default.",
+    inputs: ["approved Wiki memory", "server channels", "allowed server activity"],
+    output: "recommended channels, channels to avoid, and notes for the bot",
+    status: "Experimental"
   }
 ]
 
@@ -51,7 +71,7 @@ export function PlaygroundPanel({
               <input
                 value={query}
                 type="search"
-                placeholder="Search reading, shopping, research..."
+                placeholder="Search media, Discord, shopping..."
                 onChange={(event) => setQuery(event.target.value)}
               />
             </span>

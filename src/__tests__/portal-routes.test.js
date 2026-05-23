@@ -5,6 +5,7 @@ import { isProtectedPage, normalizePortalPath, pageFromLocation, routeForPage } 
 test("portal routes map clean URL pages", () => {
   assert.equal(pageFromLocation({ pathname: "/" }), "home")
   assert.equal(pageFromLocation({ pathname: "/Dashboard" }), "access")
+  assert.equal(pageFromLocation({ pathname: "/Stats" }), "stats")
   assert.equal(pageFromLocation({ pathname: "/Access" }), "access")
   assert.equal(pageFromLocation({ pathname: "/access" }), "access")
   assert.equal(pageFromLocation({ pathname: "/Account" }), "account")
@@ -35,7 +36,9 @@ test("route metadata keeps help public and account/wiki/playground protected", (
   assert.equal(isProtectedPage("account"), true)
   assert.equal(isProtectedPage("wiki"), true)
   assert.equal(isProtectedPage("playground"), true)
+  assert.equal(isProtectedPage("stats"), true)
   assert.equal(routeForPage("access"), "/Dashboard")
+  assert.equal(routeForPage("stats"), "/Stats")
   assert.equal(routeForPage("playground"), "/Playground")
   assert.equal(routeForPage("wiki"), "/Wiki")
   assert.equal(routeForPage("help"), "/Help")

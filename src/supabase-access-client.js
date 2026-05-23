@@ -28,6 +28,10 @@ export class SupabaseAccessClient {
         provider: data.user.app_metadata?.provider || data.user.identities?.[0]?.provider || "email",
         display_name: getDisplayName(null, data.user),
         avatar_url: data.user.user_metadata?.avatar_url || data.user.user_metadata?.picture || "",
+        account_type: data.user.user_metadata?.account_type || data.user.user_metadata?.memact_account_type || "",
+        account_state: data.user.user_metadata?.account_state || data.user.user_metadata?.memact_account_state || "",
+        password_pending: Boolean(data.user.user_metadata?.password_pending),
+        full_signup_completed: data.user.user_metadata?.full_signup_completed,
         plan: "free_unlimited",
         created_at: data.user.created_at || null
       }
@@ -76,6 +80,25 @@ export class SupabaseAccessClient {
 
   async grantConsent(_session, body) {
     return this.grantConsentFallback(body, { requireOwner: true })
+  }
+
+  async revokeConsent(_session, consentId) {
+    const { data: userData, error: userError } = await this.supabase.auth.getUser()
+    if (userError) throw mapSupabaseRpcError(userError)
+    const user = userData?.user
+    if (!user?.id) throw new AccessApiError(401, "Please sign in again.", "invalid_session")
+    const revokedAt = new Date().toISOString()
+    const { data, error } = await this.supabase
+      .from("memact_consents")
+      .update({ revoked_at: revokedAt, updated_at: revokedAt })
+      .eq("id", consentId)
+      .eq("user_id", user.id)
+      .is("revoked_at", null)
+      .select("id, user_id, app_id, scopes, categories, created_at, updated_at, revoked_at")
+      .maybeSingle()
+    if (error) throw new AccessApiError(500, error.message || "Could not remove access.", "consent_revoke_failed", error)
+    if (!data?.id) throw new AccessApiError(404, "Connection not found.", "consent_not_found")
+    return { consent: data }
   }
 
   async getConnectApp(_session, request = {}) {

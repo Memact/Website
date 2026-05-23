@@ -20,9 +20,12 @@ import { HelpPanel } from "./components/HelpPanel.jsx"
 import { LearnPanel } from "./components/LearnPanel.jsx"
 import { Landing } from "./components/Landing.jsx"
 import { PlaygroundPanel } from "./components/PlaygroundPanel.jsx"
+import { DeveloperStatsPanel } from "./components/DeveloperStatsPanel.jsx"
+import { UserDashboard } from "./components/UserDashboard.jsx"
 import { refreshDashboard, useDashboardState } from "./hooks/useDashboardState.js"
 import { isConnectPage, isProtectedPage, normalizePortalPath, pageFromLocation, routeForPage } from "./portal-routes.js"
 import { getDisplayName, getUserEmail } from "./user-display.js"
+import { ACCOUNT_TYPES, defaultPageForAccountType, getAccountType, isConsentShellAccount, tabsForAccountType } from "./account-type.js"
 
 const AUTH_INIT_TIMEOUT_MS = 12000
 const AUTH_CODE_EXCHANGE_TIMEOUT_MS = 9000
@@ -72,6 +75,7 @@ function App() {
   const [activeTab, setActiveTab] = useState(initialPage === "home" ? "login" : initialPage)
   const [email, setEmail] = useState("")
   const [signupDisplayName, setSignupDisplayName] = useState("")
+  const [signupAccountType, setSignupAccountType] = useState("")
   const [password, setPassword] = useState("")
   const [passwordConfirm, setPasswordConfirm] = useState("")
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState("")
@@ -118,6 +122,9 @@ function App() {
   const signupPasswordState = useMemo(() => getPasswordState(password, passwordConfirm), [password, passwordConfirm])
   const needsPasswordSetup = Boolean(authUser && shouldOfferPasswordSetup(authUser))
   const authEventGuardRef = useRef("")
+  const accountType = getAccountType(user, authUser)
+  const isConsentShell = isConsentShellAccount(user, authUser)
+  const portalTabs = useMemo(() => isConsentShell ? ["account"] : tabsForAccountType(accountType), [accountType, isConsentShell])
 
   function navigateToPage(page, { replace = false, hash = "" } = {}) {
     const nextPath = `${routeForPage(page)}${hash}`
@@ -147,6 +154,7 @@ function App() {
     if (nextSession && isConnectPage(page)) {
       setError("")
       setAuthNotice("")
+      setAuthChecking(false)
       setCurrentPage("connect")
       setActiveTab("connect")
       return
@@ -319,6 +327,20 @@ function App() {
 
   useEffect(() => {
     if (!session) return
+    if (currentPage === "connect" || currentPage === "learn" || currentPage === "publicWiki") return
+    if (currentPage === "home") return
+    if (isConsentShell && currentPage !== "account") {
+      navigateToPage("account", { replace: true })
+      setAuthNotice("We found approved app access for this email. Set a password to open your Memact account.")
+      return
+    }
+    if (!portalTabs.includes(currentPage)) {
+      navigateToPage(defaultPageForAccountType(accountType), { replace: true })
+    }
+  }, [accountType, currentPage, isConsentShell, portalTabs, session])
+
+  useEffect(() => {
+    if (!session) return
     if (authFlow === "recovery") {
       navigateToPage("account", { replace: true })
       setStatus("Reset your password.")
@@ -332,7 +354,7 @@ function App() {
   }, [authFlow, needsPasswordSetup, session])
 
   useEffect(() => {
-    const tabName = currentPage === "account" ? "Account" : currentPage === "help" ? "Help" : currentPage === "connect" ? "Connect" : currentPage === "wiki" || currentPage === "publicWiki" ? "Wiki" : currentPage === "playground" ? "Playground" : currentPage === "learn" ? "Learn" : currentPage === "access" ? "Dashboard" : "Login"
+    const tabName = currentPage === "account" ? "Account" : currentPage === "help" ? "Help" : currentPage === "connect" ? "Connect" : currentPage === "wiki" || currentPage === "publicWiki" ? "Wiki" : currentPage === "stats" ? "Stats" : currentPage === "playground" ? "Playground" : currentPage === "learn" ? "Learn" : currentPage === "access" ? "Dashboard" : "Login"
     document.title = `Memact | ${tabName}`
   }, [currentPage])
 
@@ -447,6 +469,47 @@ function App() {
     }
   }
 
+  async function handleConsentEmailLink(event) {
+    event.preventDefault()
+    setError("")
+    setAuthNotice("")
+    const cleanEmail = email.trim().toLowerCase()
+    if (!/^\S+@\S+\.\S+$/.test(cleanEmail)) {
+      setError("Enter a valid email to review this request.")
+      return
+    }
+    setAuthLoading("consent-link")
+    setStatus("Sending one-time link.")
+    try {
+      const { error: otpError } = await requireSupabase().auth.signInWithOtp({
+        email: cleanEmail,
+        options: {
+          emailRedirectTo: getAuthRedirectTarget(),
+          shouldCreateUser: true,
+          data: {
+            account_type: ACCOUNT_TYPES.user,
+            memact_account_type: ACCOUNT_TYPES.user,
+            account_state: "consent_shell",
+            memact_account_state: "consent_shell",
+            password_pending: true,
+            created_from: "consent_flow",
+            verified_email: true,
+            full_signup_completed: false
+          }
+        }
+      })
+      if (otpError) throw otpError
+      rememberAuthMethod("Email link")
+      setAuthNotice("Check your email for the one-time link. You can finish setting up your account later.")
+      setStatus("One-time link sent.")
+    } catch (authError) {
+      setError(formatAuthErrorMessage(authError, "Could not send the one-time link."))
+      setStatus(authStatusMessage(authError))
+    } finally {
+      setAuthLoading("")
+    }
+  }
+
   async function handleEmailSignup(event) {
     event.preventDefault()
     setError("")
@@ -475,7 +538,10 @@ function App() {
             memact_display_name: cleanDisplayName,
             memact_display_name_updated_at: new Date().toISOString(),
             memact_password_ready: true,
-            memact_password_updated_at: new Date().toISOString()
+            memact_password_updated_at: new Date().toISOString(),
+            account_type: signupAccountType || ACCOUNT_TYPES.developer,
+            memact_account_type: signupAccountType || ACCOUNT_TYPES.developer,
+            account_state: "active"
           }
         }
       })
@@ -483,6 +549,7 @@ function App() {
       setPassword("")
       setPasswordConfirm("")
       setSignupDisplayName("")
+      setSignupAccountType("")
       if (data?.session) {
         rememberAuthMethod("Email password")
         setAuthChecking(false)
@@ -815,7 +882,11 @@ function App() {
         data: {
           ...(authUser?.user_metadata || {}),
           memact_password_ready: true,
-          memact_password_updated_at: new Date().toISOString()
+          memact_password_updated_at: new Date().toISOString(),
+          account_state: "active",
+          memact_account_state: "active",
+          password_pending: false,
+          full_signup_completed: true
         }
       })
       if (updateError) throw updateError
@@ -1007,6 +1078,21 @@ function App() {
     }
   }
 
+  async function handleRevokeConsent(consentId) {
+    if (!consentId) return
+    setError("")
+    setStatus("Removing app access.")
+    try {
+      await client.revokeConsent(session, consentId)
+      await refreshDashboard(client, session, dashboardActions, statusForAccessError)
+      setStatus("App access removed.")
+    } catch (revokeError) {
+      setError(revokeError.message)
+      setStatus("Access removal failed.")
+      scrollElementIntoView("error-message")
+    }
+  }
+
   async function handleCreateKey() {
     setError("")
     setOneTimeKey("")
@@ -1128,7 +1214,9 @@ function App() {
     try {
       const result = await client.connectApp(session, connectRequest)
       const connectionId = result?.consent?.id || ""
-      setConnectNotice("App connected. You can close this tab or return to the app.")
+      setConnectNotice(isConsentShell
+        ? "Access approved. You can finish setting up your Memact account later to see your Wiki and connected apps."
+        : "App connected. You can close this tab or return to the app.")
       setStatus("App connected.")
       if (connectRequest.redirect_uri) {
         window.location.href = buildConnectRedirect(connectRequest.redirect_uri, {
@@ -1246,7 +1334,7 @@ function App() {
   const showStatusPill = !showAuth && Boolean(error || statusNeedsAttention)
   const showExternalBackHeader = session && currentPage === "connect"
   const showLearnBackHeader = isPublicLearnPage || isPublicWikiPage
-  const activePortalTabLabel = currentPage === "playground" ? "Playground" : currentPage === "wiki" ? "Wiki" : currentPage === "account" ? "Account" : currentPage === "help" ? "Help" : "Dashboard"
+  const activePortalTabLabel = currentPage === "stats" ? "Stats" : currentPage === "playground" ? "Playground" : currentPage === "wiki" ? "Wiki" : currentPage === "account" ? "Account" : currentPage === "help" ? "Help" : "Dashboard"
   const [isMobileTabsOpen, setIsMobileTabsOpen] = useState(false)
   const tabsRef = useRef(null)
 
@@ -1308,11 +1396,11 @@ function App() {
           <nav ref={tabsRef} className={isMobileTabsOpen ? "tabs is-open" : "tabs"} aria-label="Memact portal tabs">
             <button type="button" className="tab tab-current" onClick={toggleMobileTabs} aria-expanded={isMobileTabsOpen}>{activePortalTabLabel}</button>
             <div className="tabs-list">
-              <button type="button" className={currentPage === "access" ? "tab is-active" : "tab"} onClick={() => handleTabSelect("access")}>Dashboard</button>
-              <button type="button" className={currentPage === "playground" ? "tab is-active" : "tab"} onClick={() => handleTabSelect("playground")}>Playground</button>
-              <button type="button" className={currentPage === "wiki" ? "tab is-active" : "tab"} onClick={() => handleTabSelect("wiki")}>Wiki</button>
-              <button type="button" className={currentPage === "account" ? "tab is-active" : "tab"} onClick={() => handleTabSelect("account")}>Account</button>
-              <button type="button" className={currentPage === "help" ? "tab is-active" : "tab"} onClick={() => handleTabSelect("help")}>Help</button>
+              {portalTabs.map((tab) => (
+                <button key={tab} type="button" className={currentPage === tab ? "tab is-active" : "tab"} onClick={() => handleTabSelect(tab)}>
+                  {tab === "access" ? "Dashboard" : tab === "stats" ? "Stats" : tab === "playground" ? "Playground" : tab === "wiki" ? "Wiki" : tab === "account" ? "Account" : "Help"}
+                </button>
+              ))}
             </div>
             <button type="button" className="nav-dropdown-toggle" aria-label="Toggle tabs menu" aria-expanded={isMobileTabsOpen} onClick={toggleMobileTabs}>
               <Chevron className={isMobileTabsOpen ? "nav-dropdown-chevron is-open" : "nav-dropdown-chevron"} />
@@ -1346,7 +1434,7 @@ function App() {
         </section>
       ) : currentPage === "help" ? (
         <section className="dashboard">
-          <HelpPanel />
+          <HelpPanel accountType={accountType} />
         </section>
       ) : session && currentPage === "connect" ? (
         <ConnectPage
@@ -1369,34 +1457,25 @@ function App() {
           onLearnMore={() => navigateToPage("help")}
           onWiki={() => navigateToWiki(connectRequest)}
         />
-      ) : session && currentPage === "wiki" && connectRequest?.app_id && connectDetails?.app ? (
+      ) : session && currentPage === "access" && accountType === ACCOUNT_TYPES.user ? (
+        <UserDashboard
+          apps={apps}
+          consents={consents}
+          isConsentShell={isConsentShell}
+          onRevokeConsent={handleRevokeConsent}
+        />
+      ) : session && currentPage === "wiki" ? (
         <WikiPage
-          app={connectDetails?.app}
+          app={connectRequest?.app_id && connectDetails?.app ? connectDetails.app : null}
           scopes={connectDetails?.scopes || scopes}
           categories={connectDetails?.activity_categories || policy?.activity_categories || {}}
           requestedScopes={connectDetails?.requested_scopes || connectRequest?.scopes || []}
           requestedCategories={connectDetails?.requested_categories || connectRequest?.categories || []}
           transparency={connectDetails?.transparency || connectDetails?.data_transparency || connectDetails?.app?.transparency || {}}
           onUpdateSelection={updateConnectSelection}
-          onBackToConsent={() => navigateToConnect(connectRequest)}
+          onBackToConsent={() => connectRequest?.app_id ? navigateToConnect(connectRequest) : navigateToPage("access")}
           onManageConsent={() => navigateToPage("access")}
         />
-      ) : session && currentPage === "wiki" ? (
-        <section className="connect-shell">
-          <article className="panel connect-card wiki-private-card">
-            <p className="eyebrow">Wiki</p>
-            <h1>{connectRequest?.app_id && connectLoading === "loading" ? "Loading Wiki." : "Your Memact Wiki is private."}</h1>
-            <p className="muted">
-              {connectRequest?.app_id && connectLoading === "loading"
-                ? "Checking the Memact app request before showing app-specific Wiki details."
-                : "Connected apps can add to your Wiki only after consent. Sharing should happen only through a share link you create yourself."}
-            </p>
-            <div className="connect-actions">
-              <button type="button" onClick={() => navigateToPage("access")}>Open dashboard</button>
-              <button type="button" className="ghost" onClick={() => navigateToPage("help")}>Help</button>
-            </div>
-          </article>
-        </section>
       ) : session && currentPage === "playground" ? (
         <PlaygroundPanel
           apps={apps}
@@ -1407,9 +1486,18 @@ function App() {
           onUseFeature={handleUseFeature}
           onDisconnectFeature={handleDisconnectFeature}
         />
+      ) : session && currentPage === "stats" ? (
+        <DeveloperStatsPanel
+          apps={apps}
+          apiKeys={apiKeys}
+          consents={consents}
+          featureConnections={featureConnections}
+        />
       ) : session ? (
         <Dashboard
           activeTab={activeTab}
+          accountType={accountType}
+          isConsentShell={isConsentShell}
           user={user}
           authUser={authUser}
           apps={apps}
@@ -1476,6 +1564,7 @@ function App() {
           showAuth={showAuth}
           email={email}
           signupDisplayName={signupDisplayName}
+          signupAccountType={signupAccountType}
           password={password}
           passwordConfirm={passwordConfirm}
           pendingVerificationEmail={pendingVerificationEmail}
@@ -1488,6 +1577,7 @@ function App() {
           lastAuthMethod={lastAuthMethod}
           setEmail={setEmail}
           setSignupDisplayName={setSignupDisplayName}
+          setSignupAccountType={setSignupAccountType}
           setPassword={setPassword}
           setPasswordConfirm={setPasswordConfirm}
           setVerificationCode={setVerificationCode}
@@ -1497,6 +1587,7 @@ function App() {
           onVerifySignupCode={handleVerifySignupCode}
           onVerifySignInCode={handleVerifySignInCode}
           onEmailLogin={handleEmailLogin}
+          onConsentEmailLink={handleConsentEmailLink}
           onPasswordLogin={handlePasswordLogin}
           onForgotPassword={handleForgotPassword}
           onResendConfirmation={handleResendConfirmation}

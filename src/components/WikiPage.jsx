@@ -43,6 +43,7 @@ export function WikiPage({
   const [showAddContext, setShowAddContext] = useState(false)
   const [acceptedProposals, setAcceptedProposals] = useState([])
   const [rejectedProposals, setRejectedProposals] = useState([])
+  const [wikiSearch, setWikiSearch] = useState("")
 
   const toggleScope = (scope) => {
     const nextScopes = safeRequestedScopes.includes(scope)
@@ -97,6 +98,8 @@ export function WikiPage({
   }
   const visibleProposals = proposedEntries.filter((entry) => !rejectedProposals.includes(entry.id) && !acceptedProposals.some((item) => item.id === entry.id))
   const visibleEntries = [...manualEntries, ...acceptedProposals]
+  const filteredEntries = filterWikiEntries(visibleEntries, wikiSearch)
+  const groupedEntries = groupEntriesByCategory(filteredEntries)
 
   return (
     <section className="panel transparency-panel wiki-panel">
@@ -104,22 +107,44 @@ export function WikiPage({
         <div>
           <p className="eyebrow">Wiki</p>
           <h2>{app?.id ? `${appName}'s Memact Wiki` : "Your Memact Wiki"}</h2>
-          <p className="muted">A private memory surface you can inspect, edit, and share only when you choose.</p>
+          <p className="muted">A private, searchable memory page you can inspect, edit, and share only when you choose.</p>
         </div>
         <button type="button" className="button wiki-add-button" onClick={() => setShowAddContext((value) => !value)}>
           Add context
         </button>
       </div>
 
-      <div className="app-identity connect-identity">
-        <span className="app-avatar" aria-hidden="true"><span /></span>
-        <div>
-          <strong>{appName}</strong>
-          {app?.developer_url ? (
-            <a className="muted" href={app.developer_url} target="_blank" rel="noreferrer">{app.developer_url}</a>
-          ) : <span className="muted">Developer URL not provided.</span>}
+      {app?.id ? (
+        <div className="app-identity connect-identity">
+          <span className="app-avatar" aria-hidden="true"><span /></span>
+          <div>
+            <strong>{appName}</strong>
+            {app?.developer_url ? (
+              <a className="muted" href={app.developer_url} target="_blank" rel="noreferrer">{app.developer_url}</a>
+            ) : <span className="muted">Developer URL not provided.</span>}
+          </div>
         </div>
-      </div>
+      ) : (
+        <section className="permission-list wiki-share-card">
+          <p className="eyebrow">Private by default</p>
+          <h3>Your Wiki starts with what you add or approve.</h3>
+          <p className="muted">Apps, Memact, and Playground features can propose memory only after consent. You decide what becomes accepted memory.</p>
+        </section>
+      )}
+
+      <section className="permission-list wiki-extension-card">
+        <div>
+          <p className="eyebrow">Optional capture</p>
+          <h3>Install the Memact Extension</h3>
+          <p className="muted">The extension can turn approved browsing activity into useful Wiki memory. Apps can still use Memact through SDK/API without it.</p>
+        </div>
+        <ol className="wiki-step-list">
+          <li>Install the Memact browser extension.</li>
+          <li>Sign in with the same Memact account.</li>
+          <li>Choose which activity types the extension may capture.</li>
+          <li>Review proposed Wiki entries before important memory is accepted.</li>
+        </ol>
+      </section>
 
       {showAddContext ? (
         <form className="permission-list wiki-add-form" onSubmit={submitManualEntry}>
@@ -167,53 +192,55 @@ export function WikiPage({
         </form>
       ) : null}
 
-      <section className="permission-list transparency-controls-panel">
-        <div className="transparency-control-head">
-          <div>
-            <p className="eyebrow">Controls</p>
-            <h3>Choose what this app can use</h3>
-          </div>
-          <div className="transparency-summary" aria-label="Wiki selection summary">
-            <span><strong>{safeRequestedScopes.length}</strong> Actions</span>
-            <span><strong>{safeRequestedCategories.length}</strong> Activity types</span>
-          </div>
-        </div>
-        {!hasEnoughSelection ? (
-          <p className="notice" role="status">Select at least one action and one activity type before returning to consent.</p>
-        ) : null}
-        <div className="transparency-choice-grid">
-          <div className="transparency-choice-group">
-            <p className="app-list-label">Allowed actions</p>
-            <div className="transparency-control-list">
-              {scopeOptions.map((scope) => (
-                <label className="transparency-control" key={scope}>
-                  <input type="checkbox" checked={safeRequestedScopes.includes(scope)} onChange={() => toggleScope(scope)} />
-                  <span>
-                    <strong>{scopes?.[scope]?.label || scope}</strong>
-                    <small>{scopes?.[scope]?.description || scope}</small>
-                  </span>
-                </label>
-              ))}
-              {!scopeOptions.length ? <p className="muted">No actions were attached to this Wiki link.</p> : null}
+      {app?.id ? (
+        <section className="permission-list transparency-controls-panel">
+          <div className="transparency-control-head">
+            <div>
+              <p className="eyebrow">Controls</p>
+              <h3>Choose what this app can use</h3>
+            </div>
+            <div className="transparency-summary" aria-label="Wiki selection summary">
+              <span><strong>{safeRequestedScopes.length}</strong> Actions</span>
+              <span><strong>{safeRequestedCategories.length}</strong> Activity types</span>
             </div>
           </div>
-          <div className="transparency-choice-group">
-            <p className="app-list-label">Allowed activity</p>
-            <div className="transparency-control-list">
-              {categoryOptions.map((category) => (
-                <label className="transparency-control" key={category}>
-                  <input type="checkbox" checked={safeRequestedCategories.includes(category)} onChange={() => toggleCategory(category)} />
-                  <span>
-                    <strong>{categories?.[category]?.label || category}</strong>
-                    <small>{categories?.[category]?.description || category}</small>
-                  </span>
-                </label>
-              ))}
-              {!categoryOptions.length ? <p className="muted">No activity types were attached to this Wiki link.</p> : null}
+          {!hasEnoughSelection ? (
+            <p className="notice" role="status">Select at least one action and one activity type before returning to consent.</p>
+          ) : null}
+          <div className="transparency-choice-grid">
+            <div className="transparency-choice-group">
+              <p className="app-list-label">Allowed actions</p>
+              <div className="transparency-control-list">
+                {scopeOptions.map((scope) => (
+                  <label className="transparency-control" key={scope}>
+                    <input type="checkbox" checked={safeRequestedScopes.includes(scope)} onChange={() => toggleScope(scope)} />
+                    <span>
+                      <strong>{scopes?.[scope]?.label || scope}</strong>
+                      <small>{scopes?.[scope]?.description || scope}</small>
+                    </span>
+                  </label>
+                ))}
+                {!scopeOptions.length ? <p className="muted">No actions were attached to this Wiki link.</p> : null}
+              </div>
+            </div>
+            <div className="transparency-choice-group">
+              <p className="app-list-label">Allowed activity</p>
+              <div className="transparency-control-list">
+                {categoryOptions.map((category) => (
+                  <label className="transparency-control" key={category}>
+                    <input type="checkbox" checked={safeRequestedCategories.includes(category)} onChange={() => toggleCategory(category)} />
+                    <span>
+                      <strong>{categories?.[category]?.label || category}</strong>
+                      <small>{categories?.[category]?.description || category}</small>
+                    </span>
+                  </label>
+                ))}
+                {!categoryOptions.length ? <p className="muted">No activity types were attached to this Wiki link.</p> : null}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       <section className="permission-list wiki-entry-panel">
         <div className="wiki-section-head">
@@ -223,16 +250,36 @@ export function WikiPage({
           </div>
           <span className="badge">{visibleEntries.length}</span>
         </div>
-        <div className="wiki-entry-list">
-          {visibleEntries.map((entry) => (
-            <WikiEntryCard
-              key={entry.id}
-              entry={entry}
-              onDelete={() => deleteEntry(entry.id)}
-              onVisibility={(visibility) => changeEntryVisibility(entry.id, visibility)}
-            />
+        <label className="wiki-search">
+          Search Wiki
+          <span className="playground-search-field">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M10.5 17a6.5 6.5 0 1 1 0-13a6.5 6.5 0 0 1 0 13Zm5-1.5 4 4" />
+            </svg>
+            <input value={wikiSearch} type="search" placeholder="Search memory, category, source..." onChange={(event) => setWikiSearch(event.target.value)} />
+          </span>
+        </label>
+        <div className="wiki-index">
+          {groupedEntries.map((group) => (
+            <section className="wiki-category-section" key={group.category}>
+              <div className="wiki-category-head">
+                <h4>{group.category}</h4>
+                <span className="badge">{group.entries.length}</span>
+              </div>
+              <div className="wiki-entry-list">
+                {group.entries.map((entry) => (
+                  <WikiEntryCard
+                    key={entry.id}
+                    entry={entry}
+                    onDelete={() => deleteEntry(entry.id)}
+                    onVisibility={(visibility) => changeEntryVisibility(entry.id, visibility)}
+                  />
+                ))}
+              </div>
+            </section>
           ))}
           {!visibleEntries.length ? <p className="muted">No accepted Wiki entries yet. Add context yourself or approve a proposed memory when one appears.</p> : null}
+          {visibleEntries.length > 0 && !filteredEntries.length ? <p className="muted">No Wiki entries match that search.</p> : null}
         </div>
       </section>
 
@@ -258,26 +305,28 @@ export function WikiPage({
         </div>
       </section>
 
-      <div className="transparency-grid">
-        <WikiDisclosure title="What this app can send" eyebrow="App can add" items={capturedData} empty="This app has not listed exact fields yet." />
-        <WikiDisclosure title="What Memact may create" eyebrow="Wiki may contain" items={createdMemory} empty="Memact may create useful memory from what you allow." />
-        <WikiDisclosure title="Why it wants access" eyebrow="Why" items={dataUses} empty={app?.description || "This app has not provided a plain-language reason yet."} />
-        <WikiDisclosure title="What this app may use" eyebrow="Features" items={allowedFeatures} empty="No feature list was provided." />
-        <section className="permission-list transparency-card">
-          <p className="eyebrow">Access</p>
-          <h3>How long access lasts</h3>
-          <p className="muted">{retention}</p>
-        </section>
-        <section className="permission-list transparency-card">
-          <p className="eyebrow">Disconnect</p>
-          <h3>Stop future access</h3>
-          <p className="muted">{revocation} Removing app access stops future Memact access for this app.</p>
-        </section>
-      </div>
+      {app?.id ? (
+        <div className="transparency-grid">
+          <WikiDisclosure title="What this app can send" eyebrow="App can add" items={capturedData} empty="This app has not listed exact fields yet." />
+          <WikiDisclosure title="What Memact may create" eyebrow="Wiki may contain" items={createdMemory} empty="Memact may create useful memory from what you allow." />
+          <WikiDisclosure title="Why it wants access" eyebrow="Why" items={dataUses} empty={app?.description || "This app has not provided a plain-language reason yet."} />
+          <WikiDisclosure title="What this app may use" eyebrow="Features" items={allowedFeatures} empty="No feature list was provided." />
+          <section className="permission-list transparency-card">
+            <p className="eyebrow">Access</p>
+            <h3>How long access lasts</h3>
+            <p className="muted">{retention}</p>
+          </section>
+          <section className="permission-list transparency-card">
+            <p className="eyebrow">Disconnect</p>
+            <h3>Stop future access</h3>
+            <p className="muted">{revocation} Removing app access stops future Memact access for this app.</p>
+          </section>
+        </div>
+      ) : null}
 
       <div className="connect-actions">
-        <button type="button" onClick={onBackToConsent}>Back to consent</button>
-        <button type="button" className="ghost" onClick={onManageConsent}>Open dashboard</button>
+        {app?.id ? <button type="button" onClick={onBackToConsent}>Back to consent</button> : null}
+        <button type="button" className={app?.id ? "ghost" : ""} onClick={onManageConsent}>Open dashboard</button>
       </div>
 
       <section className="permission-list wiki-share-card">
@@ -449,6 +498,35 @@ function normalizeWikiEntries(value, appName) {
     confidence: entry.confidence ?? "Needs review",
     competing_interpretations: Array.isArray(entry.competing_interpretations) ? entry.competing_interpretations : [],
     contradictions: Array.isArray(entry.contradictions) ? entry.contradictions : []
+  }))
+}
+
+function filterWikiEntries(entries, query) {
+  const needle = query.trim().toLowerCase()
+  if (!needle) return entries
+  return entries.filter((entry) => {
+    const valueText = typeof entry.value === "string" ? entry.value : JSON.stringify(entry.value || {})
+    return [
+      entry.title,
+      entry.category,
+      valueText,
+      entry.source_label,
+      entry.source_detail,
+      entry.visibility
+    ].some((item) => String(item || "").toLowerCase().includes(needle))
+  })
+}
+
+function groupEntriesByCategory(entries) {
+  const groups = new Map()
+  for (const entry of entries) {
+    const category = entry.category || "Other"
+    if (!groups.has(category)) groups.set(category, [])
+    groups.get(category).push(entry)
+  }
+  return Array.from(groups.entries()).map(([category, groupEntries]) => ({
+    category,
+    entries: groupEntries
   }))
 }
 

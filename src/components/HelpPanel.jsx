@@ -3,14 +3,18 @@ import "../memact-ui.css"
 import "../faq-chevron.css"
 import { Chevron } from "./Chevron.jsx"
 
-const BASIC_FAQS = [
+const USER_BASIC_FAQS = [
   {
     question: "What is Memact?",
-    answer: "Memact helps apps personalize better using what users choose to share."
+    answer: "Memact helps apps personalize better around what users choose."
   },
   {
     question: "What is Memact Wiki?",
     answer: "Memact Wiki is your editable memory page. You can add things yourself, approve what apps suggest, edit entries, delete them, or share selected parts later."
+  },
+  {
+    question: "What does user context include?",
+    answer: "It can include preferences, projects, reading habits, shopping interests, learning topics, work style, accessibility needs, and anything else you add or approve."
   },
   {
     question: "Why do apps ask first?",
@@ -26,7 +30,7 @@ const BASIC_FAQS = [
   }
 ]
 
-const CONTROL_FAQS = [
+const USER_CONTROL_FAQS = [
   {
     question: "What can I control?",
     answer: "You can control which apps are connected, what they can use, what they can add, and whether they keep access."
@@ -37,7 +41,7 @@ const CONTROL_FAQS = [
   },
   {
     question: "Can I add my own context?",
-    answer: "Yes. You can add entries like “I prefer short summaries” or “I am working on Memact.” User-added entries are treated as stronger than app guesses."
+    answer: "Yes. You can add entries like \"I prefer short summaries\" or \"I am working on Memact.\" User-added entries are treated as stronger than app guesses."
   },
   {
     question: "Can I share my Wiki?",
@@ -49,14 +53,37 @@ const CONTROL_FAQS = [
   }
 ]
 
-const DEVELOPER_FAQS = [
+const DEVELOPER_BASIC_FAQS = [
+  {
+    question: "What is Memact?",
+    answer: "Memact is a playground where apps personalize around what users choose."
+  },
   {
     question: "How does an app connect to Memact?",
     answer: "Register an app, ask the user for access, keep the API key on your server, then use the SDK/API to send approved activity or run features."
   },
   {
+    question: "What can my app see?",
+    answer: "Only what the user allowed for your app. You can see app-level stats and your app's Wiki proposals, not the user's full Wiki."
+  },
+  {
+    question: "How do scopes and categories work?",
+    answer: "Scopes say what your app can do. Categories say what kind of activity or memory your app is asking to use."
+  }
+]
+
+const DEVELOPER_PLAYGROUND_FAQS = [
+  {
     question: "What are Playground features?",
-    answer: "Playground features are small tools developers build using Memact memory. For example, a feature could help a news app choose whether to show a quick brief, key points, or a deeper article overview."
+    answer: "Playground features are small tools developers build using Memact memory. A feature might help a news app choose whether to show a quick brief, key points, or a deeper article overview."
+  },
+  {
+    question: "Can my app propose Wiki entries?",
+    answer: "Yes, if the user allows it. Important writes should stay pending until the user accepts, edits, or rejects them."
+  },
+  {
+    question: "Can platform bots use Memact?",
+    answer: "Yes, with explicit consent. Bot data should be labeled clearly, scoped to the platform, and never treated as invisible surveillance."
   },
   {
     question: "Where does the API key live?",
@@ -102,32 +129,26 @@ function FaqItem({ faq, open = false }) {
   )
 }
 
-export function HelpPanel() {
+export function HelpPanel({ accountType = "developer" }) {
+  const isUser = accountType === "user"
   return (
     <section className="panel help-panel">
       <div>
         <p className="eyebrow">Help</p>
         <h2>Frequently asked questions</h2>
-        <p className="muted">Common questions about apps, consent, Wiki, Playground, and developer setup.</p>
+        <p className="muted">{isUser ? "Common questions about consent, Wiki, connected apps, and account controls." : "Common questions about apps, API keys, consent, Playground, and safe memory writes."}</p>
       </div>
 
       <div className="faq-section">
         <p className="faq-section-title">Basics</p>
-        {BASIC_FAQS.map((faq, index) => (
+        {(isUser ? USER_BASIC_FAQS : DEVELOPER_BASIC_FAQS).map((faq, index) => (
           <FaqItem faq={faq} key={faq.question} open={index === 0} />
         ))}
       </div>
 
       <div className="faq-section faq-section-advanced">
-        <p className="faq-section-title">Controls</p>
-        {CONTROL_FAQS.map((faq) => (
-          <FaqItem faq={faq} key={faq.question} />
-        ))}
-      </div>
-
-      <div className="faq-section faq-section-advanced">
-        <p className="faq-section-title">Developers</p>
-        {DEVELOPER_FAQS.map((faq) => (
+        <p className="faq-section-title">{isUser ? "Controls" : "Playground and Wiki writes"}</p>
+        {(isUser ? USER_CONTROL_FAQS : DEVELOPER_PLAYGROUND_FAQS).map((faq) => (
           <FaqItem faq={faq} key={faq.question} />
         ))}
       </div>

@@ -7,6 +7,8 @@ import { getAvatarUrl, getInitials, getUserEmail, getUserProvider } from "../use
 
 export function Dashboard({
   activeTab,
+  accountType = "developer",
+  isConsentShell = false,
   user,
   authUser,
   apps,
@@ -103,6 +105,7 @@ export function Dashboard({
     : "Each app gets its own permissions and API keys."
 
   const provider = getUserProvider(user, authUser)
+  const isUserAccount = accountType === "user"
   const avatar = getAvatarUrl(user, authUser)
   const displayEmail = getUserEmail(user, authUser)
   const initials = getInitials(displayName, displayEmail)
@@ -119,7 +122,7 @@ export function Dashboard({
     { id: "display-name", label: displayNameAction },
     provider === "email" ? { id: "email", label: "Change email" } : null,
     { id: "password", label: needsPasswordSetup ? "Set password" : "Change password" },
-    { id: "invite", label: "Invite user" }
+    isUserAccount ? null : { id: "invite", label: "Invite user" }
   ].filter(Boolean)
   const activeChangeLabel = changeOptions.find((option) => option.id === accountEditor)?.label || "Choose a setting"
 
@@ -173,6 +176,9 @@ export function Dashboard({
             <p className="eyebrow">Account</p>
             <button type="button" className="ghost subtle-danger sign-out-button" onClick={onSignOut}>Sign out</button>
           </div>
+          {isConsentShell ? (
+            <p className="notice" role="status">We found approved app access for this email. Set a password to open your Memact account.</p>
+          ) : null}
           <div className="identity-card">
             {avatar ? <img src={avatar} alt="" /> : <span aria-hidden="true">{initials}</span>}
             <div>
@@ -340,7 +346,7 @@ export function Dashboard({
               </form>
             </section>
           ) : null}
-          <div className="account-grid">
+          {!isUserAccount ? <div className="account-grid">
             <div className="metric-card">
               <span>Registered apps</span>
               <strong>{apps.length}</strong>
@@ -349,7 +355,7 @@ export function Dashboard({
               <span>Active API keys</span>
               <strong>{apiKeys.filter((key) => !key.revoked_at).length}</strong>
             </div>
-          </div>
+          </div> : null}
         </section>
       ) : (
         <>
@@ -657,11 +663,16 @@ const memactWikiUrl = "${wikiUrl}";
 const connectionId = "connection_id_from_connect_redirect";
 
 // 4. Keep the raw key in server env only.
+// Server env:
+// MEMACT_BASE_URL=https://api.memact.com
+// MEMACT_API_KEY=${apiKey || "mka_key_shown_once"}
+// MEMACT_APP_ID=${appId}
+// MEMACT_CONNECTION_ID=connection_id_from_connect_redirect
 const memact = createMemactClient({
-  baseUrl: "https://api.memact.com",
+  baseUrl: process.env.MEMACT_BASE_URL || "https://api.memact.com",
   apiKey: process.env.MEMACT_API_KEY || "${apiKey || "mka_key_shown_once"}",
-  appId: "${appId}",
-  connectionId
+  appId: process.env.MEMACT_APP_ID || "${appId}",
+  connectionId: process.env.MEMACT_CONNECTION_ID || connectionId
 });
 
 await memact.verifyAccess({

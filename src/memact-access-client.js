@@ -83,6 +83,10 @@ export class AccessClient {
     return this.impl.grantConsent(...args)
   }
 
+  revokeConsent(...args) {
+    return this.impl.revokeConsent(...args)
+  }
+
   getConnectApp(...args) {
     return this.impl.getConnectApp(...args)
   }

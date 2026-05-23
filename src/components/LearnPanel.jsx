@@ -6,7 +6,7 @@ import { Chevron } from "./Chevron.jsx"
 const START_FAQS = [
   {
     question: "What is Memact?",
-    answer: "Memact is a playground where apps personalize based on what users choose to share."
+    answer: "Memact is a playground where apps personalize around what users choose."
   },
   {
     question: "What problem is Memact solving?",
@@ -21,19 +21,23 @@ const START_FAQS = [
 const WIKI_FAQS = [
   {
     question: "What is Memact Wiki?",
-    answer: "It is the user’s editable memory page. Users can add context, apps can suggest entries, and Memact can create entries from approved activity."
+    answer: "It is the user's editable memory page. Users can add context, apps can suggest entries, and Memact can create entries from approved activity."
   },
   {
     question: "Why is Wiki important?",
     answer: "It gives users a readable place to see and correct what apps know. Without it, personalization stays hidden inside each app."
   },
   {
+    question: "What counts as user context?",
+    answer: "User context is useful memory for personalization: preferences, interests, projects, repeated topics, skipped topics, work style, shopping patterns, and user-written notes."
+  },
+  {
     question: "Can users edit app-added memory?",
     answer: "Yes. Users can accept, edit, reject, delete, or change visibility for entries."
   },
   {
-    question: "What does “private, shareable, public” mean?",
-    answer: "Private stays only in the user’s Wiki. Shareable can be shared by link later. Public can appear on a public username page. Private should be the default."
+    question: "What does \"private, shareable, public\" mean?",
+    answer: "Private stays only in the user's Wiki. Shareable can be shared by link later. Public can appear on a public username page. Private should be the default."
   }
 ]
 

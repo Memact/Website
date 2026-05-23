@@ -9,6 +9,7 @@ export function Landing({
   showAuth,
   email,
   signupDisplayName,
+  signupAccountType,
   password,
   passwordConfirm,
   pendingVerificationEmail,
@@ -21,6 +22,7 @@ export function Landing({
   lastAuthMethod,
   setEmail,
   setSignupDisplayName,
+  setSignupAccountType,
   setPassword,
   setPasswordConfirm,
   setVerificationCode,
@@ -30,6 +32,7 @@ export function Landing({
   onVerifySignupCode,
   onVerifySignInCode,
   onEmailLogin,
+  onConsentEmailLink,
   onPasswordLogin,
   onForgotPassword,
   onResendConfirmation,
@@ -39,6 +42,7 @@ export function Landing({
   onLearnMore
 }) {
   const isSignIn = authMode === "sign-in"
+  const isConsentAuth = isConnecting && !isSignIn
   const isVerificationStep = !isSignIn && Boolean(pendingVerificationEmail)
   const isSignInVerificationStep = isSignIn && Boolean(pendingSignInVerificationEmail)
   const [signupStep, setSignupStep] = useState("identity")
@@ -48,8 +52,8 @@ export function Landing({
       setSignupStep("verify")
       return
     }
-    setSignupStep("identity")
-  }, [authMode, isSignIn, pendingVerificationEmail])
+    setSignupStep(isConsentAuth ? "consent-email" : "account-type")
+  }, [authMode, isConsentAuth, isSignIn, pendingVerificationEmail])
 
   const handleAuthScroll = (event, mode = "sign-up") => {
     event.preventDefault()
@@ -91,6 +95,19 @@ export function Landing({
       onVerifySignupCode(event)
       return
     }
+    if (isConsentAuth) {
+      onConsentEmailLink(event)
+      return
+    }
+    if (signupStep === "account-type") {
+      event.preventDefault()
+      if (!signupAccountType) return
+      setSignupStep("identity")
+      window.requestAnimationFrame(() => {
+        document.getElementById("signup-display-name")?.focus()
+      })
+      return
+    }
     if (signupStep === "identity") {
       event.preventDefault()
       goToSignupPassword()
@@ -127,7 +144,7 @@ export function Landing({
                 <span>Personalization made better</span>
                 <span className="tagline-with">with Memact</span>
               </h1>
-              <p>A playground where apps personalize based on what users choose to share.</p>
+              <p>A playground where apps personalize around what users choose.</p>
               {showAuth ? (
                 <div className="landing-actions">
                   <a className="scroll-to-auth" href="/#sign-up" onClick={(event) => handleAuthScroll(event, "sign-up")}>Get started</a>
@@ -141,7 +158,7 @@ export function Landing({
         {showAuth ? (
           <section id={isSignIn ? "sign-in" : "sign-up"} className="panel auth-panel" aria-label={isSignIn ? "Memact sign in" : "Memact sign up"}>
             <img className="auth-panel-logo" src="/logo.png" alt="Memact" />
-            <p className="eyebrow">{isSignIn ? "Sign in" : "Get started"}</p>
+            <p className="eyebrow">{isSignIn ? "Sign in" : isConsentAuth ? "Review request" : "Get started"}</p>
             <p className="muted auth-support">
               {isSignIn
                 ? isSignInVerificationStep
@@ -149,13 +166,18 @@ export function Landing({
                   : "Sign in to manage apps, permissions, and API keys."
                 : isVerificationStep
                 ? `Enter the code sent to ${pendingVerificationEmail}.`
+                : isConsentAuth
+                ? "Enter your email to review this request. We'll send a one-time link."
+                : signupStep === "account-type"
+                ? "Are you joining as a user or developer?"
                 : signupStep === "identity"
                 ? "First, tell Memact who you are."
                 : "Now create a strong password for your account."}
             </p>
-            {!isSignIn ? (
+            {!isSignIn && !isConsentAuth ? (
               <div className="auth-progress" aria-label="Sign up progress">
-                <span className="is-active" aria-label="Name and email step" />
+                <span className="is-active" aria-label="Account type step" />
+                <span className={signupStep === "identity" || signupStep === "password" || isVerificationStep ? "is-active" : ""} aria-label="Name and email step" />
                 <span className={signupStep === "password" || isVerificationStep ? "is-active" : ""} aria-label="Password step" />
                 <span className={isVerificationStep ? "is-active" : ""} aria-label="Verification step" />
               </div>
@@ -194,6 +216,32 @@ export function Landing({
                   />
                 </label>
               ) : null}
+              {!isVerificationStep && !isSignIn && signupStep === "account-type" ? (
+                <div className="account-type-options" role="radiogroup" aria-label="Choose account type">
+                  <button
+                    type="button"
+                    className={signupAccountType === "user" ? "account-type-card is-active" : "account-type-card"}
+                    onClick={() => setSignupAccountType("user")}
+                  >
+                    <strong>User</strong>
+                    <span>I want to manage my Wiki and connected apps.</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={signupAccountType === "developer" ? "account-type-card is-active" : "account-type-card"}
+                    onClick={() => setSignupAccountType("developer")}
+                  >
+                    <strong>Developer</strong>
+                    <span>I want to build apps or Playground features.</span>
+                  </button>
+                </div>
+              ) : null}
+              {!isVerificationStep && isConsentAuth ? (
+                <label>
+                  Email
+                  <input id="consent-email" value={email} type="email" inputMode="email" autoComplete="email" placeholder="Enter your email" onChange={(event) => setEmail(event.target.value)} required />
+                </label>
+              ) : null}
               {!isVerificationStep && !isSignIn && signupStep === "identity" ? (
                 <label>
                   Display name
@@ -229,10 +277,10 @@ export function Landing({
                   </ul>
                 </>
               ) : null}
-              <button type="submit" disabled={authLoading === "password" || authLoading === "signup" || authLoading === "verify-signup" || authLoading === "verify-signin"}>
+              <button type="submit" disabled={authLoading === "password" || authLoading === "signup" || authLoading === "consent-link" || authLoading === "verify-signup" || authLoading === "verify-signin" || (!isSignIn && signupStep === "account-type" && !signupAccountType)}>
                 <span>{authLoading === "password" || authLoading === "signup" || authLoading === "verify-signup" || authLoading === "verify-signin"
-                  ? authLoading === "verify-signup" || authLoading === "verify-signin" ? "Verifying code..." : isSignIn ? "Signing in..." : "Creating account..."
-                  : isSignIn ? isSignInVerificationStep ? "Verify sign in" : "Sign in" : isVerificationStep ? "Verify email" : signupStep === "identity" ? "Continue" : "Create account"}</span>
+                  ? authLoading === "verify-signup" || authLoading === "verify-signin" ? "Verifying code..." : authLoading === "consent-link" ? "Sending link..." : isSignIn ? "Signing in..." : "Creating account..."
+                  : isSignIn ? isSignInVerificationStep ? "Verify sign in" : "Sign in" : isVerificationStep ? "Verify email" : isConsentAuth ? "Send one-time link" : signupStep === "account-type" ? "Continue" : signupStep === "identity" ? "Continue" : "Create account"}</span>
                 {!isSignIn ? <span className="auth-native-chevron auth-submit-chevron" aria-hidden="true" /> : null}
               </button>
               {isSignInVerificationStep ? (
@@ -245,6 +293,9 @@ export function Landing({
                   </button>
                   <button type="button" className="text-button" onClick={onClearPendingVerification}>Use a different email</button>
                 </>
+              ) : null}
+              {!isVerificationStep && !isSignIn && signupStep === "identity" ? (
+                <button type="button" className="text-button" onClick={() => setSignupStep("account-type")}>Back to account type</button>
               ) : null}
               {!isVerificationStep && !isSignIn && signupStep === "password" ? (
                 <button type="button" className="text-button" onClick={goBackToSignupIdentity}>Back to name and email</button>
@@ -265,8 +316,8 @@ export function Landing({
               {!isVerificationStep && !isSignInVerificationStep ? <button type="button" className="text-button" onClick={(event) => handleAuthScroll(event, isSignIn ? "sign-up" : "sign-in")}>
                 {isSignIn ? "New to Memact? Get started" : "Already have an account? Sign in"}
               </button> : null}
-              {!isVerificationStep && !isSignInVerificationStep ? <div className="auth-divider" aria-hidden="true"><span>or</span></div> : null}
-              {!isVerificationStep && !isSignInVerificationStep ? <button type="button" className="ghost" disabled={authLoading === "github"} onClick={onGithubLogin}>
+              {!isVerificationStep && !isSignInVerificationStep && !isConsentAuth && signupAccountType !== "user" ? <div className="auth-divider" aria-hidden="true"><span>or</span></div> : null}
+              {!isVerificationStep && !isSignInVerificationStep && !isConsentAuth && signupAccountType !== "user" ? <button type="button" className="ghost" disabled={authLoading === "github"} onClick={onGithubLogin}>
                 {authLoading === "github" ? "Opening GitHub..." : isSignIn ? "Sign in with GitHub" : "Sign up with GitHub"}
               </button> : null}
             </form>

@@ -96,6 +96,10 @@ export class HttpAccessClient {
     return this.post("/v1/consents", body, session)
   }
 
+  revokeConsent(session, consentId) {
+    return this.post("/v1/consents/revoke", { consent_id: consentId }, session)
+  }
+
   getConnectApp(session, request = {}) {
     const query = new URLSearchParams({
       app_id: request?.app_id || "",

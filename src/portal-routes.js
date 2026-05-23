@@ -1,6 +1,7 @@
 export const ROUTES = {
   home: "/",
   access: "/Dashboard",
+  stats: "/Stats",
   playground: "/Playground",
   wiki: "/Wiki",
   account: "/Account",
@@ -13,6 +14,8 @@ export const ROUTES = {
 const LEGACY_ROUTES = new Map([
   ["/dashboard", ROUTES.access],
   ["/Dashboard", ROUTES.access],
+  ["/stats", ROUTES.stats],
+  ["/Stats", ROUTES.stats],
   ["/playground", ROUTES.playground],
   ["/Playground", ROUTES.playground],
   ["/wiki", ROUTES.wiki],
@@ -38,6 +41,7 @@ export function pageFromLocation(locationLike = globalThis.window?.location) {
   const pathname = normalizePortalPath(locationLike?.pathname || ROUTES.home)
   if (/^\/u\/[^/]+\/?$/i.test(pathname)) return "publicWiki"
   if (pathname === ROUTES.access) return "access"
+  if (pathname === ROUTES.stats) return "stats"
   if (pathname === ROUTES.playground) return "playground"
   if (pathname === ROUTES.wiki) return "wiki"
   if (pathname === ROUTES.account) return "account"
@@ -53,7 +57,7 @@ export function routeForPage(page = "home") {
 }
 
 export function isProtectedPage(page = "home") {
-  return page === "access" || page === "playground" || page === "wiki" || page === "account" || page === "data" || page === "connect"
+  return page === "access" || page === "stats" || page === "playground" || page === "wiki" || page === "account" || page === "data" || page === "connect"
 }
 
 export function isConnectPage(page = "home") {
