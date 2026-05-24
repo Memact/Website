@@ -9,6 +9,7 @@ export function ConnectPage({ connectRequest, connectDetails, loading, notice, s
   const allowedScopes = selectedScopes.length ? selectedScopes : []
   const allowedCategories = selectedCategories.length ? selectedCategories : []
   const appName = app?.name || "this app"
+  const faviconUrl = getFaviconUrl(app?.developer_url)
   const canApprove = Boolean(app?.id && allowedScopes.length && allowedCategories.length && loading !== "approve")
 
   return (
@@ -23,7 +24,10 @@ export function ConnectPage({ connectRequest, connectDetails, loading, notice, s
         </div>
 
         <div className="app-identity connect-identity">
-          <span className="app-avatar" aria-hidden="true"><span /></span>
+          <span className="app-avatar" aria-hidden="true">
+            {faviconUrl ? <img src={faviconUrl} alt="" onError={(event) => { event.currentTarget.hidden = true }} /> : <span>{appInitial(appName)}</span>}
+            {faviconUrl ? <span>{appInitial(appName)}</span> : null}
+          </span>
           <div>
             <strong>{appName}</strong>
             {app?.developer_url ? (
@@ -112,4 +116,17 @@ function scopeLabel(scopes, scope) {
 
 function categoryLabel(categories, category) {
   return categories?.[category]?.label || category
+}
+
+function getFaviconUrl(value) {
+  try {
+    const url = new URL(value)
+    return `${url.origin}/favicon.ico`
+  } catch {
+    return ""
+  }
+}
+
+function appInitial(name) {
+  return String(name || "A").trim().charAt(0).toUpperCase() || "A"
 }

@@ -25,6 +25,7 @@ export function WikiPage({
   onManageConsent
 }) {
   const appName = app?.name || "this app"
+  const faviconUrl = getFaviconUrl(app?.developer_url)
   const optionRef = useStableRequestedOptions(app?.id, requestedScopes, requestedCategories)
   const dataUses = normalizeDisclosureList(transparency?.data_uses || transparency?.dataUses)
   const capturedData = normalizeDisclosureList(transparency?.captured_data || transparency?.capturedData || transparency?.data_collected)
@@ -73,6 +74,8 @@ export function WikiPage({
       status: "accepted",
       user_verified: true,
       confidence: "User verified",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
       competing_interpretations: [],
       contradictions: []
     }
@@ -89,7 +92,7 @@ export function WikiPage({
     setManualEntries((current) => current.filter((entry) => entry.id !== id))
   }
   const acceptProposal = (entry) => {
-    setAcceptedProposals((current) => [{ ...entry, status: "accepted", user_verified: true }, ...current])
+    setAcceptedProposals((current) => [{ ...entry, status: "accepted", user_verified: true, accepted_at: new Date().toISOString(), updated_at: new Date().toISOString() }, ...current])
     setRejectedProposals((current) => current.filter((id) => id !== entry.id))
   }
   const rejectProposal = (id) => {
@@ -116,7 +119,10 @@ export function WikiPage({
 
       {app?.id ? (
         <div className="app-identity connect-identity">
-          <span className="app-avatar" aria-hidden="true"><span /></span>
+          <span className="app-avatar" aria-hidden="true">
+            {faviconUrl ? <img src={faviconUrl} alt="" onError={(event) => { event.currentTarget.hidden = true }} /> : <span>{appInitial(appName)}</span>}
+            {faviconUrl ? <span>{appInitial(appName)}</span> : null}
+          </span>
           <div>
             <strong>{appName}</strong>
             {app?.developer_url ? (
@@ -352,6 +358,9 @@ function WikiEntryCard({ entry, onDelete, onVisibility }) {
       <div className="wiki-entry-meta">
         <span>{entry.source_label}</span>
         <span>{entry.source_detail}</span>
+        {entry.source_app_name ? <span>App: {entry.source_app_name}</span> : null}
+        <span>{entry.source_type === "user" ? "Added" : "Proposed"} {formatWikiTimestamp(entry.proposed_at || entry.created_at)}</span>
+        {entry.updated_at && entry.updated_at !== entry.created_at ? <span>Updated {formatWikiTimestamp(entry.updated_at)}</span> : null}
         <span>User verified: {entry.user_verified ? "true" : "false"}</span>
         <span>Confidence: {entry.confidence}</span>
       </div>
@@ -496,6 +505,11 @@ function normalizeWikiEntries(value, appName) {
     visibility: String(entry.visibility || "private"),
     user_verified: Boolean(entry.user_verified),
     confidence: entry.confidence ?? "Needs review",
+    source_app_id: entry.source_app_id || entry.app_id || "",
+    source_app_name: entry.source_app_name || entry.app_name || appName,
+    proposed_at: entry.proposed_at || entry.created_at || new Date().toISOString(),
+    created_at: entry.created_at || entry.proposed_at || new Date().toISOString(),
+    updated_at: entry.updated_at || entry.created_at || entry.proposed_at || "",
     competing_interpretations: Array.isArray(entry.competing_interpretations) ? entry.competing_interpretations : [],
     contradictions: Array.isArray(entry.contradictions) ? entry.contradictions : []
   }))
@@ -546,4 +560,29 @@ function sourceDetail(sourceType) {
   if (sourceType === "memact") return "Source: Memact-created"
   if (sourceType === "playground_feature") return "Source: Playground feature"
   return "Source: App-proposed"
+}
+
+function formatWikiTimestamp(value) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return "time unavailable"
+  return date.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  })
+}
+
+function getFaviconUrl(value) {
+  try {
+    const url = new URL(value)
+    return `${url.origin}/favicon.ico`
+  } catch {
+    return ""
+  }
+}
+
+function appInitial(name) {
+  return String(name || "A").trim().charAt(0).toUpperCase() || "A"
 }
