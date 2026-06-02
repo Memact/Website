@@ -11,8 +11,8 @@
   },
   "homepage": "https://github.com/Memact/Website",
   "engines": {
-    "node": ">=20",
-    "npm": ">=10"
+    "node": ">=24",
+    "npm": ">=11"
   },
   "scripts": {
     "dev": "vite",
