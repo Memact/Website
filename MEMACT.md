@@ -14,10 +14,10 @@ and public learn content.
 ## System Position
 
 ```text
-Website manages -> Access checks -> Capture records -> Inference understands -> Schema organizes -> Memory stores -> Playground features run -> Apps and users use results
+Website manages -> Access checks -> Context organizes -> Wiki shows -> Memory stores -> SDK returns allowed context -> Apps personalize
 ```
 
-Website is not the capture engine, inference engine, schema engine, memory
+Website is not the context engine, memory
 store, or feature runtime. It is the control surface.
 
 ## Copy Rules
@@ -33,7 +33,7 @@ Keep technical terms in developer sections:
 
 - capture events
 - inference
-- schema packets
+- context proposals
 - memory records
 - SDK
 - feature runtime

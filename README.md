@@ -20,7 +20,7 @@ with Memact
 - Playground feature catalog.
 - Capture Sources UI.
 - Playground feature UI.
-- Schemas UI.
+- Context UI.
 - Developer integration docs.
 - Help and Learn pages.
 
@@ -29,7 +29,7 @@ with Memact
 - Access checks, API key verification, or database RPC internals.
 - Browser/page capture.
 - Semantic inference.
-- Schema packet formation.
+- Context proposal formation.
 - Durable memory storage.
 - Feature runtime logic.
 
@@ -40,14 +40,14 @@ Website manages
 -> Access checks
 -> Capture receives
 -> Inference understands
--> Schema organizes
+-> Context organizes
 -> Memory stores
 -> Playground features run
 -> Apps and users use results
 ```
 
 Website is the console for users and developers. It is not part of the core
-capture, inference, schema, memory, or feature pipeline.
+capture, inference, context, memory, or feature pipeline.
 
 The Website should explain Memact simply for users, then give developers exact
 SDK/API steps. It should not pretend to run backend work in the browser.
