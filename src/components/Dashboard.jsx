@@ -44,6 +44,7 @@ export function Dashboard({
   onRevokeKey,
   onCopyKey,
   onTestKey,
+  onRevokeConsent,
   onSignOut,
   authLoading,
   needsPasswordSetup,
@@ -188,6 +189,9 @@ export function Dashboard({
               </p>
             </div>
           </div>
+          {isUserAccount ? (
+            <UserSettingsSections apps={apps} consents={consents} onRevokeConsent={onRevokeConsent} />
+          ) : null}
           <details className="faq-item settings-details">
             <summary className="faq-trigger settings-trigger">
               <span className="settings-trigger-text">
@@ -500,13 +504,13 @@ export function Dashboard({
                 {selectedAppId ? (
                   <>
                     {activeKeys.length ? (
-                      <section className="wiki-link-card" aria-label="Wiki link">
+                      <section className="wiki-link-card" aria-label="Yourself link">
                         <div>
-                          <p className="eyebrow">Wiki link</p>
-                          <h3>Review this app's Wiki access.</h3>
+                          <p className="eyebrow">Yourself link</p>
+                          <h3>Review this app's memory access.</h3>
                           <p className="muted">Use this beside consent so users can see what the app can add and use.</p>
                         </div>
-                        <a className="button wiki-link-button" href={buildPortalWikiUrl(selectedAppId, selectedScopes, selectedAppCategories, selectedApp?.redirect_urls?.[0] || selectedApp?.developer_url || "")}>Open Wiki link</a>
+                        <a className="button wiki-link-button" href={buildPortalWikiUrl(selectedAppId, selectedScopes, selectedAppCategories, selectedApp?.redirect_urls?.[0] || selectedApp?.developer_url || "")}>Open Yourself link</a>
                       </section>
                     ) : null}
 
@@ -656,7 +660,7 @@ function buildEmbedCode(apiKey, scopes = [], categories = [], app = null) {
 // 1. Add the Connect Memact button.
 const memactConnectUrl = "${connectUrl}";
 
-// 2. Add the Wiki link beside consent.
+// 2. Add the Yourself link beside consent.
 const memactWikiUrl = "${wikiUrl}";
 
 // 3. After approval, store the returned connection id on your server.
@@ -720,9 +724,81 @@ function buildPortalConnectUrl(appId, scopes = [], categories = [], redirectUrl 
   return url.toString()
 }
 
+function UserSettingsSections({ apps = [], consents = [], onRevokeConsent }) {
+  const activeConsents = consents.filter((consent) => !consent.revoked_at)
+  const revokedConsents = consents.filter((consent) => consent.revoked_at)
+
+  return (
+    <div className="user-settings-stack">
+      <section className="user-settings-card">
+        <div>
+          <p className="eyebrow">Profile</p>
+          <h3>Your public identity starts private.</h3>
+          <p className="muted">Use display name settings below. Public posts in Ourselves only show what you choose to publish.</p>
+        </div>
+      </section>
+
+      <section className="user-settings-card">
+        <div className="wiki-section-head">
+          <div>
+            <p className="eyebrow">Apps</p>
+            <h3>Connected apps</h3>
+            <p className="muted">Apps can only use access you approved. Revoke access when an app should stop.</p>
+          </div>
+          <span className="badge">{activeConsents.length}</span>
+        </div>
+        <div className="user-settings-list">
+          {activeConsents.map((consent) => {
+            const app = apps.find((item) => item.id === consent.app_id)
+            const appName = app?.name || consent.app_id || "Connected app"
+            return (
+              <div className="mini-row user-settings-app" key={consent.id || consent.app_id}>
+                <div>
+                  <strong>{appName}</strong>
+                  <small>{summarizeUserConsent(consent)}</small>
+                </div>
+                <button type="button" className="ghost danger" onClick={() => onRevokeConsent?.(consent.id)}>Revoke</button>
+              </div>
+            )
+          })}
+          {!activeConsents.length ? <p className="muted">No connected apps yet.</p> : null}
+          {revokedConsents.length ? <p className="muted">Revoked apps stay in history so you can see what changed.</p> : null}
+        </div>
+      </section>
+
+      <section className="user-settings-grid">
+        <div className="user-settings-card">
+          <p className="eyebrow">Privacy</p>
+          <h3>Private by default.</h3>
+          <p className="muted">Yourself entries stay private unless you make them shareable or public.</p>
+        </div>
+        <div className="user-settings-card">
+          <p className="eyebrow">Sharing</p>
+          <h3>You choose what leaves Yourself.</h3>
+          <p className="muted">Ourselves posts are public only when you create them.</p>
+        </div>
+        <div className="user-settings-card">
+          <p className="eyebrow">Account</p>
+          <h3>Email, password, sign out.</h3>
+          <p className="muted">Use the account controls below for login and identity settings.</p>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+function summarizeUserConsent(consent) {
+  const categoryCount = Array.isArray(consent.categories) ? consent.categories.length : 0
+  const scopeCount = Array.isArray(consent.scopes) ? consent.scopes.length : 0
+  const parts = []
+  if (categoryCount) parts.push(`${categoryCount} ${categoryCount === 1 ? "category" : "categories"}`)
+  if (scopeCount) parts.push(`${scopeCount} ${scopeCount === 1 ? "permission" : "permissions"}`)
+  return parts.length ? parts.join(" / ") : "Access approved"
+}
+
 function buildPortalWikiUrl(appId, scopes = [], categories = [], redirectUrl = "") {
   const origin = typeof window !== "undefined" ? window.location.origin : "https://memact.com"
-  const url = new URL("/Wiki", origin)
+  const url = new URL("/Yourself", origin)
   url.searchParams.set("app_id", appId)
   if (scopes.length) url.searchParams.set("scopes", scopes.join(","))
   if (categories.length) url.searchParams.set("categories", categories.join(","))

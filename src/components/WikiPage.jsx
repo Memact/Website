@@ -108,8 +108,8 @@ export function WikiPage({
     <section className="panel transparency-panel wiki-panel">
       <div className="transparency-hero wiki-hero">
         <div>
-          <p className="eyebrow">Wiki</p>
-          <h2>{app?.id ? `${appName}'s Memact Wiki` : "Your Memact Wiki"}</h2>
+          <p className="eyebrow">Yourself</p>
+          <h2>{app?.id ? `${appName}'s access to Yourself` : "What apps know about you"}</h2>
           <p className="muted">A private, searchable memory page you can inspect, edit, and share only when you choose.</p>
         </div>
         <button type="button" className="button wiki-add-button" onClick={() => setShowAddContext((value) => !value)}>
@@ -133,8 +133,8 @@ export function WikiPage({
       ) : (
         <section className="permission-list wiki-share-card">
           <p className="eyebrow">Private by default</p>
-          <h3>Your Wiki starts with what you add or approve.</h3>
-          <p className="muted">Apps, Memact, and Playground features can propose memory only after consent. You decide what becomes accepted memory.</p>
+          <h3>Yourself starts with what you add or approve.</h3>
+          <p className="muted">Apps and Memact can propose memory only after consent. You decide what becomes accepted memory.</p>
         </section>
       )}
 
@@ -142,13 +142,13 @@ export function WikiPage({
         <div>
           <p className="eyebrow">Optional capture</p>
           <h3>Install the Memact Extension</h3>
-          <p className="muted">The extension can turn approved browsing activity into useful Wiki memory. Apps can still use Memact through SDK/API without it.</p>
+          <p className="muted">The extension can turn approved browsing activity into useful memory. Apps can still use Memact through SDK/API without it.</p>
         </div>
         <ol className="wiki-step-list">
           <li>Install the Memact browser extension.</li>
           <li>Sign in with the same Memact account.</li>
           <li>Choose which activity types the extension may capture.</li>
-          <li>Review proposed Wiki entries before important memory is accepted.</li>
+          <li>Review proposed entries before important memory is accepted.</li>
         </ol>
       </section>
 
@@ -205,7 +205,7 @@ export function WikiPage({
               <p className="eyebrow">Controls</p>
               <h3>Choose what this app can use</h3>
             </div>
-            <div className="transparency-summary" aria-label="Wiki selection summary">
+            <div className="transparency-summary" aria-label="Yourself selection summary">
               <span><strong>{safeRequestedScopes.length}</strong> Actions</span>
               <span><strong>{safeRequestedCategories.length}</strong> Activity types</span>
             </div>
@@ -226,7 +226,7 @@ export function WikiPage({
                     </span>
                   </label>
                 ))}
-                {!scopeOptions.length ? <p className="muted">No actions were attached to this Wiki link.</p> : null}
+                {!scopeOptions.length ? <p className="muted">No actions were attached to this Yourself link.</p> : null}
               </div>
             </div>
             <div className="transparency-choice-group">
@@ -241,7 +241,7 @@ export function WikiPage({
                     </span>
                   </label>
                 ))}
-                {!categoryOptions.length ? <p className="muted">No activity types were attached to this Wiki link.</p> : null}
+                {!categoryOptions.length ? <p className="muted">No activity types were attached to this Yourself link.</p> : null}
               </div>
             </div>
           </div>
@@ -252,12 +252,12 @@ export function WikiPage({
         <div className="wiki-section-head">
           <div>
             <p className="eyebrow">Memory</p>
-            <h3>Accepted Wiki entries</h3>
+            <h3>Accepted memory</h3>
           </div>
           <span className="badge">{visibleEntries.length}</span>
         </div>
         <label className="wiki-search">
-          Search Wiki
+          Search Yourself
           <span className="playground-search-field">
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <path d="M10.5 17a6.5 6.5 0 1 1 0-13a6.5 6.5 0 0 1 0 13Zm5-1.5 4 4" />
@@ -284,8 +284,8 @@ export function WikiPage({
               </div>
             </section>
           ))}
-          {!visibleEntries.length ? <p className="muted">No accepted Wiki entries yet. Add context yourself or approve a proposed memory when one appears.</p> : null}
-          {visibleEntries.length > 0 && !filteredEntries.length ? <p className="muted">No Wiki entries match that search.</p> : null}
+          {!visibleEntries.length ? <p className="muted">No accepted memory yet. Add context yourself or approve a proposed memory when one appears.</p> : null}
+          {visibleEntries.length > 0 && !filteredEntries.length ? <p className="muted">No memory matches that search.</p> : null}
         </div>
       </section>
 
@@ -314,7 +314,7 @@ export function WikiPage({
       {app?.id ? (
         <div className="transparency-grid">
           <WikiDisclosure title="What this app can send" eyebrow="App can add" items={capturedData} empty="This app has not listed exact fields yet." />
-          <WikiDisclosure title="What Memact may create" eyebrow="Wiki may contain" items={createdMemory} empty="Memact may create useful memory from what you allow." />
+          <WikiDisclosure title="What Memact may create" eyebrow="Yourself may contain" items={createdMemory} empty="Memact may create useful memory from what you allow." />
           <WikiDisclosure title="Why it wants access" eyebrow="Why" items={dataUses} empty={app?.description || "This app has not provided a plain-language reason yet."} />
           <WikiDisclosure title="What this app may use" eyebrow="Features" items={allowedFeatures} empty="No feature list was provided." />
           <section className="permission-list transparency-card">
@@ -332,7 +332,7 @@ export function WikiPage({
 
       <div className="connect-actions">
         {app?.id ? <button type="button" onClick={onBackToConsent}>Back to consent</button> : null}
-        <button type="button" className={app?.id ? "ghost" : ""} onClick={onManageConsent}>Open dashboard</button>
+        <button type="button" className={app?.id ? "ghost" : ""} onClick={onManageConsent}>Open Settings</button>
       </div>
 
       <section className="permission-list wiki-share-card">

@@ -22,6 +22,7 @@ import { Landing } from "./components/Landing.jsx"
 import { PlaygroundPanel } from "./components/PlaygroundPanel.jsx"
 import { DeveloperStatsPanel } from "./components/DeveloperStatsPanel.jsx"
 import { UserDashboard } from "./components/UserDashboard.jsx"
+import { OurselvesPanel } from "./components/OurselvesPanel.jsx"
 import { refreshDashboard, useDashboardState } from "./hooks/useDashboardState.js"
 import { isConnectPage, isProtectedPage, normalizePortalPath, pageFromLocation, routeForPage } from "./portal-routes.js"
 import { getDisplayName, getUserEmail } from "./user-display.js"
@@ -164,7 +165,7 @@ function App() {
       setError("")
       setAuthNotice("")
       setAuthChecking(false)
-      navigateToPage(shouldOpenAccountTab(nextSession.user, detectedFlow === "recovery") ? "account" : "access", { replace: true })
+      navigateToPage(shouldOpenAccountTab(nextSession.user, detectedFlow === "recovery") ? "account" : defaultPageForAccountType(getAccountType(null, nextSession.user)), { replace: true })
       return
     }
 
@@ -354,9 +355,9 @@ function App() {
   }, [authFlow, needsPasswordSetup, session])
 
   useEffect(() => {
-    const tabName = currentPage === "account" ? "Account" : currentPage === "help" ? "Help" : currentPage === "connect" ? "Connect" : currentPage === "wiki" || currentPage === "publicWiki" ? "Wiki" : currentPage === "stats" ? "Stats" : currentPage === "playground" ? "Playground" : currentPage === "learn" ? "Learn" : currentPage === "access" ? "Dashboard" : "Login"
+    const tabName = currentPage === "home" && !session ? "Login" : labelForPortalTab(currentPage, accountType)
     document.title = `Memact | ${tabName}`
-  }, [currentPage])
+  }, [accountType, currentPage, session])
 
   useEffect(() => {
     if (authChecking || !session) return
@@ -1334,7 +1335,7 @@ function App() {
   const showStatusPill = !showAuth && Boolean(error || statusNeedsAttention)
   const showExternalBackHeader = session && currentPage === "connect"
   const showLearnBackHeader = isPublicLearnPage || isPublicWikiPage
-  const activePortalTabLabel = currentPage === "stats" ? "Stats" : currentPage === "playground" ? "Playground" : currentPage === "wiki" ? "Wiki" : currentPage === "account" ? "Account" : currentPage === "help" ? "Help" : "Dashboard"
+  const activePortalTabLabel = labelForPortalTab(currentPage, accountType)
   const [isMobileTabsOpen, setIsMobileTabsOpen] = useState(false)
   const tabsRef = useRef(null)
 
@@ -1398,7 +1399,7 @@ function App() {
             <div className="tabs-list">
               {portalTabs.map((tab) => (
                 <button key={tab} type="button" className={currentPage === tab ? "tab is-active" : "tab"} onClick={() => handleTabSelect(tab)}>
-                  {tab === "access" ? "Dashboard" : tab === "stats" ? "Stats" : tab === "playground" ? "Playground" : tab === "wiki" ? "Wiki" : tab === "account" ? "Account" : "Help"}
+                  {labelForPortalTab(tab, accountType)}
                 </button>
               ))}
             </div>
@@ -1464,6 +1465,8 @@ function App() {
           isConsentShell={isConsentShell}
           onRevokeConsent={handleRevokeConsent}
         />
+      ) : session && currentPage === "ourselves" && accountType === ACCOUNT_TYPES.user ? (
+        <OurselvesPanel displayName={getDisplayName(user, authUser)} />
       ) : session && currentPage === "wiki" ? (
         <WikiPage
           app={connectRequest?.app_id && connectDetails?.app ? connectDetails.app : null}
@@ -1473,8 +1476,8 @@ function App() {
           requestedCategories={connectDetails?.requested_categories || connectRequest?.categories || []}
           transparency={connectDetails?.transparency || connectDetails?.data_transparency || connectDetails?.app?.transparency || {}}
           onUpdateSelection={updateConnectSelection}
-          onBackToConsent={() => connectRequest?.app_id ? navigateToConnect(connectRequest) : navigateToPage("access")}
-          onManageConsent={() => navigateToPage("access")}
+          onBackToConsent={() => connectRequest?.app_id ? navigateToConnect(connectRequest) : navigateToPage("account")}
+          onManageConsent={() => navigateToPage("account")}
         />
       ) : session && currentPage === "playground" ? (
         <PlaygroundPanel
@@ -1533,6 +1536,7 @@ function App() {
           onRevokeKey={handleRevokeKey}
           onCopyKey={copyOneTimeKey}
           onTestKey={testOneTimeKey}
+          onRevokeConsent={handleRevokeConsent}
           onSignOut={signOut}
           authLoading={authLoading}
           needsPasswordSetup={needsPasswordSetup}
@@ -1670,6 +1674,30 @@ function shouldOfferPasswordSetup(user) {
   const provider = user.app_metadata?.provider || user.identities?.[0]?.provider || "email"
   if (provider !== "email") return false
   return !Boolean(user.user_metadata?.memact_password_ready)
+}
+
+function labelForPortalTab(page, accountType = ACCOUNT_TYPES.developer) {
+  if (accountType === ACCOUNT_TYPES.user) {
+    if (page === "wiki" || page === "data" || page === "access") return "Yourself"
+    if (page === "ourselves") return "Ourselves"
+    if (page === "account") return "Settings"
+    if (page === "help") return "Help"
+    if (page === "connect") return "Connect"
+    if (page === "publicWiki") return "Public"
+    if (page === "learn") return "Learn"
+  }
+
+  if (page === "access") return "Dashboard"
+  if (page === "stats") return "Stats"
+  if (page === "playground") return "Playground"
+  if (page === "account") return "Account"
+  if (page === "help") return "Help"
+  if (page === "connect") return "Connect"
+  if (page === "wiki" || page === "data") return "Wiki"
+  if (page === "ourselves") return "Ourselves"
+  if (page === "publicWiki") return "Public"
+  if (page === "learn") return "Learn"
+  return "Memact"
 }
 
 function shouldOpenAccountTab(user, isRecoveryFlow) {

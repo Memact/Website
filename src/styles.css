@@ -2131,6 +2131,43 @@ input:-webkit-autofill:focus {
   gap: 14px;
 }
 
+.user-settings-stack {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.user-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.user-settings-card {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+}
+
+.user-settings-card h3 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+
+.user-settings-list {
+  display: grid;
+  gap: 10px;
+}
+
+.user-settings-app {
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: center;
+}
+
 .consent-chip-row {
   display: flex;
   flex-wrap: wrap;
@@ -2384,6 +2421,68 @@ input:-webkit-autofill:focus {
   display: block;
   color: var(--text);
   font-size: 13px;
+}
+
+.ourselves-page {
+  display: grid;
+  gap: 16px;
+}
+
+.ourselves-hero,
+.ourselves-compose,
+.ourselves-feed {
+  display: grid;
+  gap: 14px;
+}
+
+.ourselves-hero h2,
+.ourselves-compose h3,
+.ourselves-feed h3 {
+  margin: 0;
+}
+
+.ourselves-form {
+  grid-template-columns: minmax(180px, 0.35fr) minmax(0, 1fr);
+}
+
+.ourselves-post-list {
+  display: grid;
+  gap: 10px;
+}
+
+.ourselves-post {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+}
+
+.ourselves-post h4 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.ourselves-post-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ourselves-post-metrics span {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 9px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.025);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.ourselves-empty-post {
+  border-style: dashed;
 }
 
 .public-wiki-footer {
@@ -2793,6 +2892,15 @@ input:-webkit-autofill:focus {
   .revoked-key-row { grid-template-columns: minmax(0, 1fr) auto; }
 
   .account-grid { grid-template-columns: 1fr; }
+
+  .user-settings-grid,
+  .ourselves-form {
+    grid-template-columns: 1fr;
+  }
+
+  .user-settings-app {
+    grid-template-columns: 1fr;
+  }
 
   .key-box code { white-space: pre; }
 

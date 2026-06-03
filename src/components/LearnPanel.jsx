@@ -14,17 +14,17 @@ const START_FAQS = [
   },
   {
     question: "What is the basic flow?",
-    answer: "An app asks first. If the user allows it, the app can send signals or proposed context. Memact turns that into Wiki entries the user can accept, edit, reject, or delete."
+    answer: "An app asks first. If the user allows it, the app can send signals or proposed context. Memact turns that into memory the user can accept, edit, reject, or delete."
   }
 ]
 
-const WIKI_FAQS = [
+const YOURSELF_FAQS = [
   {
-    question: "What is Memact Wiki?",
+    question: "What is Yourself?",
     answer: "It is the user's editable memory page. Users can add context, apps can suggest entries, and Memact can create entries from approved activity."
   },
   {
-    question: "Why is Wiki important?",
+    question: "Why is Yourself important?",
     answer: "It gives users a readable place to see and correct what apps know. Without it, personalization stays hidden inside each app."
   },
   {
@@ -37,7 +37,7 @@ const WIKI_FAQS = [
   },
   {
     question: "What does \"private, shareable, public\" mean?",
-    answer: "Private stays only in the user's Wiki. Shareable can be shared by link later. Public can appear on a public username page. Private should be the default."
+    answer: "Private stays only in Yourself. Shareable can be shared by link later. Public can appear on a public username page. Private should be the default."
   }
 ]
 
@@ -48,7 +48,7 @@ const APP_FAQS = [
   },
   {
     question: "What does Context do?",
-    answer: "Context is the open-source category layer. It helps Memact turn messy app signals into readable Wiki proposals, like shopping preferences, fitness preferences, media habits, or chat-app settings."
+    answer: "Context is the open-source category layer. It helps Memact turn messy app signals into readable memory proposals, like shopping preferences, fitness preferences, media habits, or chat-app settings."
   },
   {
     question: "Can apps send context directly?",
@@ -59,7 +59,7 @@ const APP_FAQS = [
 const DEVELOPER_FAQS = [
   {
     question: "What should developers build first?",
-    answer: "Start with one app category. Define what context matters, what evidence is safe, what should be blocked, and how the proposal should appear in Wiki."
+    answer: "Start with one app category. Define what context matters, what evidence is safe, what should be blocked, and how the proposal should appear to the user."
   },
   {
     question: "What should developers avoid?",
@@ -95,7 +95,7 @@ export function LearnPanel() {
       <div>
         <p className="eyebrow">Learn More</p>
         <h2>Personalization made better with Memact</h2>
-        <p className="muted">A simple overview of how apps, Context, Wiki, and Memory fit together.</p>
+        <p className="muted">A simple overview of how apps, Context, Yourself, and Memory fit together.</p>
       </div>
 
       <div className="faq-section">
@@ -106,8 +106,8 @@ export function LearnPanel() {
       </div>
 
       <div className="faq-section faq-section-advanced">
-        <p className="faq-section-title">Wiki</p>
-        {WIKI_FAQS.map((faq) => (
+        <p className="faq-section-title">Yourself</p>
+        {YOURSELF_FAQS.map((faq) => (
           <FaqItem faq={faq} key={faq.question} />
         ))}
       </div>

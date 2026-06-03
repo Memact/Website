@@ -9,8 +9,8 @@ const USER_BASIC_FAQS = [
     answer: "Memact helps apps personalize better around what users choose."
   },
   {
-    question: "What is Memact Wiki?",
-    answer: "Memact Wiki is your editable memory page. You can add things yourself, approve what apps suggest, edit entries, delete them, or share selected parts later."
+    question: "What is Yourself?",
+    answer: "Yourself is your editable memory page. You can add things yourself, approve what apps suggest, edit entries, delete them, or share selected parts later."
   },
   {
     question: "What does user context include?",
@@ -36,7 +36,7 @@ const USER_CONTROL_FAQS = [
     answer: "You can control which apps are connected, what they can use, what they can add, and whether they keep access."
   },
   {
-    question: "Can apps write to my Wiki?",
+    question: "Can apps write to Yourself?",
     answer: "Only if you allow it. Important entries can stay pending until you accept, edit, or reject them."
   },
   {
@@ -44,7 +44,7 @@ const USER_CONTROL_FAQS = [
     answer: "Yes. You can add entries like \"I prefer short summaries\" or \"I am working on Memact.\" User-added entries are treated as stronger than app guesses."
   },
   {
-    question: "Can I share my Wiki?",
+    question: "Can I share my memory?",
     answer: "Only selected entries. Private entries stay private by default."
   },
   {
@@ -64,7 +64,7 @@ const DEVELOPER_BASIC_FAQS = [
   },
   {
     question: "What can my app see?",
-    answer: "Only what the user allowed for your app. You can see app-level stats and your app's Wiki proposals, not the user's full Wiki."
+    answer: "Only what the user allowed for your app. You can see app-level stats and your app's memory proposals, not the user's full Yourself page."
   },
   {
     question: "How do scopes and categories work?",
@@ -78,7 +78,7 @@ const DEVELOPER_PLAYGROUND_FAQS = [
     answer: "Playground features are small tools developers build using Memact memory. A feature might help a news app choose whether to show a quick brief, key points, or a deeper article overview."
   },
   {
-    question: "Can my app propose Wiki entries?",
+    question: "Can my app propose memory entries?",
     answer: "Yes, if the user allows it. Important writes should stay pending until the user accepts, edits, or rejects them."
   },
   {
@@ -136,7 +136,7 @@ export function HelpPanel({ accountType = "developer" }) {
       <div>
         <p className="eyebrow">Help</p>
         <h2>Frequently asked questions</h2>
-        <p className="muted">{isUser ? "Common questions about consent, Wiki, connected apps, and account controls." : "Common questions about apps, API keys, consent, Playground, and safe memory writes."}</p>
+        <p className="muted">{isUser ? "Common questions about consent, Yourself, connected apps, and account controls." : "Common questions about apps, API keys, consent, Playground, and safe memory writes."}</p>
       </div>
 
       <div className="faq-section">
@@ -147,7 +147,7 @@ export function HelpPanel({ accountType = "developer" }) {
       </div>
 
       <div className="faq-section faq-section-advanced">
-        <p className="faq-section-title">{isUser ? "Controls" : "Playground and Wiki writes"}</p>
+        <p className="faq-section-title">{isUser ? "Controls" : "Playground and memory writes"}</p>
         {(isUser ? USER_CONTROL_FAQS : DEVELOPER_PLAYGROUND_FAQS).map((faq) => (
           <FaqItem faq={faq} key={faq.question} />
         ))}

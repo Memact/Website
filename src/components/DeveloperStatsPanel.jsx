@@ -31,7 +31,7 @@ export function DeveloperStatsPanel({
       <section className="panel">
         <p className="eyebrow">Stats</p>
         <h2>App-level activity.</h2>
-        <p className="muted">Only stats for your own apps appear here. Memact does not show a user's full Wiki to developers.</p>
+        <p className="muted">Only stats for your own apps appear here. Memact does not show a user's full Yourself page to developers.</p>
 
         <div className="stats-card-grid">
           {cards.map((card) => (
@@ -45,7 +45,7 @@ export function DeveloperStatsPanel({
       </section>
 
       <section className="panel">
-        <p className="eyebrow">Wiki proposals</p>
+        <p className="eyebrow">Memory proposals</p>
         <h2>Memory writes stay user-controlled.</h2>
         <div className="stats-card-grid">
           <article className="mini-row stats-card">
@@ -69,7 +69,7 @@ export function DeveloperStatsPanel({
             <small>Entries users rejected or deleted.</small>
           </article>
         </div>
-        <p className="muted stats-note">Detailed Wiki proposal telemetry needs the Wiki backend event stream. This panel is app-scoped and intentionally does not expose private Wiki entries.</p>
+        <p className="muted stats-note">Detailed proposal telemetry needs the memory event stream. This panel is app-scoped and intentionally does not expose private entries.</p>
       </section>
     </section>
   )

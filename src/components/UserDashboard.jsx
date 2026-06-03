@@ -11,7 +11,7 @@ export function UserDashboard({ consents = [], apps = [], onRevokeConsent, isCon
         <h2>Your connected apps.</h2>
         <p className="muted">Apps ask first. You can review what each app can use and remove access later.</p>
         {isConsentShell ? (
-          <p className="notice" role="status">This is a lightweight consent account. Finish account setup later to manage your full Wiki and settings.</p>
+          <p className="notice" role="status">This is a lightweight consent account. Finish account setup later to manage Yourself and settings.</p>
         ) : null}
 
         <div className="user-consent-list">
@@ -46,7 +46,7 @@ export function UserDashboard({ consents = [], apps = [], onRevokeConsent, isCon
       <section className="panel">
         <p className="eyebrow">Pending memory</p>
         <h2>Important writes wait for you.</h2>
-        <p className="muted">When an app wants to remember something important, it should appear as a Wiki proposal you can accept, edit, or reject.</p>
+        <p className="muted">When an app wants to remember something important, it should appear as a memory proposal you can accept, edit, or reject.</p>
       </section>
 
       {revokedConsents.length ? (

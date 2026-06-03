@@ -3,9 +3,10 @@ export const ROUTES = {
   access: "/Dashboard",
   stats: "/Stats",
   playground: "/Playground",
-  wiki: "/Wiki",
-  account: "/Account",
-  data: "/Wiki",
+  wiki: "/Yourself",
+  ourselves: "/Ourselves",
+  account: "/Settings",
+  data: "/Yourself",
   help: "/Help",
   learn: "/Learn",
   connect: "/connect"
@@ -20,10 +21,17 @@ const LEGACY_ROUTES = new Map([
   ["/Playground", ROUTES.playground],
   ["/wiki", ROUTES.wiki],
   ["/Wiki", ROUTES.wiki],
+  ["/yourself", ROUTES.wiki],
+  ["/Yourself", ROUTES.wiki],
+  ["/ourselves", ROUTES.ourselves],
+  ["/Ourselves", ROUTES.ourselves],
   ["/login", `${ROUTES.home}#sign-in`],
   ["/access", ROUTES.access],
   ["/Access", ROUTES.access],
-  ["/account", ROUTES.home],
+  ["/account", ROUTES.account],
+  ["/Account", ROUTES.account],
+  ["/settings", ROUTES.account],
+  ["/Settings", ROUTES.account],
   ["/learn", ROUTES.learn],
   ["/learn/", ROUTES.learn],
   ["/Learn/", ROUTES.learn],
@@ -44,6 +52,7 @@ export function pageFromLocation(locationLike = globalThis.window?.location) {
   if (pathname === ROUTES.stats) return "stats"
   if (pathname === ROUTES.playground) return "playground"
   if (pathname === ROUTES.wiki) return "wiki"
+  if (pathname === ROUTES.ourselves) return "ourselves"
   if (pathname === ROUTES.account) return "account"
   if (pathname === ROUTES.help) return "help"
   if (pathname === ROUTES.learn) return "learn"
@@ -57,7 +66,7 @@ export function routeForPage(page = "home") {
 }
 
 export function isProtectedPage(page = "home") {
-  return page === "access" || page === "stats" || page === "playground" || page === "wiki" || page === "account" || page === "data" || page === "connect"
+  return page === "access" || page === "stats" || page === "playground" || page === "wiki" || page === "ourselves" || page === "account" || page === "data" || page === "connect"
 }
 
 export function isConnectPage(page = "home") {
