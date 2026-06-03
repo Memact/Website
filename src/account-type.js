@@ -50,7 +50,7 @@ export function isDeveloperAccount(accessUser, authUser) {
 export function tabsForAccountType(accountType) {
   return accountType === ACCOUNT_TYPES.user
     ? ["wiki", "ourselves", "account", "help"]
-    : ["access", "stats", "playground", "account", "help"]
+    : ["access", "stats", "account", "help"]
 }
 
 export function defaultPageForAccountType(accountType = ACCOUNT_TYPES.developer) {

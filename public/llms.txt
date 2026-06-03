@@ -1,6 +1,6 @@
 # Memact
 
-Memact is a playground where apps personalize around what users choose.
+Memact helps users see what apps know about them and control it.
 
 ## Key Pages
 
@@ -24,7 +24,7 @@ Memact is a playground where apps personalize around what users choose.
 - Keep the Memact API key on the server.
 - Add a Connect Memact flow and Wiki link.
 - Store the returned `connection_id` for the signed-in user.
-- Use the SDK/API to send capture events and run Memact features after access is approved.
+- Use the SDK/API to propose context or read allowed context after access is approved.
 - Scopes and categories are permission boundaries.
 
 ## SDK Example

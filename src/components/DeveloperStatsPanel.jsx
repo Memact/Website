@@ -22,7 +22,7 @@ export function DeveloperStatsPanel({
     { label: "Active API keys", value: activeKeys.length, note: "Keys that have not been revoked." },
     { label: "Consented users", value: activeConsents.length, note: "Connections that are still active." },
     { label: "Revoked consent", value: revokedConsents.length, note: "Connections users or apps stopped." },
-    { label: "Playground usage", value: connectedFeatures.length, note: "Features connected to app keys." },
+    { label: "Allowed memory reads", value: connectedFeatures.length, note: "Feature-style connections tied to app keys." },
     { label: "Last key use", value: lastKeyUse ? formatDate(lastKeyUse) : "No use yet", note: "Most recent API key usage signal." }
   ]
 

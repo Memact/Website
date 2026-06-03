@@ -6,7 +6,7 @@ import { Chevron } from "./Chevron.jsx"
 const USER_BASIC_FAQS = [
   {
     question: "What is Memact?",
-    answer: "Memact helps apps personalize better around what users choose."
+    answer: "Memact helps you see what apps know about you and control it."
   },
   {
     question: "What is Yourself?",
@@ -56,11 +56,11 @@ const USER_CONTROL_FAQS = [
 const DEVELOPER_BASIC_FAQS = [
   {
     question: "What is Memact?",
-    answer: "Memact is a playground where apps personalize around what users choose."
+    answer: "Memact helps apps personalize around what users choose, without hiding what they know."
   },
   {
     question: "How does an app connect to Memact?",
-    answer: "Register an app, ask the user for access, keep the API key on your server, then use the SDK/API to send approved activity or run features."
+    answer: "Register an app, ask the user for access, keep the API key on your server, then use the SDK/API to propose or read allowed memory."
   },
   {
     question: "What can my app see?",
@@ -72,10 +72,10 @@ const DEVELOPER_BASIC_FAQS = [
   }
 ]
 
-const DEVELOPER_PLAYGROUND_FAQS = [
+const DEVELOPER_CONTEXT_FAQS = [
   {
-    question: "What are Playground features?",
-    answer: "Playground features are small tools developers build using Memact memory. A feature might help a news app choose whether to show a quick brief, key points, or a deeper article overview."
+    question: "What is Context?",
+    answer: "Context is the open-source category system. It helps turn app input into readable memory proposals a user can accept, edit, reject, or delete."
   },
   {
     question: "Can my app propose memory entries?",
@@ -136,7 +136,7 @@ export function HelpPanel({ accountType = "developer" }) {
       <div>
         <p className="eyebrow">Help</p>
         <h2>Frequently asked questions</h2>
-        <p className="muted">{isUser ? "Common questions about consent, Yourself, connected apps, and account controls." : "Common questions about apps, API keys, consent, Playground, and safe memory writes."}</p>
+        <p className="muted">{isUser ? "Common questions about consent, Yourself, connected apps, and account controls." : "Common questions about apps, API keys, consent, Context, and safe memory writes."}</p>
       </div>
 
       <div className="faq-section">
@@ -147,8 +147,8 @@ export function HelpPanel({ accountType = "developer" }) {
       </div>
 
       <div className="faq-section faq-section-advanced">
-        <p className="faq-section-title">{isUser ? "Controls" : "Playground and memory writes"}</p>
-        {(isUser ? USER_CONTROL_FAQS : DEVELOPER_PLAYGROUND_FAQS).map((faq) => (
+        <p className="faq-section-title">{isUser ? "Controls" : "Context and memory writes"}</p>
+        {(isUser ? USER_CONTROL_FAQS : DEVELOPER_CONTEXT_FAQS).map((faq) => (
           <FaqItem faq={faq} key={faq.question} />
         ))}
       </div>

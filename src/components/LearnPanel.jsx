@@ -6,7 +6,7 @@ import { Chevron } from "./Chevron.jsx"
 const START_FAQS = [
   {
     question: "What is Memact?",
-    answer: "Memact is a playground where apps personalize around what users choose."
+    answer: "Memact helps you see what apps know about you and control it."
   },
   {
     question: "What problem is Memact solving?",

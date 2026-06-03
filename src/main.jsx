@@ -19,7 +19,6 @@ import { Dashboard } from "./components/Dashboard.jsx"
 import { HelpPanel } from "./components/HelpPanel.jsx"
 import { LearnPanel } from "./components/LearnPanel.jsx"
 import { Landing } from "./components/Landing.jsx"
-import { PlaygroundPanel } from "./components/PlaygroundPanel.jsx"
 import { DeveloperStatsPanel } from "./components/DeveloperStatsPanel.jsx"
 import { UserDashboard } from "./components/UserDashboard.jsx"
 import { OurselvesPanel } from "./components/OurselvesPanel.jsx"
@@ -1479,16 +1478,6 @@ function App() {
           onBackToConsent={() => connectRequest?.app_id ? navigateToConnect(connectRequest) : navigateToPage("account")}
           onManageConsent={() => navigateToPage("account")}
         />
-      ) : session && currentPage === "playground" ? (
-        <PlaygroundPanel
-          apps={apps}
-          apiKeys={apiKeys}
-          featureConnections={featureConnections}
-          selectedAppId={selectedAppId}
-          setSelectedAppId={handleSelectApp}
-          onUseFeature={handleUseFeature}
-          onDisconnectFeature={handleDisconnectFeature}
-        />
       ) : session && currentPage === "stats" ? (
         <DeveloperStatsPanel
           apps={apps}
@@ -1689,7 +1678,6 @@ function labelForPortalTab(page, accountType = ACCOUNT_TYPES.developer) {
 
   if (page === "access") return "Dashboard"
   if (page === "stats") return "Stats"
-  if (page === "playground") return "Playground"
   if (page === "account") return "Account"
   if (page === "help") return "Help"
   if (page === "connect") return "Connect"

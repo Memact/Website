@@ -610,19 +610,28 @@ p { margin-top: 0; }
   width: 100%;
   gap: 14px;
   padding: 17px 18px;
-  color: var(--text);
+  color: var(--text) !important;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: var(--surface-1);
+  background: var(--surface-1) !important;
   text-align: left;
   min-height: 92px;
   transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
 }
 
+.auth-panel .account-type-card,
+.auth-panel .account-type-card:hover,
+.auth-panel .account-type-card:focus-visible,
+.auth-panel .account-type-card.is-active,
+.auth-panel .account-type-card.is-active:hover {
+  color: var(--text);
+}
+
 .account-type-card:hover,
 .account-type-card:focus-visible {
   border-color: rgba(255, 255, 255, 0.42);
-  background: rgba(255, 255, 255, 0.065);
+  color: var(--text) !important;
+  background: rgba(255, 255, 255, 0.065) !important;
 }
 
 .account-type-card-marker {
@@ -659,7 +668,15 @@ p { margin-top: 0; }
 
 .account-type-card.is-active {
   border-color: rgba(255, 255, 255, 0.55);
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--text) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.auth-panel .account-type-card.is-active,
+.auth-panel .account-type-card.is-active:hover,
+.auth-panel .account-type-card.is-active:focus-visible {
+  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
 .account-type-card.is-active .account-type-card-marker {

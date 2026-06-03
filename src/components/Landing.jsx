@@ -141,10 +141,10 @@ export function Landing({
           ) : (
             <>
               <h1 className="locked-tagline">
-                <span>Personalization made better</span>
-                <span className="tagline-with">with Memact</span>
+                <span>Your Identity.</span>
+                <span className="tagline-with">Your Choice.</span>
               </h1>
-              <p>A playground where apps personalize around what users choose.</p>
+              <p>See what apps know about you and control it.</p>
               {showAuth ? (
                 <div className="landing-actions">
                   <a className="scroll-to-auth" href="/#sign-up" onClick={(event) => handleAuthScroll(event, "sign-up")}>Get started</a>
@@ -226,7 +226,7 @@ export function Landing({
                     <span className="account-type-card-marker" aria-hidden="true" />
                     <span className="account-type-card-copy">
                       <strong>User</strong>
-                      <span>I want to manage my Wiki and connected apps.</span>
+                      <span>I want to manage what apps know about me.</span>
                     </span>
                   </button>
                   <button
@@ -237,7 +237,7 @@ export function Landing({
                     <span className="account-type-card-marker" aria-hidden="true" />
                     <span className="account-type-card-copy">
                       <strong>Developer</strong>
-                      <span>I want to build apps or Playground features.</span>
+                      <span>I want to build apps with Memact.</span>
                     </span>
                   </button>
                 </div>

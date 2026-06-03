@@ -307,7 +307,7 @@ export function WikiPage({
               onEdit={() => acceptProposal({ ...entry, source_label: "Edited and accepted by you" })}
             />
           ))}
-          {!visibleProposals.length ? <p className="muted">No app, Memact, or Playground proposals are waiting right now.</p> : null}
+          {!visibleProposals.length ? <p className="muted">No app or Memact proposals are waiting right now.</p> : null}
         </div>
       </section>
 
@@ -551,14 +551,14 @@ function normalizeSourceType(value) {
 function sourceLabel(sourceType, appName) {
   if (sourceType === "user") return "Added by you"
   if (sourceType === "memact") return "Created by Memact"
-  if (sourceType === "playground_feature") return "Proposed by Playground feature"
+  if (sourceType === "playground_feature") return "Proposed by Memact feature"
   return `Proposed by ${appName}`
 }
 
 function sourceDetail(sourceType) {
   if (sourceType === "user") return "Source: User-added"
   if (sourceType === "memact") return "Source: Memact-created"
-  if (sourceType === "playground_feature") return "Source: Playground feature"
+  if (sourceType === "playground_feature") return "Source: Memact feature"
   return "Source: App-proposed"
 }
 
