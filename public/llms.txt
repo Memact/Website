@@ -16,7 +16,7 @@ Memact helps users see what apps know about them and control it.
 - Users choose whether an app connects.
 - Wiki shows what an app can use, what Memact creates from it, and what the app may receive.
 - Users can review access and disconnect apps later.
-- The browser extension is optional. Apps can use Memact through SDK/API integration without it.
+- Apps can use Memact through SDK/API integration.
 
 ## Developer Concepts
 
@@ -24,7 +24,7 @@ Memact helps users see what apps know about them and control it.
 - Keep the Memact API key on the server.
 - Add a Connect Memact flow and Wiki link.
 - Store the returned `connection_id` for the signed-in user.
-- Use the SDK/API to propose context or read allowed context after access is approved.
+- Use the SDK/API to propose context or read allowed memory after access is approved.
 - Scopes and categories are permission boundaries.
 
 ## SDK Example
@@ -38,16 +38,15 @@ const memact = createMemactClient({
   appId: "your_app_id"
 });
 
-await memact.capture({
-  event_type: "article_read",
-  category: "web:research",
-  payload: { title, url }
+await memact.proposeContext({
+  category: "reading",
+  title: "Prefers short summaries",
+  value: { preferred_summary_style: "concise" },
+  evidence: ["summary preference selected in app"]
 });
 
-const result = await memact.runFeature("adaptive-article-overview", {
-  article,
-  reading_memory,
-  recent_events: []
+const allowed = await memact.getAllowedContext({
+  category: "reading"
 });
 ```
 

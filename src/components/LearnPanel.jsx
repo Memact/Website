@@ -14,14 +14,14 @@ const START_FAQS = [
   },
   {
     question: "What is the basic flow?",
-    answer: "An app asks first. If the user allows it, the app can send signals or proposed context. Memact turns that into memory the user can accept, edit, reject, or delete."
+    answer: "An app asks first. If the user allows it, the app can send signals or propose memory. Context organizes it, Yourself shows it, and the user decides what stays."
   }
 ]
 
 const YOURSELF_FAQS = [
   {
     question: "What is Yourself?",
-    answer: "It is the user's editable memory page. Users can add context, apps can suggest entries, and Memact can create entries from approved activity."
+    answer: "It is the user's editable page of what apps know about them. Users can add details, review app suggestions, edit what is wrong, or delete what should not stay."
   },
   {
     question: "Why is Yourself important?",
@@ -48,7 +48,7 @@ const APP_FAQS = [
   },
   {
     question: "What does Context do?",
-    answer: "Context is the open-source category layer. It helps Memact turn messy app signals into readable memory proposals, like shopping preferences, fitness preferences, media habits, or chat-app settings."
+    answer: "Context is the open-source category system. It helps turn messy app input into readable memory proposals, like fitness preferences, shopping habits, media taste, or chat-app settings."
   },
   {
     question: "Can apps send context directly?",
@@ -63,15 +63,15 @@ const DEVELOPER_FAQS = [
   },
   {
     question: "What should developers avoid?",
-    answer: "Hidden tracking, raw data leaks, fake conclusions, and features that make sensitive claims without support."
+    answer: "Hidden tracking, raw data leaks, fake conclusions, and sensitive claims without support."
   },
   {
     question: "What happened to Schema?",
     answer: "Schema is now Context. Older issues and PRs may still say Schema, but the job is the same: organize app signals into safe, readable context proposals."
   },
   {
-    question: "Does Memact need the extension?",
-    answer: "No. Apps can integrate with Memact through SDK/API. The extension is only an optional capture source."
+    question: "Does Memact need a separate install?",
+    answer: "No. The core flow is app to Access to Context to Yourself to Memory. Apps can integrate through the SDK/API."
   }
 ]
 
@@ -94,7 +94,7 @@ export function LearnPanel() {
     <section className="panel help-panel">
       <div>
         <p className="eyebrow">Learn More</p>
-        <h2>Personalization made better with Memact</h2>
+        <h2>See what apps know about you.</h2>
         <p className="muted">A simple overview of how apps, Context, Yourself, and Memory fit together.</p>
       </div>
 

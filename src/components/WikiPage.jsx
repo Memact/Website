@@ -138,20 +138,6 @@ export function WikiPage({
         </section>
       )}
 
-      <section className="permission-list wiki-extension-card">
-        <div>
-          <p className="eyebrow">Optional capture</p>
-          <h3>Install the Memact Extension</h3>
-          <p className="muted">The extension can turn approved browsing activity into useful memory. Apps can still use Memact through SDK/API without it.</p>
-        </div>
-        <ol className="wiki-step-list">
-          <li>Install the Memact browser extension.</li>
-          <li>Sign in with the same Memact account.</li>
-          <li>Choose which activity types the extension may capture.</li>
-          <li>Review proposed entries before important memory is accepted.</li>
-        </ol>
-      </section>
-
       {showAddContext ? (
         <form className="permission-list wiki-add-form" onSubmit={submitManualEntry}>
           <div>

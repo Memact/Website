@@ -21,8 +21,8 @@ const USER_BASIC_FAQS = [
     answer: "Because an app should not use or add memory about you without permission."
   },
   {
-    question: "Is the browser extension required?",
-    answer: "No. Apps can use Memact through the SDK/API. The extension is optional."
+    question: "Do I need to install anything?",
+    answer: "No. Apps can connect to Memact through the SDK/API. The important part is that you approve what the app can use or add."
   },
   {
     question: "Does an app get all my data?",
@@ -60,7 +60,7 @@ const DEVELOPER_BASIC_FAQS = [
   },
   {
     question: "How does an app connect to Memact?",
-    answer: "Register an app, ask the user for access, keep the API key on your server, then use the SDK/API to propose or read allowed memory."
+    answer: "Register an app, ask the user for access, keep the API key on your server, then use the SDK/API to propose context or read allowed memory."
   },
   {
     question: "What can my app see?",
@@ -83,7 +83,7 @@ const DEVELOPER_CONTEXT_FAQS = [
   },
   {
     question: "Can platform bots use Memact?",
-    answer: "Yes, with explicit consent. Bot data should be labeled clearly, scoped to the platform, and never treated as invisible surveillance."
+    answer: "Yes, with explicit consent. Bot activity should be labeled clearly and should only create memory the user can review."
   },
   {
     question: "Where does the API key live?",

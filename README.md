@@ -2,12 +2,7 @@
 
 Website is the public site and portal for Memact.
 
-Memact is a playground where apps personalize around what users choose.
-
-```text
-Personalization made better
-with Memact
-```
+Memact helps people see what apps know about them and control it.
 
 ## What This Repo Owns
 
@@ -16,10 +11,8 @@ with Memact
 - App registration.
 - API keys.
 - Consent screens.
-- Wiki.
-- Playground feature catalog.
-- Capture Sources UI.
-- Playground feature UI.
+- Yourself: the user memory page.
+- Ourselves: the public/social memory surface.
 - Context UI.
 - Developer integration docs.
 - Help and Learn pages.
@@ -27,27 +20,21 @@ with Memact
 ## What This Repo Does Not Own
 
 - Access checks, API key verification, or database RPC internals.
-- Browser/page capture.
-- Semantic inference.
 - Context proposal formation.
 - Durable memory storage.
-- Feature runtime logic.
 
 ## Product Flow
 
 ```text
 Website manages
 -> Access checks
--> Capture receives
--> Inference understands
 -> Context organizes
 -> Memory stores
--> Playground features run
 -> Apps and users use results
 ```
 
 Website is the console for users and developers. It is not part of the core
-capture, inference, context, memory, or feature pipeline.
+Access, Context, or Memory pipeline.
 
 The Website should explain Memact simply for users, then give developers exact
 SDK/API steps. It should not pretend to run backend work in the browser.
@@ -60,9 +47,9 @@ compact cards, rounded controls, and consistent button hierarchy.
 Authenticated dashboard:
 
 - Dashboard shows apps, permissions, API keys, usage statistics, and Wiki links for active keys.
-- `/Playground` shows real Playground features that can be connected to an app API key.
-- `/Wiki` is the app-specific user wiki page. It is private unless a user explicitly creates a share link.
-- Account shows identity, email/password actions, invites, and account metrics.
+- `/Yourself` shows what apps know about the user and lets the user add, edit, reject, delete, or share selected memory.
+- `/Ourselves` is the public/social memory surface.
+- Settings shows profile, connected apps, privacy, sharing, and account controls.
 - Help uses short FAQs for users and developers.
 
 Keep the UI direct and calm. Avoid generic SaaS filler and decorative copy that
@@ -123,7 +110,7 @@ After creating an API key, Website shows:
 - a one-time API key
 - copy and test controls
 - a Connect Memact URL
-- a Wiki URL
+- a Yourself URL
 - a server-side SDK example
 
 Normal app flow:
@@ -132,10 +119,10 @@ Normal app flow:
 developer creates app
 -> chooses scopes and categories
 -> user clicks "Connect Memact" inside the third-party app
--> Memact shows consent plus the app's Wiki page
+-> Memact shows consent plus the user's memory controls
 -> user approves or cancels
 -> approved apps receive a connection_id
--> app verifies API key + connection_id + scopes before sending events or running features
+-> app verifies API key + connection_id + scopes before proposing or reading allowed memory
 ```
 
 API keys identify the app. `connection_id` identifies the specific user consent.
@@ -144,17 +131,16 @@ Verification must pass both.
 Customer apps should use the Memact SDK/API from their backend. They should not
 call Supabase RPCs or configure Supabase keys.
 
-## Consent and Wiki
+## Consent and Yourself
 
-The consent page must show what the app is asking to use and a Wiki link for
+The consent page must show what the app is asking to use and a Yourself link for
 the same app.
 
-Wiki explains:
+Yourself explains:
 
 - what the app can send
 - what Memact may create or organize
 - why the app wants it
-- what features the app may use
 - how long access lasts
 - how the user can stop future access
 
