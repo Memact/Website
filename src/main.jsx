@@ -459,7 +459,7 @@ function App() {
       })
       if (otpError) throw otpError
       rememberAuthMethod("Email link")
-      setAuthNotice("Check your email for the login link.")
+      setAuthNotice("Check your email and open the sign-in link.")
       setStatus("Login link sent.")
     } catch (authError) {
       setError(formatAuthErrorMessage(authError))
@@ -479,7 +479,7 @@ function App() {
       return
     }
     setAuthLoading("consent-link")
-    setStatus("Sending one-time link.")
+    setStatus("Sending secure link.")
     try {
       const { error: otpError } = await requireSupabase().auth.signInWithOtp({
         email: cleanEmail,
@@ -500,10 +500,10 @@ function App() {
       })
       if (otpError) throw otpError
       rememberAuthMethod("Email link")
-      setAuthNotice("Check your email for the one-time link. You can finish setting up your account later.")
-      setStatus("One-time link sent.")
+      setAuthNotice("Check your email and open the secure link. You can finish setting up your account later.")
+      setStatus("Secure link sent.")
     } catch (authError) {
-      setError(formatAuthErrorMessage(authError, "Could not send the one-time link."))
+      setError(formatAuthErrorMessage(authError, "Could not send the secure link."))
       setStatus(authStatusMessage(authError))
     } finally {
       setAuthLoading("")
@@ -562,7 +562,8 @@ function App() {
         setVerificationCode("")
         setAuthMode("sign-up")
         navigateToPage("home", { replace: true, hash: "#sign-up" })
-        setStatus("Verification code sent.")
+        setAuthNotice("Check your email and open the confirmation link.")
+        setStatus("Confirmation link sent.")
       }
     } catch (authError) {
       setError(formatAuthErrorMessage(authError, "Account creation did not finish."))
@@ -637,7 +638,7 @@ function App() {
     setSignInVerificationCode("")
     setAuthMode("sign-in")
     navigateToPage("home", { replace: true, hash: "#sign-in" })
-    setStatus("Verification code sent.")
+    setStatus("Sign-in link sent.")
     return true
   }
 
@@ -651,7 +652,7 @@ function App() {
       return
     }
     if (!/^[0-9A-Za-z]{6,10}$/.test(cleanCode)) {
-      setError("Enter the verification code from your email.")
+      setError("Open the latest sign-in link from your email.")
       return
     }
     setAuthLoading("verify-signin")
@@ -679,7 +680,7 @@ function App() {
       applySession(verifiedSession, "default")
       setStatus("Signed in.")
     } catch (verifyError) {
-      setError(formatAuthErrorMessage(verifyError, "Verification code did not work. Check the latest email and try again."))
+      setError(formatAuthErrorMessage(verifyError, "Sign-in verification did not work. Open the latest email link and try again."))
       setStatus(authStatusMessage(verifyError))
     } finally {
       authEventGuardRef.current = ""
@@ -705,7 +706,7 @@ function App() {
       return
     }
     if (!/^[0-9A-Za-z]{6,10}$/.test(cleanCode)) {
-      setError("Enter the verification code from your email.")
+      setError("Open the confirmation link from your email.")
       return
     }
     setAuthLoading("verify-signup")
@@ -719,7 +720,7 @@ function App() {
       if (verifyError) throw verifyError
       await finishEmailVerification(data?.session || null)
     } catch (verifyError) {
-      setError(formatAuthErrorMessage(verifyError, "Verification code did not work. Check the latest email and try again."))
+      setError(formatAuthErrorMessage(verifyError, "Email confirmation did not work. Open the latest email link and try again."))
       setStatus(authStatusMessage(verifyError))
     } finally {
       setAuthLoading("")
@@ -732,19 +733,11 @@ function App() {
     setAuthNotice("")
   }
 
-  async function shouldRequireSignInVerification(auth, signedInSession) {
-    if (!SIGNIN_RISK_FUNCTION_NAME || !signedInSession) return false
-    try {
-      const { data, error: riskError } = await auth.functions.invoke(SIGNIN_RISK_FUNCTION_NAME, {
-        body: {
-          event: "password_sign_in"
-        }
-      })
-      if (riskError) return false
-      return Boolean(data?.requires_verification || data?.requiresVerification || data?.ip_changed || data?.ipChanged)
-    } catch {
-      return false
-    }
+  async function shouldRequireSignInVerification() {
+    // Keep sign-in link/password flows link-first. Supabase reauthentication uses
+    // nonce codes, but Memact should not show a code box unless email templates
+    // are deliberately configured to send visible tokens.
+    return false
   }
 
   async function handleForgotPassword() {
@@ -855,8 +848,8 @@ function App() {
       })
       if (resendError) throw resendError
       setPendingVerificationEmail(targetEmail)
-      setAuthNotice("Verification code sent again.")
-      setStatus("Verification code sent.")
+      setAuthNotice("Confirmation link sent again.")
+      setStatus("Confirmation link sent.")
     } catch (resendError) {
       setError(formatAuthErrorMessage(resendError, "Could not resend the confirmation email."))
       setStatus(authStatusMessage(resendError))

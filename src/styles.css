@@ -598,6 +598,33 @@ p { margin-top: 0; }
   text-align: center;
 }
 
+.auth-link-sent-card {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.auth-link-sent-card strong,
+.auth-link-sent-card span {
+  display: block;
+}
+
+.auth-link-sent-card strong {
+  font-size: 17px;
+  line-height: 1.2;
+}
+
+.auth-link-sent-card span {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
 .account-type-options {
   display: grid;
   gap: 12px;

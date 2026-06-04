@@ -92,7 +92,7 @@ export function Landing({
 
   const handleSignupSubmit = (event) => {
     if (isVerificationStep) {
-      onVerifySignupCode(event)
+      event.preventDefault()
       return
     }
     if (isConsentAuth) {
@@ -118,7 +118,7 @@ export function Landing({
 
   const handleSignInSubmit = (event) => {
     if (isSignInVerificationStep) {
-      onVerifySignInCode(event)
+      event.preventDefault()
       return
     }
     onPasswordLogin(event)
@@ -162,12 +162,12 @@ export function Landing({
             <p className="muted auth-support">
               {isSignIn
                 ? isSignInVerificationStep
-                  ? `Enter the code sent to ${pendingSignInVerificationEmail}.`
+                  ? `Open the sign-in link sent to ${pendingSignInVerificationEmail}.`
                   : "Sign in to manage apps, permissions, and API keys."
                 : isVerificationStep
-                ? `Enter the code sent to ${pendingVerificationEmail}.`
+                ? `Open the confirmation link sent to ${pendingVerificationEmail}.`
                 : isConsentAuth
-                ? "Enter your email to review this request. We'll send a one-time link."
+                ? "Enter your email to review this request. We'll send a secure link."
                 : signupStep === "account-type"
                 ? "Are you joining as a user or developer?"
                 : signupStep === "identity"
@@ -185,36 +185,16 @@ export function Landing({
             {isSignIn && lastAuthMethod && !isSignInVerificationStep ? <p className="last-auth-chip">Last used: {lastAuthMethod}</p> : null}
             <form className="form" onSubmit={isSignIn ? handleSignInSubmit : handleSignupSubmit}>
               {isSignInVerificationStep ? (
-                <label>
-                  Verification code
-                  <input
-                    className="verification-code-input"
-                    value={signInVerificationCode}
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    placeholder="Enter code"
-                    maxLength={10}
-                    onChange={(event) => setSignInVerificationCode(event.target.value.replace(/\s+/g, "").slice(0, 10))}
-                    required
-                  />
-                </label>
+                <div className="auth-link-sent-card" role="status">
+                  <strong>Check your email.</strong>
+                  <span>Open the sign-in link to continue. You can come back here if you need to use password again.</span>
+                </div>
               ) : null}
               {isVerificationStep ? (
-                <label>
-                  Verification code
-                  <input
-                    className="verification-code-input"
-                    value={verificationCode}
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    placeholder="Enter code"
-                    maxLength={10}
-                    onChange={(event) => setVerificationCode(event.target.value.replace(/\s+/g, "").slice(0, 10))}
-                    required
-                  />
-                </label>
+                <div className="auth-link-sent-card" role="status">
+                  <strong>Check your email.</strong>
+                  <span>Open the confirmation link to finish setting up your Memact account.</span>
+                </div>
               ) : null}
               {!isVerificationStep && !isSignIn && signupStep === "account-type" ? (
                 <div className="account-type-options" role="radiogroup" aria-label="Choose account type">
@@ -283,19 +263,21 @@ export function Landing({
                   </ul>
                 </>
               ) : null}
-              <button type="submit" disabled={authLoading === "password" || authLoading === "signup" || authLoading === "consent-link" || authLoading === "verify-signup" || authLoading === "verify-signin" || (!isSignIn && signupStep === "account-type" && !signupAccountType)}>
-                <span>{authLoading === "password" || authLoading === "signup" || authLoading === "verify-signup" || authLoading === "verify-signin"
-                  ? authLoading === "verify-signup" || authLoading === "verify-signin" ? "Verifying code..." : authLoading === "consent-link" ? "Sending link..." : isSignIn ? "Signing in..." : "Creating account..."
-                  : isSignIn ? isSignInVerificationStep ? "Verify sign in" : "Sign in" : isVerificationStep ? "Verify email" : isConsentAuth ? "Send one-time link" : signupStep === "account-type" ? "Continue" : signupStep === "identity" ? "Continue" : "Create account"}</span>
-                {!isSignIn ? <span className="auth-native-chevron auth-submit-chevron" aria-hidden="true" /> : null}
-              </button>
+              {!isVerificationStep && !isSignInVerificationStep ? (
+                <button type="submit" disabled={authLoading === "password" || authLoading === "signup" || authLoading === "consent-link" || (!isSignIn && signupStep === "account-type" && !signupAccountType)}>
+                  <span>{authLoading === "password" || authLoading === "signup" || authLoading === "consent-link"
+                    ? authLoading === "consent-link" ? "Sending link..." : isSignIn ? "Signing in..." : "Creating account..."
+                    : isSignIn ? "Sign in" : isConsentAuth ? "Send secure link" : signupStep === "account-type" ? "Continue" : signupStep === "identity" ? "Continue" : "Create account"}</span>
+                  {!isSignIn ? <span className="auth-native-chevron auth-submit-chevron" aria-hidden="true" /> : null}
+                </button>
+              ) : null}
               {isSignInVerificationStep ? (
                 <button type="button" className="text-button" onClick={onClearPendingSignInVerification}>Use password again</button>
               ) : null}
               {isVerificationStep ? (
                 <>
                   <button type="button" className="text-button" disabled={authLoading === "resend-confirmation"} onClick={onResendConfirmation}>
-                    {authLoading === "resend-confirmation" ? "Sending code..." : "Resend code"}
+                    {authLoading === "resend-confirmation" ? "Sending link..." : "Resend confirmation link"}
                   </button>
                   <button type="button" className="text-button" onClick={onClearPendingVerification}>Use a different email</button>
                 </>
