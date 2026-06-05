@@ -33,6 +33,7 @@ const AUTH_SESSION_CHECK_TIMEOUT_MS = 9000
 const LAST_AUTH_METHOD_KEY = "memact.lastAuthMethod"
 const INVITE_FUNCTION_NAME = import.meta.env.VITE_SUPABASE_INVITE_FUNCTION || "invite-user"
 const SIGNIN_RISK_FUNCTION_NAME = import.meta.env.VITE_SUPABASE_SIGNIN_RISK_FUNCTION || ""
+const DELETE_ACCOUNT_FUNCTION_NAME = import.meta.env.VITE_SUPABASE_DELETE_ACCOUNT_FUNCTION || ""
 
 function App() {
   const client = useMemo(() => new AccessClient(ACCESS_URL), [])
@@ -113,6 +114,8 @@ function App() {
   const [emailChangeSuccess, setEmailChangeSuccess] = useState("")
   const [displayNameDraft, setDisplayNameDraft] = useState("")
   const [displayNameSuccess, setDisplayNameSuccess] = useState("")
+  const [accountTypeSuccess, setAccountTypeSuccess] = useState("")
+  const [deleteAccountSuccess, setDeleteAccountSuccess] = useState("")
   const [inviteEmail, setInviteEmail] = useState("")
   const [inviteSuccess, setInviteSuccess] = useState("")
   const { user, apps, apiKeys, consents, featureConnections, status, error, canRetryDashboard } = dashboard
@@ -546,6 +549,18 @@ function App() {
         }
       })
       if (signUpError) throw signUpError
+      if (looksLikeExistingEmailSignup(data)) {
+        setAuthMode("sign-in")
+        setEmail(cleanEmail)
+        setPassword("")
+        setPasswordConfirm("")
+        setSignupDisplayName("")
+        setSignupAccountType("")
+        navigateToPage("home", { replace: true, hash: "#sign-in" })
+        setError("This email may already have a Memact account. Sign in instead, or use forgot password if you do not remember it.")
+        setStatus("Account already exists.")
+        return
+      }
       setPassword("")
       setPasswordConfirm("")
       setSignupDisplayName("")
@@ -562,8 +577,8 @@ function App() {
         setVerificationCode("")
         setAuthMode("sign-up")
         navigateToPage("home", { replace: true, hash: "#sign-up" })
-        setAuthNotice("Check your email and open the confirmation link.")
-        setStatus("Confirmation link sent.")
+        setAuthNotice("Check your email and enter the confirmation code.")
+        setStatus("Confirmation code sent.")
       }
     } catch (authError) {
       setError(formatAuthErrorMessage(authError, "Account creation did not finish."))
@@ -706,7 +721,7 @@ function App() {
       return
     }
     if (!/^[0-9A-Za-z]{6,10}$/.test(cleanCode)) {
-      setError("Open the confirmation link from your email.")
+      setError("Enter the confirmation code from your email.")
       return
     }
     setAuthLoading("verify-signup")
@@ -720,7 +735,7 @@ function App() {
       if (verifyError) throw verifyError
       await finishEmailVerification(data?.session || null)
     } catch (verifyError) {
-      setError(formatAuthErrorMessage(verifyError, "Email confirmation did not work. Open the latest email link and try again."))
+      setError(formatAuthErrorMessage(verifyError, "Email confirmation did not work. Use the latest code and try again."))
       setStatus(authStatusMessage(verifyError))
     } finally {
       setAuthLoading("")
@@ -824,16 +839,87 @@ function App() {
     }
   }
 
+  async function handleSwitchAccountType(nextAccountType) {
+    setError("")
+    setAuthNotice("")
+    setAccountTypeSuccess("")
+    if (!Object.values(ACCOUNT_TYPES).includes(nextAccountType)) {
+      setError("Choose user or developer.")
+      return
+    }
+    if (nextAccountType === accountType) {
+      setAccountTypeSuccess(`You are already using the ${nextAccountType} portal.`)
+      return
+    }
+    setAuthLoading("account-type")
+    setStatus("Switching portal.")
+    try {
+      const auth = requireSupabase()
+      const { data, error: updateError } = await auth.auth.updateUser({
+        data: {
+          ...(authUser?.user_metadata || {}),
+          account_type: nextAccountType,
+          memact_account_type: nextAccountType,
+          memact_account_type_updated_at: new Date().toISOString()
+        }
+      })
+      if (updateError) throw updateError
+      const nextUser = data?.user || authUser
+      if (nextUser) setAuthUser(nextUser)
+      setAccountTypeSuccess(`Switched to ${nextAccountType === ACCOUNT_TYPES.user ? "user" : "developer"} portal. Existing data was kept.`)
+      setStatus("Portal switched.")
+      navigateToPage(defaultPageForAccountType(nextAccountType), { replace: true })
+    } catch (switchError) {
+      setError(formatAuthErrorMessage(switchError, "Account type did not change."))
+      setStatus(authStatusMessage(switchError))
+    } finally {
+      setAuthLoading("")
+    }
+  }
+
+  async function handleRequestAccountDeletion() {
+    setError("")
+    setAuthNotice("")
+    setDeleteAccountSuccess("")
+    const confirmed = window.confirm("Delete your Memact account? This needs the secure server deletion function. If it is not configured, Memact will tell you instead of pretending it deleted anything.")
+    if (!confirmed) return
+    if (!DELETE_ACCOUNT_FUNCTION_NAME) {
+      setError("Account deletion needs a secure Supabase function before it can run. Browser code cannot safely delete Auth users.")
+      setStatus("Account deletion not configured.")
+      return
+    }
+    setAuthLoading("delete-account")
+    setStatus("Requesting account deletion.")
+    try {
+      const auth = requireSupabase()
+      const { error: deleteError } = await auth.functions.invoke(DELETE_ACCOUNT_FUNCTION_NAME, {
+        body: {
+          user_id: authUser?.id || user?.id || "",
+          requested_at: new Date().toISOString()
+        }
+      })
+      if (deleteError) throw deleteError
+      setDeleteAccountSuccess("Account deletion requested. You will be signed out now.")
+      setStatus("Account deletion requested.")
+      await signOut()
+    } catch (deleteError) {
+      setError(formatAuthErrorMessage(deleteError, "Account deletion did not finish."))
+      setStatus(authStatusMessage(deleteError))
+    } finally {
+      setAuthLoading("")
+    }
+  }
+
   async function handleResendConfirmation() {
     setError("")
     setAuthNotice("")
     const targetEmail = (pendingVerificationEmail || email).trim().toLowerCase()
     if (!targetEmail) {
-      setError("Enter your email first so Memact knows where to send the confirmation email.")
+      setError("Enter your email first so Memact knows where to send the confirmation code.")
       return
     }
     setAuthLoading("resend-confirmation")
-    setStatus("Sending confirmation email.")
+    setStatus("Sending confirmation code.")
     try {
       const auth = requireSupabase()
       if (typeof auth.auth.resend !== "function") {
@@ -848,10 +934,10 @@ function App() {
       })
       if (resendError) throw resendError
       setPendingVerificationEmail(targetEmail)
-      setAuthNotice("Confirmation link sent again.")
-      setStatus("Confirmation link sent.")
+      setAuthNotice("Confirmation code sent again.")
+      setStatus("Confirmation code sent.")
     } catch (resendError) {
-      setError(formatAuthErrorMessage(resendError, "Could not resend the confirmation email."))
+      setError(formatAuthErrorMessage(resendError, "Could not resend the confirmation code."))
       setStatus(authStatusMessage(resendError))
     } finally {
       setAuthLoading("")
@@ -1539,6 +1625,10 @@ function App() {
           setDisplayNameDraft={setDisplayNameDraft}
           displayNameSuccess={displayNameSuccess}
           onUpdateDisplayName={handleUpdateDisplayName}
+          accountTypeSuccess={accountTypeSuccess}
+          onSwitchAccountType={handleSwitchAccountType}
+          deleteAccountSuccess={deleteAccountSuccess}
+          onRequestAccountDeletion={handleRequestAccountDeletion}
           inviteEmail={inviteEmail}
           setInviteEmail={setInviteEmail}
           inviteSuccess={inviteSuccess}
@@ -1623,6 +1713,12 @@ function formatAuthErrorMessage(error, fallback = "Login did not finish.") {
   if (baseMessage && suffix) return `${baseMessage} (${suffix})`
   if (baseMessage) return baseMessage
   return suffix || fallback
+}
+
+function looksLikeExistingEmailSignup(data) {
+  const user = data?.user
+  if (!user || data?.session) return false
+  return Array.isArray(user.identities) && user.identities.length === 0
 }
 
 function authStatusMessage(error) {

@@ -625,8 +625,57 @@ p { margin-top: 0; }
   line-height: 1.45;
 }
 
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+.password-field {
+  display: grid;
+  gap: 8px;
+}
+
+.password-input-wrap {
+  position: relative;
+  display: block;
+}
+
+.password-input-wrap input {
+  padding-right: 92px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: auto;
+  min-height: 34px;
+  transform: translateY(-50%);
+  padding: 0 13px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.055) !important;
+  color: var(--text) !important;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible,
+.password-toggle[aria-pressed="true"] {
+  border-color: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: var(--text) !important;
+}
+
 .account-type-options {
   display: grid;
+  gap: 12px;
+}
+
+.account-type-switcher {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -1930,6 +1979,27 @@ input:-webkit-autofill:focus {
   gap: 8px;
 }
 
+.cap-consent-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.cap-consent-card {
+  align-items: start;
+  min-height: 100%;
+}
+
+.cap-consent-card ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
+.cap-consent-card li + li {
+  margin-top: 4px;
+}
+
 .connect-link-row {
   display: flex;
   flex-wrap: wrap;
@@ -2808,6 +2878,7 @@ input:-webkit-autofill:focus {
   .landing-with-auth,
   .access-layout,
   .grid,
+  .account-type-switcher,
   .connect-grid,
   .transparency-grid,
   .transparency-choice-grid {

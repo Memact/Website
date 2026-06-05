@@ -2,6 +2,7 @@ import React, { useState } from "react"
 import { CategoryGrid } from "./CategoryGrid.jsx"
 import { Chevron } from "./Chevron.jsx"
 import { HelpPanel } from "./HelpPanel.jsx"
+import { PasswordField } from "./PasswordField.jsx"
 import { presetSuggestionsForPolicy } from "../access-policy.js"
 import { getAvatarUrl, getInitials, getUserEmail, getUserProvider } from "../user-display.js"
 
@@ -65,6 +66,10 @@ export function Dashboard({
   setDisplayNameDraft,
   displayNameSuccess,
   onUpdateDisplayName,
+  accountTypeSuccess,
+  onSwitchAccountType,
+  deleteAccountSuccess,
+  onRequestAccountDeletion,
   inviteEmail,
   setInviteEmail,
   inviteSuccess,
@@ -189,6 +194,40 @@ export function Dashboard({
               </p>
             </div>
           </div>
+          <section className="password-panel account-editor-panel account-type-panel">
+            <div>
+              <p className="eyebrow">Portal</p>
+              <h2>Choose how you use Memact.</h2>
+              <p className="muted">Switching only changes which portal opens. Your apps, keys, connected apps, and Yourself entries stay as they are.</p>
+            </div>
+            {accountTypeSuccess ? <p className="notice notice-success" role="status">{accountTypeSuccess}</p> : null}
+            <div className="account-type-switcher" role="group" aria-label="Account type">
+              <button
+                type="button"
+                className={isUserAccount ? "account-type-card is-active" : "account-type-card"}
+                disabled={authLoading === "account-type"}
+                onClick={() => onSwitchAccountType?.("user")}
+              >
+                <span className="account-type-card-marker" aria-hidden="true" />
+                <span className="account-type-card-copy">
+                  <strong>User</strong>
+                  <span>Manage what apps know about you.</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                className={!isUserAccount ? "account-type-card is-active" : "account-type-card"}
+                disabled={authLoading === "account-type"}
+                onClick={() => onSwitchAccountType?.("developer")}
+              >
+                <span className="account-type-card-marker" aria-hidden="true" />
+                <span className="account-type-card-copy">
+                  <strong>Developer</strong>
+                  <span>Build apps with Memact.</span>
+                </span>
+              </button>
+            </div>
+          </section>
           {isUserAccount ? (
             <UserSettingsSections apps={apps} consents={consents} onRevokeConsent={onRevokeConsent} />
           ) : null}
@@ -255,28 +294,22 @@ export function Dashboard({
               </div>
               {passwordSuccess ? <p className="notice notice-success" role="status">{passwordSuccess}</p> : null}
               <form className="form" onSubmit={onSetPassword}>
-                <label>
-                  New password
-                  <input
-                    value={setupPassword}
-                    type="password"
-                    autoComplete="new-password"
-                    placeholder="Create a strong password"
-                    onChange={(event) => setSetupPassword(event.target.value)}
-                    required
-                  />
-                </label>
-                <label>
-                  Confirm password
-                  <input
-                    value={setupPasswordConfirm}
-                    type="password"
-                    autoComplete="new-password"
-                    placeholder="Repeat the password"
-                    onChange={(event) => setSetupPasswordConfirm(event.target.value)}
-                    required
-                  />
-                </label>
+                <PasswordField
+                  label="New password"
+                  value={setupPassword}
+                  autoComplete="new-password"
+                  placeholder="Create a strong password"
+                  onChange={(event) => setSetupPassword(event.target.value)}
+                  required
+                />
+                <PasswordField
+                  label="Confirm password"
+                  value={setupPasswordConfirm}
+                  autoComplete="new-password"
+                  placeholder="Repeat the password"
+                  onChange={(event) => setSetupPasswordConfirm(event.target.value)}
+                  required
+                />
                 <div className="password-strength" data-strength={passwordState.level}>
                   <div className="password-strength-bar">
                     <span style={{ width: `${passwordState.percent}%` }} />
@@ -360,6 +393,22 @@ export function Dashboard({
               <strong>{apiKeys.filter((key) => !key.revoked_at).length}</strong>
             </div>
           </div> : null}
+          <section className="password-panel account-editor-panel danger-zone-panel">
+            <div>
+              <p className="eyebrow">Delete account</p>
+              <h2>Delete your Memact account.</h2>
+              <p className="muted">This needs a secure server function. Browser code cannot safely delete Supabase Auth users by itself.</p>
+            </div>
+            {deleteAccountSuccess ? <p className="notice notice-success" role="status">{deleteAccountSuccess}</p> : null}
+            <button
+              type="button"
+              className="ghost danger"
+              disabled={authLoading === "delete-account"}
+              onClick={onRequestAccountDeletion}
+            >
+              {authLoading === "delete-account" ? "Requesting deletion..." : "Delete account"}
+            </button>
+          </section>
         </section>
       ) : (
         <>

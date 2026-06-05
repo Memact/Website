@@ -3,6 +3,7 @@ import "../memact-ui.css"
 import "../landing-polish.css"
 import "../desktop-landing-lift.css"
 import "../mobile-wide-auth.css"
+import { PasswordField } from "./PasswordField.jsx"
 
 export function Landing({
   isConnecting,
@@ -92,7 +93,7 @@ export function Landing({
 
   const handleSignupSubmit = (event) => {
     if (isVerificationStep) {
-      event.preventDefault()
+      onVerifySignupCode(event)
       return
     }
     if (isConsentAuth) {
@@ -165,7 +166,7 @@ export function Landing({
                   ? `Open the sign-in link sent to ${pendingSignInVerificationEmail}.`
                   : "Sign in to manage apps, permissions, and API keys."
                 : isVerificationStep
-                ? `Open the confirmation link sent to ${pendingVerificationEmail}.`
+                ? `Enter the confirmation code sent to ${pendingVerificationEmail}.`
                 : isConsentAuth
                 ? "Enter your email to review this request. We'll send a secure link."
                 : signupStep === "account-type"
@@ -193,8 +194,24 @@ export function Landing({
               {isVerificationStep ? (
                 <div className="auth-link-sent-card" role="status">
                   <strong>Check your email.</strong>
-                  <span>Open the confirmation link to finish setting up your Memact account.</span>
+                  <span>Enter the confirmation code to finish setting up your Memact account.</span>
                 </div>
+              ) : null}
+              {isVerificationStep ? (
+                <label>
+                  Confirmation code
+                  <input
+                    id="signup-verification-code"
+                    className="verification-code-input"
+                    value={verificationCode}
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    placeholder="Enter code"
+                    onChange={(event) => setVerificationCode(event.target.value)}
+                    required
+                  />
+                </label>
               ) : null}
               {!isVerificationStep && !isSignIn && signupStep === "account-type" ? (
                 <div className="account-type-options" role="radiogroup" aria-label="Choose account type">
@@ -238,15 +255,26 @@ export function Landing({
                 Email
                 <input id={isSignIn ? "signin-email" : "signup-email"} value={email} type="email" inputMode="email" autoComplete="email" placeholder="Enter your email" onChange={(event) => setEmail(event.target.value)} required />
               </label> : null}
-              {!isSignInVerificationStep && !isVerificationStep && (isSignIn || signupStep === "password") ? <label>
-                Password
-                <input id={isSignIn ? "signin-password" : "signup-password"} value={password} type="password" autoComplete={isSignIn ? "current-password" : "new-password"} placeholder={isSignIn ? "Enter your password" : "Create a strong password"} onChange={(event) => setPassword(event.target.value)} required />
-              </label> : null}
+              {!isSignInVerificationStep && !isVerificationStep && (isSignIn || signupStep === "password") ? (
+                <PasswordField
+                  id={isSignIn ? "signin-password" : "signup-password"}
+                  label="Password"
+                  value={password}
+                  autoComplete={isSignIn ? "current-password" : "new-password"}
+                  placeholder={isSignIn ? "Enter your password" : "Create a strong password"}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                />
+              ) : null}
               {!isVerificationStep && !isSignIn && signupStep === "password" ? (
-                <label>
-                  Confirm password
-                  <input value={passwordConfirm} type="password" autoComplete="new-password" placeholder="Repeat the password" onChange={(event) => setPasswordConfirm(event.target.value)} required />
-                </label>
+                <PasswordField
+                  label="Confirm password"
+                  value={passwordConfirm}
+                  autoComplete="new-password"
+                  placeholder="Repeat the password"
+                  onChange={(event) => setPasswordConfirm(event.target.value)}
+                  required
+                />
               ) : null}
               {!isVerificationStep && !isSignIn && signupStep === "password" && passwordState ? (
                 <>
@@ -276,8 +304,11 @@ export function Landing({
               ) : null}
               {isVerificationStep ? (
                 <>
+                  <button type="submit" disabled={authLoading === "verify-signup"}>
+                    {authLoading === "verify-signup" ? "Verifying..." : "Verify code"}
+                  </button>
                   <button type="button" className="text-button" disabled={authLoading === "resend-confirmation"} onClick={onResendConfirmation}>
-                    {authLoading === "resend-confirmation" ? "Sending link..." : "Resend confirmation link"}
+                    {authLoading === "resend-confirmation" ? "Sending code..." : "Resend code"}
                   </button>
                   <button type="button" className="text-button" onClick={onClearPendingVerification}>Use a different email</button>
                 </>

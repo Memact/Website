@@ -11,6 +11,9 @@ export function ConnectPage({ connectRequest, connectDetails, loading, notice, s
   const appName = app?.name || "this app"
   const faviconUrl = getFaviconUrl(app?.developer_url)
   const canApprove = Boolean(app?.id && allowedScopes.length && allowedCategories.length && loading !== "approve")
+  const requestedContext = normalizeRequestedContext(connectDetails?.requested_context || connectRequest?.requested_context)
+  const shareableContext = normalizeDisclosureList(connectDetails?.shareable_context || connectRequest?.shareable_context)
+  const missingContext = normalizeDisclosureList(connectDetails?.missing_context || connectRequest?.missing_context)
 
   return (
     <section className="connect-shell">
@@ -61,6 +64,20 @@ export function ConnectPage({ connectRequest, connectDetails, loading, notice, s
           <div className="connect-link-row">
             <button type="button" className="learn-more-link connect-learn-more" onClick={onLearnMore}>Learn more</button>
             <button type="button" className="button connect-learn-more" onClick={onWiki}>Yourself</button>
+          </div>
+        </section>
+
+        <section className="permission-list consent-summary-card">
+          <div>
+            <p className="eyebrow">Context request</p>
+            <h3>What this app is asking Memact for</h3>
+            <p className="muted">Memact shares only approved memory. If something is missing, the app should ask you normally.</p>
+          </div>
+          <div className="cap-consent-grid">
+            <ConsentMiniList title="Asked for" items={requestedContext} empty="This app has not listed exact memory fields yet." />
+            <ConsentMiniList title="Memact can share" items={shareableContext} empty="Nothing is prefilled yet. You can still approve limited access." />
+            <ConsentMiniList title="Still needed" items={missingContext} empty="No missing fields were listed." />
+            <ConsentMiniList title="Won't share" items={["Full profile", "Raw activity events", "Unapproved memory"]} />
           </div>
         </section>
 
@@ -116,6 +133,35 @@ function scopeLabel(scopes, scope) {
 
 function categoryLabel(categories, category) {
   return categories?.[category]?.label || category
+}
+
+function ConsentMiniList({ title, items = [], empty = "" }) {
+  const safeItems = normalizeDisclosureList(items)
+  return (
+    <div className="mini-row cap-consent-card">
+      <strong>{title}</strong>
+      {safeItems.length ? (
+        <ul>
+          {safeItems.slice(0, 5).map((item) => <li key={item}>{item}</li>)}
+        </ul>
+      ) : <small>{empty}</small>}
+    </div>
+  )
+}
+
+function normalizeRequestedContext(value) {
+  return (Array.isArray(value) ? value : [])
+    .map((item) => typeof item === "string" ? item : item?.description || item?.field_hint || "")
+    .map((item) => String(item || "").trim())
+    .filter(Boolean)
+}
+
+function normalizeDisclosureList(value) {
+  if (!Array.isArray(value)) return []
+  return value
+    .map((item) => typeof item === "string" ? item : item?.description || item?.field_path || item?.title || "")
+    .map((item) => String(item || "").trim())
+    .filter(Boolean)
 }
 
 function getFaviconUrl(value) {
