@@ -133,13 +133,7 @@ export function WikiPage({
             ) : <span className="muted">Developer URL not provided.</span>}
           </div>
         </div>
-      ) : (
-        <section className="panel wiki-start-panel">
-          <p className="eyebrow">Private by default</p>
-          <h3>Yourself starts with what you add or approve.</h3>
-          <p className="muted">Apps can suggest memory only after consent. You decide what becomes accepted memory.</p>
-        </section>
-      )}
+      ) : null}
 
       <section className="wiki-overview-grid" aria-label="Yourself overview">
         <div className="wiki-overview-card">
