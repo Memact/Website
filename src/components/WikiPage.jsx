@@ -105,20 +105,23 @@ export function WikiPage({
   const groupedEntries = groupEntriesByCategory(filteredEntries)
 
   return (
-    <section className="panel transparency-panel wiki-panel">
-      <div className="transparency-hero wiki-hero">
+    <section className="wiki-page">
+      <div className="panel wiki-hero-panel">
         <div>
           <p className="eyebrow">Yourself</p>
           <h2>{app?.id ? `${appName}'s access to Yourself` : "What apps know about you"}</h2>
-          <p className="muted">A private, searchable memory page you can review, edit, and share only when you choose.</p>
+          <p className="muted">A private page for memory about you. Add what is true, approve what apps suggest, and delete what should not stay.</p>
         </div>
-        <button type="button" className="button wiki-add-button" onClick={() => setShowAddMemory((value) => !value)}>
-          Add memory
-        </button>
+        <div className="wiki-hero-actions">
+          <button type="button" className="button wiki-add-button" onClick={() => setShowAddMemory((value) => !value)}>
+            Add context
+          </button>
+          <button type="button" className="ghost" onClick={onManageConsent}>Settings</button>
+        </div>
       </div>
 
       {app?.id ? (
-        <div className="app-identity connect-identity">
+        <div className="panel app-identity connect-identity wiki-app-panel">
           <span className="app-avatar" aria-hidden="true">
             {faviconUrl ? <img src={faviconUrl} alt="" onError={(event) => { event.currentTarget.hidden = true }} /> : <span>{appInitial(appName)}</span>}
             {faviconUrl ? <span>{appInitial(appName)}</span> : null}
@@ -131,19 +134,37 @@ export function WikiPage({
           </div>
         </div>
       ) : (
-        <section className="permission-list wiki-share-card">
+        <section className="panel wiki-start-panel">
           <p className="eyebrow">Private by default</p>
           <h3>Yourself starts with what you add or approve.</h3>
-          <p className="muted">Apps and Memact can propose memory only after consent. You decide what becomes accepted memory.</p>
+          <p className="muted">Apps can suggest memory only after consent. You decide what becomes accepted memory.</p>
         </section>
       )}
 
+      <section className="wiki-overview-grid" aria-label="Yourself overview">
+        <div className="wiki-overview-card">
+          <span>Accepted</span>
+          <strong>{visibleEntries.length}</strong>
+          <small>entries you approved or added</small>
+        </div>
+        <div className="wiki-overview-card">
+          <span>Waiting</span>
+          <strong>{visibleProposals.length}</strong>
+          <small>app suggestions to review</small>
+        </div>
+        <div className="wiki-overview-card">
+          <span>Default</span>
+          <strong>Private</strong>
+          <small>nothing public unless you choose</small>
+        </div>
+      </section>
+
       {showAddMemory ? (
-        <form className="permission-list wiki-add-form" onSubmit={submitManualEntry}>
+        <form className="panel wiki-add-form" onSubmit={submitManualEntry}>
           <div>
-            <p className="eyebrow">Manual memory</p>
-            <h3>Add memory yourself</h3>
-            <p className="muted">User-added memory starts private, accepted, and verified by you.</p>
+            <p className="eyebrow">Add context</p>
+            <h3>Add something apps should know.</h3>
+            <p className="muted">What you add starts private, accepted, and verified by you.</p>
           </div>
           <div className="wiki-form-grid">
             <label>
@@ -185,7 +206,7 @@ export function WikiPage({
       ) : null}
 
       {app?.id ? (
-        <section className="permission-list transparency-controls-panel">
+        <section className="panel transparency-controls-panel wiki-controls-panel">
           <div className="transparency-control-head">
             <div>
               <p className="eyebrow">Controls</p>
@@ -234,11 +255,11 @@ export function WikiPage({
         </section>
       ) : null}
 
-      <section className="permission-list wiki-entry-panel">
+      <section className="panel wiki-entry-panel wiki-main-panel">
         <div className="wiki-section-head">
           <div>
-            <p className="eyebrow">Memory</p>
-            <h3>Accepted memory</h3>
+            <p className="eyebrow">Your entries</p>
+            <h3>Accepted context</h3>
           </div>
           <span className="badge">{visibleEntries.length}</span>
         </div>
@@ -270,16 +291,23 @@ export function WikiPage({
               </div>
             </section>
           ))}
-          {!visibleEntries.length ? <p className="muted">No accepted memory yet. Add memory yourself or approve a proposed memory when one appears.</p> : null}
-          {visibleEntries.length > 0 && !filteredEntries.length ? <p className="muted">No memory matches that search.</p> : null}
+          {!visibleEntries.length ? (
+            <div className="wiki-empty-state">
+              <p className="eyebrow">Nothing accepted yet</p>
+              <h4>Add your first entry.</h4>
+              <p className="muted">Try a simple one: preferred name, dietary restriction, study goal, project note, or shopping preference.</p>
+              <button type="button" className="ghost" onClick={() => setShowAddMemory(true)}>Add context</button>
+            </div>
+          ) : null}
+          {visibleEntries.length > 0 && !filteredEntries.length ? <p className="muted">No entry matches that search.</p> : null}
         </div>
       </section>
 
-      <section className="permission-list wiki-entry-panel">
+      <section className="panel wiki-entry-panel wiki-main-panel">
         <div className="wiki-section-head">
           <div>
-            <p className="eyebrow">Proposed writes</p>
-            <h3>Important writes need your approval</h3>
+            <p className="eyebrow">Review</p>
+            <h3>Suggestions from apps</h3>
           </div>
           <span className="badge">{visibleProposals.length}</span>
         </div>
@@ -293,7 +321,7 @@ export function WikiPage({
               onEdit={() => acceptProposal({ ...entry, source_label: "Edited and accepted by you" })}
             />
           ))}
-          {!visibleProposals.length ? <p className="muted">No app or Memact proposals are waiting right now.</p> : null}
+          {!visibleProposals.length ? <p className="muted">No app suggestions are waiting right now.</p> : null}
         </div>
       </section>
 
@@ -316,12 +344,12 @@ export function WikiPage({
         </div>
       ) : null}
 
-      <div className="connect-actions">
+      {app?.id ? <div className="connect-actions">
         {app?.id ? <button type="button" onClick={onBackToConsent}>Back to consent</button> : null}
-        <button type="button" className={app?.id ? "ghost" : ""} onClick={onManageConsent}>Open Settings</button>
-      </div>
+        <button type="button" className="ghost" onClick={onManageConsent}>Open Settings</button>
+      </div> : null}
 
-      <section className="permission-list wiki-share-card">
+      <section className="panel wiki-share-card">
         <p className="eyebrow">Sharing</p>
         <h3>Private unless you create a share link.</h3>
         <p className="muted">A username page should only show entries you explicitly make shareable or public.</p>
@@ -531,7 +559,6 @@ function groupEntriesByCategory(entries) {
 }
 
 function normalizeSourceType(value) {
-  if (value === "playground_feature") return "memact_feature"
   return ["user", "app", "memact", "memact_feature"].includes(value) ? value : "app"
 }
 

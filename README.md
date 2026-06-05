@@ -12,7 +12,6 @@ Memact helps people see what apps know about them and control it.
 - API keys.
 - Consent screens.
 - Yourself: the user memory page.
-- Ourselves: the public/social memory surface.
 - Context UI.
 - Developer integration docs.
 - Help and Learn pages.
@@ -48,7 +47,6 @@ Authenticated dashboard:
 
 - Dashboard shows apps, permissions, API keys, usage statistics, and Wiki links for active keys.
 - `/Yourself` shows what apps know about the user and lets the user add, edit, reject, delete, or share selected memory.
-- `/Ourselves` is the public/social memory surface.
 - Settings shows profile, connected apps, privacy, sharing, and account controls.
 - Help uses short FAQs for users and developers.
 

@@ -2369,13 +2369,36 @@ input:-webkit-autofill:focus {
   padding: 16px;
 }
 
-.wiki-panel {
-  gap: 14px;
+.wiki-page {
+  display: grid;
+  gap: 12px;
 }
 
-.wiki-hero {
-  grid-template-columns: minmax(0, 1fr) max-content;
-  align-items: start;
+.wiki-hero-panel {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px;
+}
+
+.wiki-hero-panel h2 {
+  margin: 0;
+  font-size: clamp(30px, 5vw, 54px);
+  line-height: 0.98;
+  letter-spacing: -0.06em;
+}
+
+.wiki-hero-panel .muted {
+  max-width: 720px;
+  margin-top: 12px;
+}
+
+.wiki-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .wiki-add-button {
@@ -2383,10 +2406,56 @@ input:-webkit-autofill:focus {
   white-space: nowrap;
 }
 
+.wiki-app-panel,
+.wiki-start-panel,
 .wiki-add-form,
 .wiki-entry-panel,
-.wiki-extension-card {
+.wiki-share-card,
+.wiki-controls-panel {
   background: var(--surface-1);
+}
+
+.wiki-start-panel,
+.wiki-add-form,
+.wiki-entry-panel,
+.wiki-share-card,
+.wiki-controls-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.wiki-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.wiki-overview-card {
+  display: grid;
+  gap: 7px;
+  min-height: 118px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  background: var(--surface-1);
+}
+
+.wiki-overview-card span,
+.wiki-overview-card small {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.wiki-overview-card strong {
+  color: var(--text);
+  font-size: 28px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.wiki-main-panel {
+  padding: 18px;
 }
 
 .wiki-extension-card {
@@ -2409,16 +2478,16 @@ input:-webkit-autofill:focus {
 
 .wiki-index {
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
 .wiki-category-section {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 14px;
-  background: rgba(255, 255, 255, 0.018);
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.022);
 }
 
 .wiki-category-head {
@@ -2453,15 +2522,15 @@ input:-webkit-autofill:focus {
 
 .wiki-entry-list {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .wiki-entry-card {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 14px;
+  padding: 14px 15px;
   background: rgba(255, 255, 255, 0.025);
 }
 
@@ -2472,7 +2541,7 @@ input:-webkit-autofill:focus {
 
 .wiki-entry-app,
 .wiki-entry-memact,
-.wiki-entry-playground_feature {
+.wiki-entry-memact_feature {
   background: var(--surface-1);
 }
 
@@ -2513,6 +2582,20 @@ input:-webkit-autofill:focus {
   justify-content: flex-end;
 }
 
+.wiki-empty-state {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.wiki-empty-state h4 {
+  margin: 0;
+  font-size: 20px;
+}
+
 .wiki-entry-actions select {
   width: auto;
   min-width: 150px;
@@ -2535,68 +2618,6 @@ input:-webkit-autofill:focus {
   display: block;
   color: var(--text);
   font-size: 13px;
-}
-
-.ourselves-page {
-  display: grid;
-  gap: 16px;
-}
-
-.ourselves-hero,
-.ourselves-compose,
-.ourselves-feed {
-  display: grid;
-  gap: 14px;
-}
-
-.ourselves-hero h2,
-.ourselves-compose h3,
-.ourselves-feed h3 {
-  margin: 0;
-}
-
-.ourselves-form {
-  grid-template-columns: minmax(180px, 0.35fr) minmax(0, 1fr);
-}
-
-.ourselves-post-list {
-  display: grid;
-  gap: 10px;
-}
-
-.ourselves-post {
-  display: grid;
-  gap: 8px;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface-1);
-}
-
-.ourselves-post h4 {
-  margin: 0;
-  font-size: 18px;
-  line-height: 1.2;
-}
-
-.ourselves-post-metrics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.ourselves-post-metrics span {
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 6px 9px;
-  color: var(--muted);
-  background: rgba(255, 255, 255, 0.025);
-  font-size: 12px;
-  font-weight: 750;
-}
-
-.ourselves-empty-post {
-  border-style: dashed;
 }
 
 .public-wiki-footer {
@@ -2879,6 +2900,7 @@ input:-webkit-autofill:focus {
   .access-layout,
   .grid,
   .account-type-switcher,
+  .wiki-overview-grid,
   .connect-grid,
   .transparency-grid,
   .transparency-choice-grid {
@@ -2928,8 +2950,17 @@ input:-webkit-autofill:focus {
 
   .connect-hero,
   .transparency-hero,
+  .wiki-hero-panel,
   .transparency-control-head {
     display: grid;
+  }
+
+  .wiki-hero-actions {
+    justify-content: stretch;
+  }
+
+  .wiki-hero-actions button {
+    width: 100%;
   }
 
   .connect-link-row {
@@ -3008,8 +3039,7 @@ input:-webkit-autofill:focus {
 
   .account-grid { grid-template-columns: 1fr; }
 
-  .user-settings-grid,
-  .ourselves-form {
+  .user-settings-grid {
     grid-template-columns: 1fr;
   }
 

@@ -21,7 +21,6 @@ import { LearnPanel } from "./components/LearnPanel.jsx"
 import { Landing } from "./components/Landing.jsx"
 import { DeveloperStatsPanel } from "./components/DeveloperStatsPanel.jsx"
 import { UserDashboard } from "./components/UserDashboard.jsx"
-import { OurselvesPanel } from "./components/OurselvesPanel.jsx"
 import { refreshDashboard, useDashboardState } from "./hooks/useDashboardState.js"
 import { isConnectPage, isProtectedPage, normalizePortalPath, pageFromLocation, routeForPage } from "./portal-routes.js"
 import { getDisplayName, getUserEmail } from "./user-display.js"
@@ -1543,8 +1542,6 @@ function App() {
           isConsentShell={isConsentShell}
           onRevokeConsent={handleRevokeConsent}
         />
-      ) : session && currentPage === "ourselves" && accountType === ACCOUNT_TYPES.user ? (
-        <OurselvesPanel displayName={getDisplayName(user, authUser)} />
       ) : session && currentPage === "wiki" ? (
         <WikiPage
           app={connectRequest?.app_id && connectDetails?.app ? connectDetails.app : null}
@@ -1757,7 +1754,6 @@ function shouldOfferPasswordSetup(user) {
 function labelForPortalTab(page, accountType = ACCOUNT_TYPES.developer) {
   if (accountType === ACCOUNT_TYPES.user) {
     if (page === "wiki" || page === "data" || page === "access") return "Yourself"
-    if (page === "ourselves") return "Ourselves"
     if (page === "account") return "Settings"
     if (page === "help") return "Help"
     if (page === "connect") return "Connect"
@@ -1771,7 +1767,6 @@ function labelForPortalTab(page, accountType = ACCOUNT_TYPES.developer) {
   if (page === "help") return "Help"
   if (page === "connect") return "Connect"
   if (page === "wiki" || page === "data") return "Wiki"
-  if (page === "ourselves") return "Ourselves"
   if (page === "publicWiki") return "Public"
   if (page === "learn") return "Learn"
   return "Memact"
