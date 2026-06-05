@@ -2591,6 +2591,11 @@ input:-webkit-autofill:focus {
   background: rgba(255, 255, 255, 0.018);
 }
 
+.wiki-empty-state button {
+  justify-self: start;
+  width: auto;
+}
+
 .wiki-empty-state h4 {
   margin: 0;
   font-size: 20px;
@@ -2899,7 +2904,6 @@ input:-webkit-autofill:focus {
   .landing-with-auth,
   .access-layout,
   .grid,
-  .account-type-switcher,
   .connect-grid,
   .transparency-grid,
   .transparency-choice-grid {
@@ -3180,6 +3184,10 @@ input:-webkit-autofill:focus {
   }
 
   .wiki-overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-type-switcher {
     grid-template-columns: 1fr;
   }
 }
