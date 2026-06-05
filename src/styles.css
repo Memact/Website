@@ -1129,6 +1129,23 @@ input[type="password"]::-ms-clear {
 .help-panel,
 .app-workspace { gap: 14px; }
 
+.help-panel > div:first-child {
+  gap: 10px;
+}
+
+.help-panel h2 {
+  margin: 0;
+  max-width: 720px;
+  font-size: clamp(30px, 5vw, 54px);
+  line-height: 0.98;
+  letter-spacing: -0.06em;
+}
+
+.help-panel > div:first-child .muted {
+  max-width: 720px;
+  margin: 2px 0 0;
+}
+
 .help-intro { margin: 0; }
 
 .faq-section {
