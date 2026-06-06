@@ -208,10 +208,10 @@ export function WikiPage({
                 onChange={(value) => updateDraft("visibility", value)}
               />
             </div>
-            <label>
-              Optional expiry date
-              <input value={draft.expires_at} type="date" onChange={(event) => updateDraft("expires_at", event.target.value)} />
-            </label>
+            <div className="wiki-field">
+              <span>Optional expiry date</span>
+              <MemactDatePicker value={draft.expires_at} onChange={(value) => updateDraft("expires_at", value)} />
+            </div>
             <label className="wiki-form-wide">
               Optional source note
               <input value={draft.source_note} placeholder="Why are you adding this?" onChange={(event) => updateDraft("source_note", event.target.value)} />
@@ -443,6 +443,104 @@ function MemactSelect({ label, value, options, onChange, compact = false }) {
       </div>
     </details>
   )
+}
+
+function MemactDatePicker({ value, onChange }) {
+  const detailsRef = useRef(null)
+  const selectedDate = parseIsoDate(value)
+  const initialMonth = selectedDate || new Date()
+  const [viewYear, setViewYear] = useState(initialMonth.getFullYear())
+  const [viewMonth, setViewMonth] = useState(initialMonth.getMonth())
+  const days = buildCalendarDays(viewYear, viewMonth)
+  const monthLabel = new Intl.DateTimeFormat("en", { month: "long", year: "numeric" }).format(new Date(viewYear, viewMonth, 1))
+
+  const moveMonth = (amount) => {
+    const next = new Date(viewYear, viewMonth + amount, 1)
+    setViewYear(next.getFullYear())
+    setViewMonth(next.getMonth())
+  }
+  const chooseDate = (day) => {
+    onChange(toIsoDate(new Date(viewYear, viewMonth, day)))
+    detailsRef.current?.removeAttribute("open")
+  }
+  const clearDate = () => {
+    onChange("")
+    detailsRef.current?.removeAttribute("open")
+  }
+
+  return (
+    <details className="memact-date-picker" ref={detailsRef}>
+      <summary className="memact-date-trigger" aria-label="Choose optional expiry date">
+        <span>{value ? formatDateLabel(value) : "dd-mm-yyyy"}</span>
+        <span className="memact-calendar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M7 3.75v3M17 3.75v3M4.75 9.25h14.5M6.25 5.75h11.5c.83 0 1.5.67 1.5 1.5v10.5c0 .83-.67 1.5-1.5 1.5H6.25c-.83 0-1.5-.67-1.5-1.5V7.25c0-.83.67-1.5 1.5-1.5Z" />
+          </svg>
+        </span>
+      </summary>
+      <div className="memact-date-menu">
+        <div className="memact-date-head">
+          <button type="button" className="ghost" onClick={() => moveMonth(-1)} aria-label="Previous month">&lt;</button>
+          <strong>{monthLabel}</strong>
+          <button type="button" className="ghost" onClick={() => moveMonth(1)} aria-label="Next month">&gt;</button>
+        </div>
+        <div className="memact-date-weekdays" aria-hidden="true">
+          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => <span key={day}>{day}</span>)}
+        </div>
+        <div className="memact-date-grid">
+          {days.map((day, index) => day ? (
+            <button
+              type="button"
+              className={isSameIsoDate(value, viewYear, viewMonth, day) ? "is-active" : ""}
+              key={`${day}-${index}`}
+              onClick={() => chooseDate(day)}
+            >
+              {day}
+            </button>
+          ) : <span key={`empty-${index}`} aria-hidden="true" />)}
+        </div>
+        <button type="button" className="ghost memact-date-clear" onClick={clearDate}>Clear date</button>
+      </div>
+    </details>
+  )
+}
+
+function buildCalendarDays(year, month) {
+  const firstDay = new Date(year, month, 1).getDay()
+  const leadingEmptyDays = (firstDay + 6) % 7
+  const totalDays = new Date(year, month + 1, 0).getDate()
+  const days = [
+    ...Array.from({ length: leadingEmptyDays }, () => null),
+    ...Array.from({ length: totalDays }, (_, index) => index + 1)
+  ]
+  while (days.length % 7 !== 0) days.push(null)
+  return days
+}
+
+function parseIsoDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ""))) return null
+  const [year, month, day] = value.split("-").map(Number)
+  const date = new Date(year, month - 1, day)
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null
+  return date
+}
+
+function toIsoDate(date) {
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`
+}
+
+function formatDateLabel(value) {
+  const date = parseIsoDate(value)
+  if (!date) return "dd-mm-yyyy"
+  return `${pad2(date.getDate())}-${pad2(date.getMonth() + 1)}-${date.getFullYear()}`
+}
+
+function isSameIsoDate(value, year, month, day) {
+  return value === toIsoDate(new Date(year, month, day))
+}
+
+function pad2(value) {
+  return String(value).padStart(2, "0")
 }
 
 function WikiProposalCard({ entry, onAccept, onEdit, onReject }) {
