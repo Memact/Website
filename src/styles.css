@@ -2900,6 +2900,43 @@ input:-webkit-autofill:focus {
   gap: 12px;
 }
 
+.wiki-section-head {
+  align-items: center;
+}
+
+.wiki-section-head > div {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.wiki-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: end;
+  min-width: 52px;
+  min-height: 52px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 0 14px;
+  color: var(--text);
+  background: var(--surface-2);
+  font-size: 24px;
+  font-weight: 850;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.wiki-count-badge-small {
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 14px;
+  padding: 0 10px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
 .wiki-entry-list {
   display: grid;
   gap: 8px;
@@ -3568,10 +3605,22 @@ input:-webkit-autofill:focus {
     grid-template-columns: 1fr;
   }
 
-  .wiki-section-head,
+  .wiki-section-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    align-items: center;
+  }
+
   .wiki-entry-main {
     display: grid;
     align-items: stretch;
+  }
+
+  .wiki-count-badge {
+    min-width: 46px;
+    min-height: 46px;
+    border-radius: 16px;
+    font-size: 22px;
   }
 
   .account-type-switcher {

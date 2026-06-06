@@ -279,7 +279,7 @@ export function WikiPage({
             <p className="eyebrow">Your entries</p>
             <h3>Accepted context</h3>
           </div>
-          <span className="badge">{visibleEntries.length}</span>
+          <span className="wiki-count-badge" aria-label={`${visibleEntries.length} accepted entries`}>{visibleEntries.length}</span>
         </div>
         <label className="wiki-search">
           Search Yourself
@@ -295,7 +295,7 @@ export function WikiPage({
             <section className="wiki-category-section" key={group.category}>
               <div className="wiki-category-head">
                 <h4>{group.category}</h4>
-                <span className="badge">{group.entries.length}</span>
+                <span className="wiki-count-badge wiki-count-badge-small" aria-label={`${group.entries.length} entries in ${group.category}`}>{group.entries.length}</span>
               </div>
               <div className="wiki-entry-list">
                 {group.entries.map((entry) => (
@@ -328,7 +328,7 @@ export function WikiPage({
               <p className="eyebrow">Review</p>
               <h3>Suggestions from apps</h3>
             </div>
-            <span className="badge">{visibleProposals.length}</span>
+            <span className="wiki-count-badge" aria-label={`${visibleProposals.length} app suggestions`}>{visibleProposals.length}</span>
           </div>
           <div className="wiki-entry-list">
             {visibleProposals.map((entry) => (
