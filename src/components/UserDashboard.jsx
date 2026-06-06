@@ -40,10 +40,8 @@ export function UserDashboard({ consents = [], apps = [], onRevokeConsent, isCon
             </section>
           ) : null}
         </div>
-      </section>
-
       {revokedConsents.length ? (
-        <section className="panel">
+        <section className="user-dashboard-subsection">
           <p className="eyebrow">History</p>
           <h2>Removed app access.</h2>
           <div className="user-consent-list">
@@ -56,6 +54,7 @@ export function UserDashboard({ consents = [], apps = [], onRevokeConsent, isCon
           </div>
         </section>
       ) : null}
+      </section>
     </section>
   )
 }

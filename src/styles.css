@@ -506,7 +506,7 @@ p { margin-top: 0; }
 .stats-page > .panel:first-child > h2,
 .user-dashboard > .panel:first-child > h2,
 .help-panel h2,
-.wiki-hero-panel h2 {
+.wiki-page > .wiki-hero-panel h2 {
   margin: 0;
   max-width: 860px;
   font-size: clamp(30px, 5vw, 54px);
@@ -879,6 +879,15 @@ input[type="password"]::-ms-clear {
   align-items: stretch;
   gap: 14px;
   grid-template-columns: 1fr;
+}
+
+.dashboard-shell-panel {
+  padding: 24px;
+}
+
+.dashboard-shell-head {
+  display: grid;
+  gap: 14px;
 }
 
 .dashboard-tutorial-panel {
@@ -1650,6 +1659,15 @@ input:-webkit-autofill:focus {
   min-width: 0;
 }
 
+.account-panel > .identity-card {
+  margin-top: 14px;
+}
+
+.identity-card > div {
+  display: grid;
+  gap: 6px;
+}
+
 .identity-card h2 {
   line-height: 1.12;
   margin-bottom: 0;
@@ -2261,7 +2279,6 @@ input:-webkit-autofill:focus {
   font-weight: 850;
 }
 
-.wiki-link-card,
 .playground-hero-panel,
 .playground-store-panel,
 .feature-store-card {
@@ -2270,32 +2287,19 @@ input:-webkit-autofill:focus {
   background: var(--surface-1);
 }
 
-.wiki-link-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 14px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018)),
-    var(--surface-1);
-}
-
-.wiki-link-card h3 {
-  margin: 0;
-  font-size: 18px;
-  letter-spacing: -0.02em;
-}
-
-.wiki-link-button {
-  width: auto;
-  white-space: nowrap;
-}
-
 .stats-page,
 .user-dashboard {
   display: grid;
   gap: 16px;
+}
+
+.stats-subsection,
+.user-dashboard-subsection {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
 }
 
 .stats-card-grid {
@@ -2465,12 +2469,16 @@ input:-webkit-autofill:focus {
   gap: 12px;
 }
 
+.wiki-shell-panel {
+  padding: 24px;
+}
+
 .wiki-hero-panel {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 18px;
-  padding: 24px;
+  padding: 0;
 }
 
 .wiki-hero-panel h2 {
@@ -2507,6 +2515,9 @@ input:-webkit-autofill:focus {
 .wiki-entry-panel,
 .wiki-share-card,
 .wiki-controls-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
   background: var(--surface-1);
 }
 
@@ -3149,7 +3160,6 @@ input:-webkit-autofill:focus {
     grid-template-columns: 1fr;
   }
 
-  .wiki-link-card,
   .feature-card-actions,
   .wiki-hero {
     display: grid;

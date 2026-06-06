@@ -127,8 +127,8 @@ export function WikiPage({
   const hasShareableEntries = visibleEntries.some((entry) => entry.visibility === "shareable")
 
   return (
-    <section className="wiki-page">
-      <div className="panel wiki-hero-panel">
+    <section className="panel wiki-page wiki-shell-panel">
+      <div className="wiki-hero-panel">
         <div>
           <p className="eyebrow">Yourself</p>
           <h2>{app?.id ? `${appName}'s access to Yourself` : "What apps know about you"}</h2>
@@ -142,7 +142,7 @@ export function WikiPage({
       </div>
 
       {app?.id ? (
-        <div className="panel app-identity connect-identity wiki-app-panel">
+        <div className="app-identity connect-identity wiki-app-panel">
           <span className="app-avatar" aria-hidden="true">
             {faviconUrl ? <img src={faviconUrl} alt="" onError={(event) => { event.currentTarget.hidden = true }} /> : <span>{appInitial(appName)}</span>}
             {faviconUrl ? <span>{appInitial(appName)}</span> : null}
@@ -175,7 +175,7 @@ export function WikiPage({
       </section>
 
       {showAddMemory ? (
-        <form className="panel wiki-add-form" ref={addMemoryRef} onSubmit={submitManualEntry}>
+        <form className="wiki-add-form" ref={addMemoryRef} onSubmit={submitManualEntry}>
           <div>
             <p className="eyebrow">Add context</p>
             <h3>Add something apps should know.</h3>
@@ -224,7 +224,7 @@ export function WikiPage({
       ) : null}
 
       {app?.id ? (
-        <section className="panel transparency-controls-panel wiki-controls-panel">
+        <section className="transparency-controls-panel wiki-controls-panel">
           <div className="transparency-control-head">
             <div>
               <p className="eyebrow">Controls</p>
@@ -251,7 +251,7 @@ export function WikiPage({
                     </span>
                   </label>
                 ))}
-                {!scopeOptions.length ? <p className="muted">No actions were attached to this Yourself link.</p> : null}
+                {!scopeOptions.length ? <p className="muted">No actions were attached to this access request.</p> : null}
               </div>
             </div>
             <div className="transparency-choice-group">
@@ -266,14 +266,14 @@ export function WikiPage({
                     </span>
                   </label>
                 ))}
-                {!categoryOptions.length ? <p className="muted">No activity types were attached to this Yourself link.</p> : null}
+                {!categoryOptions.length ? <p className="muted">No activity types were attached to this access request.</p> : null}
               </div>
             </div>
           </div>
         </section>
       ) : null}
 
-      <section className="panel wiki-entry-panel wiki-main-panel">
+      <section className="wiki-entry-panel wiki-main-panel">
         <div className="wiki-section-head">
           <div>
             <p className="eyebrow">Your entries</p>
@@ -322,7 +322,7 @@ export function WikiPage({
       </section>
 
       {visibleProposals.length ? (
-        <section className="panel wiki-entry-panel wiki-main-panel">
+        <section className="wiki-entry-panel wiki-main-panel">
           <div className="wiki-section-head">
             <div>
               <p className="eyebrow">Review</p>
@@ -368,7 +368,7 @@ export function WikiPage({
         <button type="button" className="ghost" onClick={onManageConsent}>Open Settings</button>
       </div> : null}
 
-      {hasShareableEntries ? <section className="panel wiki-share-card">
+      {hasShareableEntries ? <section className="wiki-share-card">
         <p className="eyebrow">Sharing</p>
         <h3>Private unless you create a share link.</h3>
       </section> : null}

@@ -41,9 +41,7 @@ export function DeveloperStatsPanel({
             </article>
           ))}
         </div>
-      </section>
-
-      <section className="panel">
+      <section className="stats-subsection">
         <p className="eyebrow">Memory proposals</p>
         <h2>Memory writes stay user-controlled.</h2>
         <div className="stats-card-grid">
@@ -68,6 +66,7 @@ export function DeveloperStatsPanel({
             <small>Entries users rejected or deleted.</small>
           </article>
         </div>
+      </section>
       </section>
     </section>
   )

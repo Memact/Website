@@ -135,42 +135,6 @@ export function Dashboard({
 
   return (
     <section className="dashboard">
-      {activeTab === "access" ? (
-        <div className="dashboard-head dashboard-overview panel slim-panel">
-          <div>
-            <p className="eyebrow">Dashboard</p>
-            <h2>{hasApps ? "Build with Memact" : "Create your first app"}</h2>
-          </div>
-          <details
-            className="dashboard-tutorial-panel settings-details"
-            open={showDashboardTutorial}
-            onToggle={(event) => setShowDashboardTutorial(event.currentTarget.open)}
-          >
-            <summary className="settings-trigger">
-              <span className="settings-trigger-text">
-                <span className="account-change-label">Quick tutorial</span>
-                <strong>Set up app access</strong>
-              </span>
-              <Chevron />
-            </summary>
-            <div className="dashboard-tutorial-steps">
-              <div className="mini-row">
-                <strong>1. Create an app</strong>
-                <small>Name the app and choose the activity categories it can use.</small>
-              </div>
-              <div className="mini-row">
-                <strong>2. Save permissions</strong>
-                <small>Pick the scopes that match what the app should use.</small>
-              </div>
-              <div className="mini-row">
-                <strong>3. Create a key</strong>
-                <small>Copy the key once and keep it on your server.</small>
-              </div>
-            </div>
-          </details>
-        </div>
-      ) : null}
-
       {activeTab === "help" ? (
         <HelpPanel />
       ) : activeTab === "account" ? (
@@ -404,7 +368,40 @@ export function Dashboard({
           </section>
         </section>
       ) : (
-        <>
+        <section className="panel dashboard-overview dashboard-shell-panel">
+          <div className="dashboard-shell-head">
+            <div>
+              <p className="eyebrow">Dashboard</p>
+              <h2>{hasApps ? "Build with Memact" : "Create your first app"}</h2>
+            </div>
+            <details
+              className="dashboard-tutorial-panel settings-details"
+              open={showDashboardTutorial}
+              onToggle={(event) => setShowDashboardTutorial(event.currentTarget.open)}
+            >
+              <summary className="settings-trigger">
+                <span className="settings-trigger-text">
+                  <span className="account-change-label">Quick tutorial</span>
+                  <strong>Set up app access</strong>
+                </span>
+                <Chevron />
+              </summary>
+              <div className="dashboard-tutorial-steps">
+                <div className="mini-row">
+                  <strong>1. Create an app</strong>
+                  <small>Name the app and choose the activity categories it can use.</small>
+                </div>
+                <div className="mini-row">
+                  <strong>2. Save permissions</strong>
+                  <small>Pick the scopes that match what the app should use.</small>
+                </div>
+                <div className="mini-row">
+                  <strong>3. Create a key</strong>
+                  <small>Copy the key once and keep it on your server.</small>
+                </div>
+              </div>
+            </details>
+          </div>
           <section id="app-panel" className="panel app-workspace">
             <p className="eyebrow">APPS</p>
             <div className="current-app-block">
@@ -543,16 +540,6 @@ export function Dashboard({
               <div className="stack">
                 {selectedAppId ? (
                   <>
-                    {activeKeys.length ? (
-                      <section className="wiki-link-card" aria-label="Yourself link">
-                        <div>
-                          <p className="eyebrow">Yourself link</p>
-                          <h3>Review this app's memory access.</h3>
-                        </div>
-                        <a className="button wiki-link-button" href={buildPortalWikiUrl(selectedAppId, selectedScopes, selectedAppCategories, selectedApp?.redirect_urls?.[0] || selectedApp?.developer_url || "")}>Open Yourself link</a>
-                      </section>
-                    ) : null}
-
                     <section className="usage-overview" aria-label="Usage statistics">
                       <div className="usage-overview-head">
                         <p className="eyebrow">Usage statistics</p>
@@ -610,30 +597,30 @@ export function Dashboard({
               </div>
             </section>
           </div>
-        </>
-      )}
 
-      {activeTab === "access" && oneTimeKey ? (
-        <section id="one-time-key-panel" className="panel key-panel">
-          <div className="key-panel-head">
-            <p className="eyebrow">Copy now</p>
-            <h2>One-time API key</h2>
-            <p className="muted key-warning">Memact stores only a hash. This raw key cannot be shown again.</p>
-          </div>
-          <div className="key-box">
-            <code>{oneTimeKey}</code>
-            <div className="key-actions">
-              <button type="button" className="button" onClick={onCopyKey}>Copy key</button>
-              <button type="button" className="ghost" onClick={onTestKey}>Test key</button>
-            </div>
-          </div>
-          {apiTestResult ? <p className="notice notice-success" role="status">{apiTestResult}</p> : null}
-          <details className="embed-code">
-            <summary>Embed code</summary>
-            <pre><code>{buildEmbedCode(oneTimeKey, oneTimeKeyScopes, oneTimeKeyCategories, selectedApp)}</code></pre>
-          </details>
+          {oneTimeKey ? (
+            <section id="one-time-key-panel" className="panel key-panel">
+              <div className="key-panel-head">
+                <p className="eyebrow">Copy now</p>
+                <h2>One-time API key</h2>
+                <p className="muted key-warning">Memact stores only a hash. This raw key cannot be shown again.</p>
+              </div>
+              <div className="key-box">
+                <code>{oneTimeKey}</code>
+                <div className="key-actions">
+                  <button type="button" className="button" onClick={onCopyKey}>Copy key</button>
+                  <button type="button" className="ghost" onClick={onTestKey}>Test key</button>
+                </div>
+              </div>
+              {apiTestResult ? <p className="notice notice-success" role="status">{apiTestResult}</p> : null}
+              <details className="embed-code">
+                <summary>Embed code</summary>
+                <pre><code>{buildEmbedCode(oneTimeKey, oneTimeKeyScopes, oneTimeKeyCategories, selectedApp)}</code></pre>
+              </details>
+            </section>
+          ) : null}
         </section>
-      ) : null}
+      )}
     </section>
   )
 }
@@ -693,19 +680,15 @@ function buildEmbedCode(apiKey, scopes = [], categories = [], app = null) {
   const appId = app?.id || "app_id_from_memact_portal"
   const redirectUrl = app?.redirect_urls?.[0] || app?.developer_url || "https://your-app.example.com/memact/callback"
   const connectUrl = buildPortalConnectUrl(appId, scopes, categories, redirectUrl)
-  const wikiUrl = buildPortalWikiUrl(appId, scopes, categories, redirectUrl)
   return `import { createMemactClient } from "@memact/sdk";
 
 // 1. Add the Connect Memact button.
 const memactConnectUrl = "${connectUrl}";
 
-// 2. Add the Yourself link beside consent.
-const memactWikiUrl = "${wikiUrl}";
-
-// 3. After approval, store the returned connection id on your server.
+// 2. After approval, store the returned connection id on your server.
 const connectionId = "connection_id_from_connect_redirect";
 
-// 4. Keep the raw key in server env only.
+// 3. Keep the raw key in server env only.
 // Server env:
 // MEMACT_BASE_URL=https://api.memact.com
 // MEMACT_API_KEY=${apiKey || "mka_key_shown_once"}
@@ -800,14 +783,4 @@ function summarizeUserConsent(consent) {
   if (categoryCount) parts.push(`${categoryCount} ${categoryCount === 1 ? "category" : "categories"}`)
   if (scopeCount) parts.push(`${scopeCount} ${scopeCount === 1 ? "permission" : "permissions"}`)
   return parts.length ? parts.join(" / ") : "Access approved"
-}
-
-function buildPortalWikiUrl(appId, scopes = [], categories = [], redirectUrl = "") {
-  const origin = typeof window !== "undefined" ? window.location.origin : "https://memact.com"
-  const url = new URL("/Yourself", origin)
-  url.searchParams.set("app_id", appId)
-  if (scopes.length) url.searchParams.set("scopes", scopes.join(","))
-  if (categories.length) url.searchParams.set("categories", categories.join(","))
-  if (redirectUrl) url.searchParams.set("redirect_uri", redirectUrl)
-  return url.toString()
 }
