@@ -29,15 +29,15 @@ const YOURSELF_FAQS = [
   },
   {
     question: "What counts as user memory?",
-    answer: "User memory can include preferences, interests, projects, repeated topics, skipped topics, work style, shopping patterns, preferred usernames, public contact details the user approves, and user-written notes."
+    answer: "User memory can include preferences, interests, projects, repeated topics, skipped topics, work style, shopping patterns, preferred usernames, contact details the user approves, and user-written notes."
   },
   {
     question: "Can users edit app-added memory?",
     answer: "Yes. Users can accept, edit, reject, delete, or change visibility for entries."
   },
   {
-    question: "What does \"private, shareable, public\" mean?",
-    answer: "Private stays only in Yourself. Shareable can be shared by link later. Public can appear on a public username page. Private should be the default."
+    question: "What does \"private\" or \"shareable\" mean?",
+    answer: "Private stays only in Yourself. Shareable can be shared by link later. Private should be the default."
   }
 ]
 

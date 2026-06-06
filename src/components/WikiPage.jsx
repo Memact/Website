@@ -1,4 +1,5 @@
-import React, { useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
+import { Chevron } from "./Chevron.jsx"
 
 const WIKI_CATEGORIES = [
   "Reading",
@@ -11,6 +12,11 @@ const WIKI_CATEGORIES = [
   "Project notes",
   "Personal preferences",
   "Other"
+]
+
+const VISIBILITY_OPTIONS = [
+  { value: "private", label: "Private" },
+  { value: "shareable", label: "Shareable" }
 ]
 
 export function WikiPage({
@@ -45,7 +51,22 @@ export function WikiPage({
   const [acceptedProposals, setAcceptedProposals] = useState([])
   const [rejectedProposals, setRejectedProposals] = useState([])
   const [wikiSearch, setWikiSearch] = useState("")
+  const addMemoryRef = useRef(null)
 
+  useEffect(() => {
+    if (!showAddMemory) return
+    window.requestAnimationFrame(() => {
+      addMemoryRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+    })
+  }, [showAddMemory])
+
+  const openAddMemory = () => {
+    if (showAddMemory) {
+      addMemoryRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+      return
+    }
+    setShowAddMemory(true)
+  }
   const toggleScope = (scope) => {
     const nextScopes = safeRequestedScopes.includes(scope)
       ? safeRequestedScopes.filter((item) => item !== scope)
@@ -113,7 +134,7 @@ export function WikiPage({
           <p className="muted">A private page for memory about you. Add what is true, approve what apps suggest, and delete what should not stay.</p>
         </div>
         <div className="wiki-hero-actions">
-          <button type="button" className="button wiki-add-button" onClick={() => setShowAddMemory((value) => !value)}>
+          <button type="button" className="button wiki-add-button" onClick={openAddMemory}>
             Add context
           </button>
           <button type="button" className="ghost" onClick={onManageConsent}>Settings</button>
@@ -149,12 +170,12 @@ export function WikiPage({
         <div className="wiki-overview-card">
           <span>Default</span>
           <strong>Private</strong>
-          <small>nothing public unless you choose</small>
+          <small>shareable only when you choose</small>
         </div>
       </section>
 
       {showAddMemory ? (
-        <form className="panel wiki-add-form" onSubmit={submitManualEntry}>
+        <form className="panel wiki-add-form" ref={addMemoryRef} onSubmit={submitManualEntry}>
           <div>
             <p className="eyebrow">Add context</p>
             <h3>Add something apps should know.</h3>
@@ -165,24 +186,28 @@ export function WikiPage({
               Title
               <input value={draft.title} placeholder="I prefer concise summaries" onChange={(event) => updateDraft("title", event.target.value)} required />
             </label>
-            <label>
-              Category
-              <select value={draft.category} onChange={(event) => updateDraft("category", event.target.value)}>
-                {WIKI_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
-              </select>
-            </label>
+            <div className="wiki-field">
+              <span>Category</span>
+              <MemactSelect
+                label="Category"
+                value={draft.category}
+                options={WIKI_CATEGORIES.map((category) => ({ value: category, label: category }))}
+                onChange={(value) => updateDraft("category", value)}
+              />
+            </div>
             <label className="wiki-form-wide">
               Value / note
               <textarea value={draft.value} placeholder="Write what apps should remember." onChange={(event) => updateDraft("value", event.target.value)} required />
             </label>
-            <label>
-              Visibility
-              <select value={draft.visibility} onChange={(event) => updateDraft("visibility", event.target.value)}>
-                <option value="private">Private</option>
-                <option value="shareable">Shareable</option>
-                <option value="public">Public</option>
-              </select>
-            </label>
+            <div className="wiki-field">
+              <span>Visibility</span>
+              <MemactSelect
+                label="Visibility"
+                value={draft.visibility}
+                options={VISIBILITY_OPTIONS}
+                onChange={(value) => updateDraft("visibility", value)}
+              />
+            </div>
             <label>
               Optional expiry date
               <input value={draft.expires_at} type="date" onChange={(event) => updateDraft("expires_at", event.target.value)} />
@@ -259,7 +284,7 @@ export function WikiPage({
         </div>
         <label className="wiki-search">
           Search Yourself
-          <span className="playground-search-field">
+          <span className="wiki-search-field">
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <path d="M10.5 17a6.5 6.5 0 1 1 0-13a6.5 6.5 0 0 1 0 13Zm5-1.5 4 4" />
             </svg>
@@ -290,7 +315,7 @@ export function WikiPage({
               <p className="eyebrow">Nothing accepted yet</p>
               <h4>Add your first entry.</h4>
               <p className="muted">Try a simple one: preferred name, dietary restriction, study goal, project note, or shopping preference.</p>
-              <button type="button" className="ghost" onClick={() => setShowAddMemory(true)}>Add context</button>
+              <button type="button" className="ghost" onClick={openAddMemory}>Add context</button>
             </div>
           ) : null}
           {visibleEntries.length > 0 && !filteredEntries.length ? <p className="muted">No entry matches that search.</p> : null}
@@ -346,7 +371,7 @@ export function WikiPage({
       <section className="panel wiki-share-card">
         <p className="eyebrow">Sharing</p>
         <h3>Private unless you create a share link.</h3>
-        <p className="muted">A username page should only show entries you explicitly make shareable or public.</p>
+        <p className="muted">A share link should only show entries you explicitly make shareable.</p>
       </section>
     </section>
   )
@@ -375,14 +400,48 @@ function WikiEntryCard({ entry, onDelete, onVisibility }) {
       <WikiSignals entry={entry} />
       <div className="wiki-entry-actions">
         <button type="button" className="ghost">Edit</button>
-        <select value={entry.visibility} onChange={(event) => onVisibility(event.target.value)} aria-label={`Change visibility for ${entry.title}`}>
-          <option value="private">Private</option>
-          <option value="shareable">Shareable</option>
-          <option value="public">Public</option>
-        </select>
+        <MemactSelect
+          label={`Change visibility for ${entry.title}`}
+          value={entry.visibility}
+          options={VISIBILITY_OPTIONS}
+          onChange={onVisibility}
+          compact
+        />
         <button type="button" className="ghost danger" onClick={onDelete}>Delete</button>
       </div>
     </article>
+  )
+}
+
+function MemactSelect({ label, value, options, onChange, compact = false }) {
+  const detailsRef = useRef(null)
+  const selected = options.find((option) => option.value === value) || options[0]
+  const chooseOption = (nextValue) => {
+    onChange(nextValue)
+    detailsRef.current?.removeAttribute("open")
+  }
+
+  return (
+    <details className={`memact-select${compact ? " memact-select-compact" : ""}`} ref={detailsRef}>
+      <summary className="memact-select-trigger" aria-label={label}>
+        <span>{selected?.label || value}</span>
+        <Chevron className="memact-select-chevron" />
+      </summary>
+      <div className="memact-select-menu" role="listbox" aria-label={label}>
+        {options.map((option) => (
+          <button
+            type="button"
+            role="option"
+            aria-selected={option.value === value}
+            className={option.value === value ? "is-active" : ""}
+            key={option.value}
+            onClick={() => chooseOption(option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </details>
   )
 }
 

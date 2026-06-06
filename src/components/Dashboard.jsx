@@ -776,8 +776,8 @@ function UserSettingsSections({ apps = [], consents = [], onRevokeConsent }) {
       <section className="user-settings-card">
         <div>
           <p className="eyebrow">Profile</p>
-          <h3>Your public identity starts private.</h3>
-          <p className="muted">Use display name settings below. Your public identity stays private until you choose otherwise.</p>
+          <h3>Your profile starts private.</h3>
+          <p className="muted">Use display name settings below. Your profile stays private until you choose otherwise.</p>
         </div>
       </section>
 
@@ -813,12 +813,12 @@ function UserSettingsSections({ apps = [], consents = [], onRevokeConsent }) {
         <div className="user-settings-card">
           <p className="eyebrow">Privacy</p>
           <h3>Private by default.</h3>
-          <p className="muted">Yourself entries stay private unless you make them shareable or public.</p>
+          <p className="muted">Yourself entries stay private unless you make them shareable.</p>
         </div>
         <div className="user-settings-card">
           <p className="eyebrow">Sharing</p>
           <h3>You choose what leaves Yourself.</h3>
-          <p className="muted">Sharing stays off until you explicitly make an entry shareable or public.</p>
+          <p className="muted">Sharing stays off until you explicitly make an entry shareable.</p>
         </div>
         <div className="user-settings-card">
           <p className="eyebrow">Account</p>
