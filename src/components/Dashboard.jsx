@@ -104,8 +104,8 @@ export function Dashboard({
         ? "Save permissions first."
         : ""
   const appHeading = isCreatingApp
-    ? hasApps ? "Create a new app." : "Create your first app."
-    : selectedApp?.name || "Select an app."
+    ? hasApps ? "Create a new app" : "App setup"
+    : selectedApp?.name || "Select an app"
 
   const provider = getUserProvider(user, authUser)
   const isUserAccount = accountType === "user"
@@ -114,7 +114,6 @@ export function Dashboard({
   const initials = getInitials(displayName, displayEmail)
   const [accountEditor, setAccountEditor] = useState(authFlow === "recovery" || needsPasswordSetup ? "password" : "")
   const [selectedPresetId, setSelectedPresetId] = useState("")
-  const [showDashboardTutorial, setShowDashboardTutorial] = useState(false)
   const showDisplayNameEditor = accountEditor === "display-name"
   const showPasswordEditor = accountEditor === "password"
   const showEmailEditor = accountEditor === "email"
@@ -158,14 +157,12 @@ export function Dashboard({
           </div>
           <section className="password-panel account-editor-panel account-action-panel">
             <div>
-              <p className="eyebrow">Session</p>
               <h2>Sign out</h2>
             </div>
             <button type="button" className="ghost subtle-danger sign-out-button" onClick={onSignOut}>Sign out</button>
           </section>
           <section className="password-panel account-editor-panel account-type-panel">
             <div>
-              <p className="eyebrow">Portal</p>
               <h2>Choose how you use Memact</h2>
             </div>
             {accountTypeSuccess ? <p className="notice notice-success" role="status">{accountTypeSuccess}</p> : null}
@@ -223,7 +220,6 @@ export function Dashboard({
           {showDisplayNameEditor ? (
             <section className="password-panel account-editor-panel display-name-panel">
               <div>
-                <p className="eyebrow">Display name</p>
                 <h2>{hasDisplayName ? "Change your name" : "Set your display name"}</h2>
               </div>
               {displayNameSuccess ? <p className="notice notice-success" role="status">{displayNameSuccess}</p> : null}
@@ -249,7 +245,6 @@ export function Dashboard({
           {displayEmail && showPasswordEditor ? (
             <section className="password-panel account-editor-panel">
               <div>
-                <p className="eyebrow">Password</p>
                 <h2>{authFlow === "recovery" ? "Reset your password" : needsPasswordSetup ? "Set a password" : "Update your password"}</h2>
                 <p className="muted">
                   {authFlow === "recovery"
@@ -297,7 +292,6 @@ export function Dashboard({
           {provider === "email" && showEmailEditor ? (
             <section className="password-panel account-editor-panel email-panel">
               <div>
-                <p className="eyebrow">Email</p>
                 <h2>Change your email</h2>
               </div>
               {emailChangeSuccess ? <p className="notice notice-success" role="status">{emailChangeSuccess}</p> : null}
@@ -323,7 +317,6 @@ export function Dashboard({
           {showInviteEditor ? (
             <section className="password-panel account-editor-panel invite-panel">
               <div>
-                <p className="eyebrow">Invite</p>
                 <h2>Invite someone to Memact</h2>
               </div>
               {inviteSuccess ? <p className="notice notice-success" role="status">{inviteSuccess}</p> : null}
@@ -358,7 +351,6 @@ export function Dashboard({
           </div> : null}
           <section className="password-panel account-editor-panel danger-zone-panel">
             <div>
-              <p className="eyebrow">Delete account</p>
               <h2>Delete your Memact account</h2>
             </div>
             {deleteAccountSuccess ? <p className="notice notice-success" role="status">{deleteAccountSuccess}</p> : null}
@@ -378,33 +370,6 @@ export function Dashboard({
             <div>
               <h2>{hasApps ? "Build with Memact" : "Create your first app"}</h2>
             </div>
-            <details
-              className="dashboard-tutorial-panel settings-details"
-              open={showDashboardTutorial}
-              onToggle={(event) => setShowDashboardTutorial(event.currentTarget.open)}
-            >
-              <summary className="settings-trigger">
-                <span className="settings-trigger-text">
-                  <span className="account-change-label">Quick tutorial</span>
-                  <strong>Set up app access</strong>
-                </span>
-                <Chevron />
-              </summary>
-              <div className="dashboard-tutorial-steps">
-                <div className="mini-row">
-                  <strong>1. Create an app</strong>
-                  <small>Name the app and choose the activity categories it can use.</small>
-                </div>
-                <div className="mini-row">
-                  <strong>2. Save permissions</strong>
-                  <small>Pick the scopes that match what the app should use.</small>
-                </div>
-                <div className="mini-row">
-                  <strong>3. Create a key</strong>
-                  <small>Copy the key once and keep it on your server.</small>
-                </div>
-              </div>
-            </details>
           </div>
           <section id="app-panel" className="panel app-workspace">
             <div className="current-app-block">
@@ -443,8 +408,7 @@ export function Dashboard({
                   <textarea value={newAppDescription} placeholder="Optional: What will this app use Memact for?" onChange={(event) => setNewAppDescription(event.target.value)} />
                 </label>
                 <div>
-                  <p className="eyebrow">Activity categories</p>
-                  <p className="muted">Pick the kinds of memory this app is allowed to ask for or suggest. This keeps access narrow by design.</p>
+                  <h3 className="form-subheader">Memory this app can ask for</h3>
                   <CategoryGrid
                     categories={categories}
                     selected={newAppCategories}
@@ -515,8 +479,7 @@ export function Dashboard({
 
               {presetSuggestions.length > 0 ? (
                 <div className="presets-section">
-                  <p className="eyebrow presets-label">Quick presets</p>
-                  <p className="presets-sub">Apply a preset to match common permission patterns. Scopes update immediately. Save to confirm.</p>
+                  <h3 className="form-subheader presets-label">Quick presets</h3>
                   <div className="presets-inline">
                     {presetSuggestions.map((preset) => (
                       <button
@@ -537,13 +500,12 @@ export function Dashboard({
             </section>
 
             <section id="api-keys-panel" className="panel api-keys-panel">
-              <p className="eyebrow">API keys</p>
+              <h2>API keys</h2>
               <div className="stack">
                 {selectedAppId ? (
                   <>
                     <section className="usage-overview" aria-label="Usage statistics">
                       <div className="usage-overview-head">
-                        <p className="eyebrow">Usage statistics</p>
                         <h3>Key binding and exposure checks</h3>
                       </div>
                       <div className="usage-kpis">
@@ -602,7 +564,6 @@ export function Dashboard({
           {oneTimeKey ? (
             <section id="one-time-key-panel" className="panel key-panel">
               <div className="key-panel-head">
-                <p className="eyebrow">Copy now</p>
                 <h2>One-time API key</h2>
                 <p className="muted key-warning">Memact stores only a hash. This raw key cannot be shown again.</p>
               </div>
@@ -750,7 +711,6 @@ function UserSettingsSections({ apps = [], consents = [], onRevokeConsent }) {
       <section className="user-settings-card">
         <div className="wiki-section-head">
           <div>
-            <p className="eyebrow">Apps</p>
             <h3>Connected apps</h3>
           </div>
           <span className="badge">{activeConsents.length}</span>

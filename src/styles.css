@@ -22,6 +22,8 @@
   --topbar-floating-top: calc(var(--topbar-safe-top) + var(--topbar-gap));
   --topbar-actual-height: var(--topbar-height);
   --panel-header-gap: 16px;
+  --subheader-gap: 8px;
+  --subheader-size: clamp(20px, 2vw, 24px);
   --status-overlay-gap: 10px;
   --status-overlay-stack-offset: 68px;
   color: var(--text);
@@ -503,17 +505,36 @@ p { margin-top: 0; }
   letter-spacing: -0.02em;
 }
 
-.dashboard-overview h2,
+.dashboard-overview > .dashboard-shell-head h2,
 .account-panel > .account-panel-head h2,
 .stats-page > .panel:first-child > h2,
 .user-dashboard > .panel:first-child > h2,
-.help-panel h2,
+.help-panel > div:first-child > h2,
 .wiki-page > .wiki-hero-panel h2 {
   margin: 0;
   max-width: 860px;
-  font-size: clamp(28px, 4.6vw, 48px);
+  font-size: clamp(28px, 4.4vw, 44px);
   line-height: 1.02;
   letter-spacing: -0.06em;
+}
+
+.current-app-block h2,
+.section-copy h2,
+.api-keys-panel > h2,
+.usage-overview-head h3,
+.key-panel-head h2,
+.password-panel h2,
+.permission-list > h3,
+.consent-summary-card h3,
+.transparency-card h3,
+.user-consent-card h3,
+.wiki-section-head h3,
+.wiki-empty-state h4,
+.form-subheader {
+  margin: 0;
+  font-size: var(--subheader-size);
+  line-height: 1.14;
+  letter-spacing: -0.035em;
 }
 
 /* Auth */
@@ -894,19 +915,6 @@ input[type="password"]::-ms-clear {
   margin-bottom: var(--panel-header-gap);
 }
 
-.dashboard-tutorial-panel {
-  width: 100%;
-  grid-column: 1 / -1;
-  overflow: hidden;
-}
-
-.dashboard-tutorial-steps {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  padding: 0 16px 16px;
-}
-
 .panel-external-label {
   margin: 0 0 -8px;
   color: var(--soft);
@@ -955,7 +963,6 @@ input[type="password"]::-ms-clear {
   max-width: 620px;
 }
 
-.section-copy .eyebrow,
 .section-copy h2,
 .section-copy .muted {
   margin: 0;
@@ -1130,7 +1137,6 @@ input[type="password"]::-ms-clear {
   gap: 4px;
 }
 
-.key-panel-head .eyebrow,
 .key-panel-head h2,
 .key-warning {
   margin: 0;
@@ -1171,10 +1177,10 @@ input[type="password"]::-ms-clear {
   margin-bottom: var(--panel-header-gap);
 }
 
-.help-panel h2 {
+.help-panel > div:first-child > h2 {
   margin: 0;
   max-width: 720px;
-  font-size: clamp(28px, 4.6vw, 48px);
+  font-size: clamp(28px, 4.4vw, 44px);
   line-height: 1.02;
   letter-spacing: -0.06em;
 }
@@ -2912,7 +2918,7 @@ input:-webkit-autofill:focus {
 
 .wiki-section-head > div {
   display: grid;
-  gap: 8px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -3435,10 +3441,6 @@ input:-webkit-autofill:focus {
     width: 100%;
   }
 
-  .dashboard-tutorial-steps {
-    grid-template-columns: 1fr;
-  }
-
   .tooltip-wrap { display: flex; width: 100%; }
 
   .compact-form { grid-template-columns: 1fr; }
@@ -3658,14 +3660,8 @@ input:-webkit-autofill:focus {
   gap: 4px;
 }
 
-.usage-overview-head .eyebrow {
-  margin: 0;
-}
-
 .usage-overview-head h3 {
   margin: 0;
-  font-size: 15px;
-  font-weight: 650;
 }
 
 .usage-kpis {
@@ -3759,13 +3755,6 @@ input:-webkit-autofill:focus {
 
 .presets-label {
   margin: 0;
-}
-
-.presets-sub {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.4;
 }
 
 .presets-inline {

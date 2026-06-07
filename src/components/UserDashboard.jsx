@@ -18,7 +18,6 @@ export function UserDashboard({ consents = [], apps = [], onRevokeConsent, isCon
             return (
               <article className="permission-list user-consent-card" key={consent.id}>
                 <div>
-                  <p className="eyebrow">Connected app</p>
                   <h3>{app?.name || "Connected app"}</h3>
                   {app?.description ? <p className="muted">{app.description}</p> : null}
                 </div>

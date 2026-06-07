@@ -20,9 +20,7 @@ export function ConnectPage({ connectRequest, connectDetails, loading, notice, s
       <article className="panel connect-card">
         <div className="connect-hero">
           <div>
-            <p className="eyebrow">Connect app</p>
             <h2>{appName} wants to connect</h2>
-            <p className="muted">Choose what this app can use before you connect it.</p>
           </div>
         </div>
 
@@ -44,7 +42,6 @@ export function ConnectPage({ connectRequest, connectDetails, loading, notice, s
 
         <section className="permission-list consent-summary-card">
           <div>
-            <p className="eyebrow">Before you approve</p>
             <h3>What this connection allows</h3>
           </div>
           <div className="consent-points">
@@ -69,9 +66,7 @@ export function ConnectPage({ connectRequest, connectDetails, loading, notice, s
 
         <section className="permission-list consent-summary-card">
           <div>
-            <p className="eyebrow">Context request</p>
             <h3>What this app is asking Memact for</h3>
-            <p className="muted">Memact shares only approved memory. If something is missing, the app should ask you normally.</p>
           </div>
           <div className="cap-consent-grid">
             <ConsentMiniList title="Asked for" items={requestedContext} empty="This app has not listed exact memory fields yet." />
@@ -83,7 +78,7 @@ export function ConnectPage({ connectRequest, connectDetails, loading, notice, s
 
         <div className="connect-grid">
           <section className="permission-list">
-            <p className="eyebrow">Permissions</p>
+            <h3>Permissions</h3>
             {requestedScopes.length ? requestedScopes.map((scope) => (
               <label className="scope-card consent-choice-card" key={scope}>
                 <input
@@ -99,7 +94,7 @@ export function ConnectPage({ connectRequest, connectDetails, loading, notice, s
             )) : <p className="muted">No permissions requested.</p>}
           </section>
           <section className="permission-list">
-            <p className="eyebrow">Activity categories</p>
+            <h3>Memory types</h3>
             {requestedCategories.length ? requestedCategories.map((category) => (
               <label className="scope-card consent-choice-card" key={category}>
                 <input

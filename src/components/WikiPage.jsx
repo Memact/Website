@@ -225,7 +225,6 @@ export function WikiPage({
         <section className="transparency-controls-panel wiki-controls-panel">
           <div className="transparency-control-head">
             <div>
-              <p className="eyebrow">Controls</p>
               <h3>Choose what this app can use</h3>
             </div>
             <div className="transparency-summary" aria-label="Yourself selection summary">
@@ -275,7 +274,6 @@ export function WikiPage({
         <div className="wiki-section-head">
           <div>
             <h3>Things saved about you</h3>
-            <p className="wiki-section-help">Apps can use these only when you allow them.</p>
           </div>
           <span className="wiki-count-badge" aria-label={`${visibleEntries.length} saved things`}>{visibleEntries.length}</span>
         </div>
@@ -323,7 +321,6 @@ export function WikiPage({
           <div className="wiki-section-head">
             <div>
               <h3>Apps want to add these</h3>
-              <p className="wiki-section-help">Keep, edit, or reject each suggestion.</p>
             </div>
             <span className="wiki-count-badge" aria-label={`${visibleProposals.length} app suggestions`}>{visibleProposals.length}</span>
           </div>
@@ -343,17 +340,15 @@ export function WikiPage({
 
       {app?.id ? (
         <div className="transparency-grid">
-          <WikiDisclosure title="Details this app can send" eyebrow="App can add" items={capturedData} empty="This app has not listed exact fields yet." />
-          <WikiDisclosure title="Memory Memact may save" eyebrow="Yourself may contain" items={createdMemory} empty="Memact may create useful memory from what you allow." />
-          <WikiDisclosure title="Why it wants access" eyebrow="Why" items={dataUses} empty={app?.description || "This app has not provided a plain-language reason yet."} />
-          <WikiDisclosure title="Memory this app may use" eyebrow="Allowed memory" items={allowedFeatures} empty="No allowed memory list was provided." />
+          <WikiDisclosure title="Details this app can send" items={capturedData} empty="This app has not listed exact fields yet." />
+          <WikiDisclosure title="Memory Memact may save" items={createdMemory} empty="Memact may create useful memory from what you allow." />
+          <WikiDisclosure title="Why it wants access" items={dataUses} empty={app?.description || "This app has not provided a plain-language reason yet."} />
+          <WikiDisclosure title="Memory this app may use" items={allowedFeatures} empty="No allowed memory list was provided." />
           <section className="permission-list transparency-card">
-            <p className="eyebrow">Access</p>
             <h3>How long access lasts</h3>
             <p className="muted">{retention}</p>
           </section>
           <section className="permission-list transparency-card">
-            <p className="eyebrow">Disconnect</p>
             <h3>Stop future access</h3>
             <p className="muted">{revocation} Removing app access stops future Memact access for this app.</p>
           </section>
@@ -366,7 +361,6 @@ export function WikiPage({
       </div> : null}
 
       {hasShareableEntries ? <section className="wiki-share-card">
-        <p className="eyebrow">Sharing</p>
         <h3>Private unless you create a share link</h3>
       </section> : null}
     </section>
@@ -639,10 +633,9 @@ function WikiSignals({ entry }) {
   )
 }
 
-function WikiDisclosure({ eyebrow, title, items, empty }) {
+function WikiDisclosure({ title, items, empty }) {
   return (
     <section className="permission-list transparency-card">
-      <p className="eyebrow">{eyebrow}</p>
       <h3>{title}</h3>
       <DisclosureList items={items} empty={empty} />
     </section>

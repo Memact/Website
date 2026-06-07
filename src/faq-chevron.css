@@ -35,8 +35,7 @@
   transition: transform 140ms ease;
 }
 
-.faq-item:hover:not(:has(.faq-chevron:hover)),
-.dashboard-tutorial-panel:hover:not(:has(.faq-chevron:hover)) {
+.faq-item:hover:not(:has(.faq-chevron:hover)) {
   border-color: rgba(255, 255, 255, 0.2);
   background: var(--surface-2);
 }
@@ -47,15 +46,13 @@
   background: var(--surface-3);
 }
 
-.faq-item[open] .faq-chevron,
-.dashboard-tutorial-panel[open] .faq-chevron {
+.faq-item[open] .faq-chevron {
   border-color: rgba(255, 255, 255, 0.36);
   color: var(--text);
   background: var(--surface-3);
 }
 
 .faq-item[open] .faq-chevron .chevron-icon,
-.dashboard-tutorial-panel[open] .faq-chevron .chevron-icon,
 .revoked-history[open] .faq-chevron .chevron-icon,
 .settings-details[open] .faq-chevron .chevron-icon,
 .faq-chevron.is-open .chevron-icon {
