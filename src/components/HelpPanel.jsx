@@ -64,7 +64,7 @@ const DEVELOPER_BASIC_FAQS = [
   },
   {
     question: "What can my app see?",
-    answer: "Only what the user allowed for your app. You can see app-level stats and your app's memory proposals, not the user's full Yourself page."
+    answer: "Only what the user allowed for your app. You can see your app's access, API keys, and memory proposals, not the user's full Yourself page."
   },
   {
     question: "How do scopes and categories work?",

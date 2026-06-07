@@ -512,7 +512,6 @@ export function Dashboard({
                           <strong>{usageStats.lastUsedLabel}</strong>
                         </div>
                       </div>
-                      {usageStats.exposureDetail ? <p className="usage-empty-state muted">{usageStats.exposureDetail}</p> : null}
                     </section>
 
                     {activeKeys.length ? activeKeys.map((key) => (
@@ -609,15 +608,9 @@ function getUsageStats(selectedApp, selectedKeys = [], apps = []) {
     .filter(Boolean)
     .sort()
     .at(-1)
-  const appName = selectedApp?.name || "this app"
   return {
     appsUsingSameKey,
     exposureLabel: exposedKey ? "Review now" : unknownExposure ? "No signal yet" : "Clear",
-    exposureDetail: exposedKey
-      ? "A public exposure signal was reported for this key. Revoke it and create a replacement after removing the leak."
-      : unknownExposure
-        ? `Memact can show exposure checks when the access layer reports them. Until then, keep ${appName}'s raw key server-side and out of public code.`
-        : "",
     lastUsedLabel: lastUsedAt ? formatDate(lastUsedAt) : "No use yet"
   }
 }

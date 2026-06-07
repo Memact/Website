@@ -507,7 +507,6 @@ p { margin-top: 0; }
 
 .dashboard-overview > .dashboard-shell-head h2,
 .account-panel > .account-panel-head h2,
-.stats-page > .panel:first-child > h2,
 .user-dashboard > .panel:first-child > h2,
 .help-panel > div:first-child > h2,
 .wiki-page > .wiki-hero-panel h2 {
@@ -1575,6 +1574,11 @@ input:-webkit-autofill:focus {
   justify-content: space-between;
 }
 
+.api-keys-panel {
+  display: grid;
+  gap: var(--panel-header-gap);
+}
+
 .api-keys-panel .stack { gap: 10px; }
 
 .api-key-row {
@@ -2318,37 +2322,17 @@ input:-webkit-autofill:focus {
   background: var(--surface-1);
 }
 
-.stats-page,
 .user-dashboard {
   display: grid;
   gap: 16px;
 }
 
-.stats-subsection,
 .user-dashboard-subsection {
   display: grid;
   gap: 12px;
   margin-top: 16px;
   border-top: 1px solid var(--border);
   padding-top: 16px;
-}
-
-.stats-card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.stats-card strong {
-  display: block;
-  margin: 4px 0;
-  font-size: clamp(24px, 3vw, 34px);
-  letter-spacing: -0.04em;
-}
-
-.stats-note {
-  margin-top: 14px;
 }
 
 .user-consent-list {
@@ -3666,7 +3650,7 @@ input:-webkit-autofill:focus {
 
 .usage-overview-head {
   display: grid;
-  gap: 4px;
+  gap: var(--subheader-gap);
 }
 
 .usage-overview-head h3 {

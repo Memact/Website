@@ -19,7 +19,6 @@ import { Dashboard } from "./components/Dashboard.jsx"
 import { HelpPanel } from "./components/HelpPanel.jsx"
 import { LearnPanel } from "./components/LearnPanel.jsx"
 import { Landing } from "./components/Landing.jsx"
-import { DeveloperStatsPanel } from "./components/DeveloperStatsPanel.jsx"
 import { UserDashboard } from "./components/UserDashboard.jsx"
 import { refreshDashboard, useDashboardState } from "./hooks/useDashboardState.js"
 import { isConnectPage, isProtectedPage, normalizePortalPath, pageFromLocation, routeForPage } from "./portal-routes.js"
@@ -118,7 +117,7 @@ function App() {
   const [deleteAccountSuccess, setDeleteAccountSuccess] = useState("")
   const [inviteEmail, setInviteEmail] = useState("")
   const [inviteSuccess, setInviteSuccess] = useState("")
-  const { user, apps, apiKeys, consents, featureConnections, status, error, canRetryDashboard } = dashboard
+  const { user, apps, apiKeys, consents, status, error, canRetryDashboard } = dashboard
   const { setStatus, setError, setCanRetryDashboard } = dashboardActions
   const session = authSession?.access_token || ""
   const passwordState = useMemo(() => getPasswordState(setupPassword, setupPasswordConfirm), [setupPassword, setupPasswordConfirm])
@@ -1572,13 +1571,6 @@ function App() {
           onBackToConsent={() => connectRequest?.app_id ? navigateToConnect(connectRequest) : navigateToPage("account")}
           onManageConsent={() => navigateToPage("account")}
         />
-      ) : session && currentPage === "stats" ? (
-        <DeveloperStatsPanel
-          apps={apps}
-          apiKeys={apiKeys}
-          consents={consents}
-          featureConnections={featureConnections}
-        />
       ) : session ? (
         <Dashboard
           activeTab={activeTab}
@@ -1780,7 +1772,6 @@ function labelForPortalTab(page, accountType = ACCOUNT_TYPES.developer) {
   }
 
   if (page === "access") return "Dashboard"
-  if (page === "stats") return "Stats"
   if (page === "account") return "Settings"
   if (page === "help") return "Help"
   if (page === "connect") return "Connect"
