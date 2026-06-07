@@ -141,8 +141,7 @@ export function Dashboard({
         <section className="panel account-panel">
           <div className="account-panel-head">
             <div>
-              <p className="eyebrow">Account</p>
-              <h2>Your Memact account</h2>
+              <h2>Your Memact settings</h2>
             </div>
           </div>
           {isConsentShell ? (
@@ -377,7 +376,6 @@ export function Dashboard({
         <section className="panel dashboard-overview dashboard-shell-panel">
           <div className="dashboard-shell-head">
             <div>
-              <p className="eyebrow">Dashboard</p>
               <h2>{hasApps ? "Build with Memact" : "Create your first app"}</h2>
             </div>
             <details
@@ -409,10 +407,8 @@ export function Dashboard({
             </details>
           </div>
           <section id="app-panel" className="panel app-workspace">
-            <p className="eyebrow">APPS</p>
             <div className="current-app-block">
               <div>
-                <p className="eyebrow">App</p>
                 <h2>{appHeading}</h2>
               </div>
             </div>
@@ -482,7 +478,6 @@ export function Dashboard({
             <section id="permissions-panel" className="panel">
               <div className="section-head">
                 <div className="section-copy">
-                  <p className="eyebrow">Permissions</p>
                   <h2>Choose what this app can ask Memact to use</h2>
                 </div>
                 <div className="actions section-actions">

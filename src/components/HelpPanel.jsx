@@ -134,7 +134,6 @@ export function HelpPanel({ accountType = "developer" }) {
   return (
     <section className="panel help-panel">
       <div>
-        <p className="eyebrow">Help</p>
         <h2>Frequently asked questions</h2>
       </div>
 

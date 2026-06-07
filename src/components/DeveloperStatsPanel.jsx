@@ -29,7 +29,6 @@ export function DeveloperStatsPanel({
   return (
     <section className="dashboard stats-page">
       <section className="panel">
-        <p className="eyebrow">Stats</p>
         <h2>App-level activity</h2>
 
         <div className="stats-card-grid">
@@ -42,7 +41,6 @@ export function DeveloperStatsPanel({
           ))}
         </div>
       <section className="stats-subsection">
-        <p className="eyebrow">Memory proposals</p>
         <h2>Memory writes stay user-controlled</h2>
         <div className="stats-card-grid">
           <article className="mini-row stats-card">

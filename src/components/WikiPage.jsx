@@ -130,7 +130,6 @@ export function WikiPage({
     <section className="panel wiki-page wiki-shell-panel">
       <div className="wiki-hero-panel">
         <div>
-          <p className="eyebrow">Yourself</p>
           <h2>{app?.id ? `${appName}'s access to Yourself` : "What apps know about you"}</h2>
         </div>
         <div className="wiki-hero-actions">

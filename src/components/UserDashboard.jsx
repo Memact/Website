@@ -7,7 +7,6 @@ export function UserDashboard({ consents = [], apps = [], onRevokeConsent, isCon
   return (
     <section className="dashboard user-dashboard">
       <section className="panel">
-        <p className="eyebrow">Dashboard</p>
         <h2>Your connected apps</h2>
         {isConsentShell ? (
           <p className="notice" role="status">This is a lightweight consent account. Finish account setup later to manage Yourself and settings.</p>
@@ -42,7 +41,6 @@ export function UserDashboard({ consents = [], apps = [], onRevokeConsent, isCon
         </div>
       {revokedConsents.length ? (
         <section className="user-dashboard-subsection">
-          <p className="eyebrow">History</p>
           <h2>Removed app access</h2>
           <div className="user-consent-list">
             {revokedConsents.map((consent) => (

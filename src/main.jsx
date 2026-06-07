@@ -1781,7 +1781,7 @@ function labelForPortalTab(page, accountType = ACCOUNT_TYPES.developer) {
 
   if (page === "access") return "Dashboard"
   if (page === "stats") return "Stats"
-  if (page === "account") return "Account"
+  if (page === "account") return "Settings"
   if (page === "help") return "Help"
   if (page === "connect") return "Connect"
   if (page === "wiki" || page === "data") return "Wiki"
