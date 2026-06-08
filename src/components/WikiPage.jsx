@@ -53,11 +53,56 @@ export function WikiPage({
   const scopeOptions = optionRef.current.scopes
   const categoryOptions = optionRef.current.categories
   const hasEnoughSelection = safeRequestedScopes.length > 0 && safeRequestedCategories.length > 0
-  const [manualEntries, setManualEntries] = useState([])
+  const [manualEntries, setManualEntries] = useState(() => {
+    try {
+      const saved = localStorage.getItem("memact_manual_entries")
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
   const [draft, setDraft] = useState(defaultDraft())
   const [showAddMemory, setShowAddMemory] = useState(false)
-  const [acceptedProposals, setAcceptedProposals] = useState([])
-  const [rejectedProposals, setRejectedProposals] = useState([])
+  const [acceptedProposals, setAcceptedProposals] = useState(() => {
+    try {
+      const saved = localStorage.getItem("memact_accepted_proposals")
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+  const [rejectedProposals, setRejectedProposals] = useState(() => {
+    try {
+      const saved = localStorage.getItem("memact_rejected_proposals")
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("memact_manual_entries", JSON.stringify(manualEntries))
+    } catch (e) {
+      console.error("Failed to save manual entries", e)
+    }
+  }, [manualEntries])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("memact_accepted_proposals", JSON.stringify(acceptedProposals))
+    } catch (e) {
+      console.error("Failed to save accepted proposals", e)
+    }
+  }, [acceptedProposals])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("memact_rejected_proposals", JSON.stringify(rejectedProposals))
+    } catch (e) {
+      console.error("Failed to save rejected proposals", e)
+    }
+  }, [rejectedProposals])
   const [wikiSearch, setWikiSearch] = useState("")
   const [goalText, setGoalText] = useState("")
   const [activeGoal, setActiveGoal] = useState(null)
