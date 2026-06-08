@@ -189,6 +189,21 @@ export function WikiPage({
   const goalFields = goalTemplate?.fields || []
   const missingGoalFields = goalFields.filter((field) => !findContextValue(visibleEntries, field.field_path))
 
+  const goalInputRef = useRef(null)
+  const isFirstTimeUser = visibleEntries.length === 0
+
+  useEffect(() => {
+    if (isFirstTimeUser && !app?.id) {
+      goalInputRef.current?.focus()
+    }
+  }, [isFirstTimeUser, app?.id])
+
+  const handleGoalKeyDown = (event) => {
+    if (event.key === "Enter") {
+      findGoalContext(event)
+    }
+  }
+
   const findGoalContext = (event) => {
     event.preventDefault()
     const nextGoal = goalText.trim()
@@ -268,10 +283,30 @@ export function WikiPage({
               <h3>Start with what you are trying to do</h3>
               <p className="muted">Memact will find the useful details and ask only what is missing</p>
             </div>
-            <div className="wiki-goal-input-row">
-              <input value={goalText} placeholder="Example: I am looking for a laptop" onChange={(event) => setGoalText(event.target.value)} />
-              <button type="submit" className="ghost">Find details</button>
+            <div className="wiki-goal-field-wrapper">
+              <input
+                ref={goalInputRef}
+                autoFocus={isFirstTimeUser}
+                value={goalText}
+                placeholder="Example: I am looking for a laptop"
+                onChange={(event) => setGoalText(event.target.value)}
+                onKeyDown={handleGoalKeyDown}
+              />
+              {goalText.trim().length > 0 ? (
+                <button type="submit" className="enter-action-button" aria-label="Find details">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="enter-icon">
+                    <path d="M9 10l-5 5 5 5" />
+                    <path d="M20 4v7a4 4 0 0 1-4 4H4" />
+                  </svg>
+                </button>
+              ) : null}
             </div>
+            {isFirstTimeUser ? (
+              <div className="wiki-goal-prompt">
+                <span className="pulse-dot" />
+                <span>Start here: Type a goal above to initialize your memory entries.</span>
+              </div>
+            ) : null}
           </form>
           {goalTemplate ? (
             <div className="wiki-goal-result">
@@ -418,7 +453,21 @@ export function WikiPage({
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <path d="M10.5 17a6.5 6.5 0 1 1 0-13a6.5 6.5 0 0 1 0 13Zm5-1.5 4 4" />
             </svg>
-            <input value={wikiSearch} type="search" placeholder="Search name, food, study, project..." onChange={(event) => setWikiSearch(event.target.value)} />
+            <input
+              value={wikiSearch}
+              type="text"
+              placeholder="Search name, food, study, project..."
+              onChange={(event) => setWikiSearch(event.target.value)}
+              style={wikiSearch.trim().length > 0 ? { paddingRight: "46px" } : {}}
+            />
+            {wikiSearch.trim().length > 0 ? (
+              <span className="enter-action-indicator" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="enter-icon">
+                  <path d="M9 10l-5 5 5 5" />
+                  <path d="M20 4v7a4 4 0 0 1-4 4H4" />
+                </svg>
+              </span>
+            ) : null}
           </span>
         </label>
         <div className="wiki-index">
@@ -562,7 +611,7 @@ function WikiEntryCard({ entry, onDelete, onVisibility }) {
   )
 }
 
-function MemactSelect({ label, value, options, onChange, compact = false }) {
+export function MemactSelect({ label, value, options, onChange, compact = false }) {
   const detailsRef = useRef(null)
   const selected = options.find((option) => option.value === value) || options[0]
   const chooseOption = (nextValue) => {

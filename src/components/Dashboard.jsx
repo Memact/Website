@@ -5,6 +5,7 @@ import { HelpPanel } from "./HelpPanel.jsx"
 import { PasswordField } from "./PasswordField.jsx"
 import { presetSuggestionsForPolicy } from "../access-policy.js"
 import { getAvatarUrl, getInitials, getUserEmail, getUserProvider } from "../user-display.js"
+import { MemactSelect } from "./WikiPage.jsx"
 
 export function Dashboard({
   activeTab,
@@ -196,27 +197,18 @@ export function Dashboard({
           {isUserAccount ? (
             <UserSettingsSections apps={apps} consents={consents} onRevokeConsent={onRevokeConsent} />
           ) : null}
-          <details className="faq-item settings-details">
-            <summary className="faq-trigger settings-trigger">
-              <span className="settings-trigger-text">
-                <span className="account-change-label">Settings</span>
-                <strong>{activeChangeLabel}</strong>
-              </span>
-              <Chevron />
-            </summary>
-            <div className="faq-answer settings-menu">
-              {changeOptions.map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  className={accountEditor === option.id ? "is-active" : ""}
-                  onClick={() => chooseAccountEditor(option.id)}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </details>
+          <div className="wiki-field settings-select-container">
+            <span>Settings</span>
+            <MemactSelect
+              label="Choose a setting"
+              value={accountEditor}
+              options={[
+                { value: "", label: "Choose a setting" },
+                ...changeOptions.map((option) => ({ value: option.id, label: option.label }))
+              ]}
+              onChange={setAccountEditor}
+            />
+          </div>
           {showDisplayNameEditor ? (
             <section className="password-panel account-editor-panel display-name-panel">
               <div>
