@@ -2527,6 +2527,8 @@ input:-webkit-autofill:focus {
 
 .wiki-app-panel,
 .wiki-start-panel,
+.wiki-goal-panel,
+.wiki-portable-panel,
 .wiki-add-form,
 .wiki-entry-panel,
 .wiki-share-card,
@@ -2538,12 +2540,94 @@ input:-webkit-autofill:focus {
 }
 
 .wiki-start-panel,
+.wiki-goal-panel,
+.wiki-portable-panel,
 .wiki-add-form,
 .wiki-entry-panel,
 .wiki-share-card,
 .wiki-controls-panel {
   display: grid;
   gap: 12px;
+}
+
+.wiki-goal-panel,
+.wiki-portable-panel {
+  padding: 18px;
+}
+
+.wiki-goal-form {
+  display: grid;
+  gap: 12px;
+}
+
+.wiki-goal-form h3,
+.wiki-goal-result h3,
+.wiki-portable-panel h3 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+}
+
+.wiki-goal-form .muted,
+.wiki-goal-result .muted,
+.wiki-portable-panel .muted {
+  margin: 6px 0 0;
+}
+
+.wiki-goal-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 10px;
+  align-items: center;
+}
+
+.wiki-goal-input-row button {
+  min-height: 52px;
+}
+
+.wiki-goal-result {
+  display: grid;
+  gap: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.wiki-goal-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 10px;
+}
+
+.wiki-goal-field {
+  display: grid;
+  gap: 7px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.022);
+}
+
+.wiki-goal-field span {
+  color: var(--text);
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.wiki-goal-field small {
+  color: var(--soft);
+  font-weight: 750;
+}
+
+.wiki-goal-field strong {
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.wiki-goal-field.is-saved {
+  border-color: rgba(200, 247, 212, 0.24);
+  background: rgba(200, 247, 212, 0.035);
 }
 
 .wiki-overview-grid {
@@ -2626,6 +2710,19 @@ input:-webkit-autofill:focus {
 .wiki-category-head h4 {
   margin: 0;
   font-size: 18px;
+}
+
+.wiki-subgroup {
+  display: grid;
+  gap: 8px;
+}
+
+.wiki-subgroup h5 {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 850;
+  letter-spacing: 0.02em;
 }
 
 .wiki-form-grid {

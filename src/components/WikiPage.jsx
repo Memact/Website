@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 import { Chevron } from "./Chevron.jsx"
+import { findContextValue, suggestContextGoal } from "../context-goals.js"
 
 const WIKI_CATEGORIES = [
   "Reading",
@@ -51,7 +52,11 @@ export function WikiPage({
   const [acceptedProposals, setAcceptedProposals] = useState([])
   const [rejectedProposals, setRejectedProposals] = useState([])
   const [wikiSearch, setWikiSearch] = useState("")
+  const [goalText, setGoalText] = useState("")
+  const [activeGoal, setActiveGoal] = useState(null)
+  const [goalAnswers, setGoalAnswers] = useState({})
   const addMemoryRef = useRef(null)
+  const goalRef = useRef(null)
 
   useEffect(() => {
     if (!showAddMemory) return
@@ -85,6 +90,9 @@ export function WikiPage({
       id: `local-${Date.now()}`,
       title: draft.title.trim(),
       category: draft.category,
+      group: draft.category,
+      subgroup: "General",
+      field_path: `manual.${slugFieldPath(draft.category)}.${slugFieldPath(draft.title)}`,
       value: draft.value.trim(),
       visibility: draft.visibility,
       expires_at: draft.expires_at,
@@ -123,8 +131,55 @@ export function WikiPage({
   const visibleProposals = proposedEntries.filter((entry) => !rejectedProposals.includes(entry.id) && !acceptedProposals.some((item) => item.id === entry.id))
   const visibleEntries = [...manualEntries, ...acceptedProposals]
   const filteredEntries = filterWikiEntries(visibleEntries, wikiSearch)
-  const groupedEntries = groupEntriesByCategory(filteredEntries)
+  const groupedEntries = groupEntriesByContext(filteredEntries)
   const hasShareableEntries = visibleEntries.some((entry) => entry.visibility === "shareable")
+  const goalTemplate = activeGoal ? suggestContextGoal(activeGoal) : null
+  const goalFields = goalTemplate?.fields || []
+  const missingGoalFields = goalFields.filter((field) => !findContextValue(visibleEntries, field.field_path))
+
+  const findGoalContext = (event) => {
+    event.preventDefault()
+    const nextGoal = goalText.trim()
+    if (!nextGoal) return
+    setActiveGoal(nextGoal)
+    window.requestAnimationFrame(() => {
+      goalRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+    })
+  }
+
+  const saveGoalAnswers = () => {
+    if (!goalTemplate) return
+    const createdAt = new Date().toISOString()
+    const entries = goalFields
+      .map((field) => {
+        const answer = String(goalAnswers[field.field_path] || "").trim()
+        if (!answer || findContextValue(visibleEntries, field.field_path)) return null
+        return {
+          id: `goal-${field.field_path}-${Date.now()}`,
+          title: field.label,
+          category: goalTemplate.group,
+          group: goalTemplate.group,
+          subgroup: field.subgroup || "General",
+          field_path: field.field_path,
+          value: { [field.field_path]: answer, note: answer },
+          visibility: "private",
+          source_type: "user",
+          source_label: "Added by you",
+          source_detail: `Source: ${activeGoal}`,
+          status: "accepted",
+          user_verified: true,
+          confidence: "User verified",
+          created_at: createdAt,
+          updated_at: createdAt,
+          competing_interpretations: [],
+          contradictions: []
+        }
+      })
+      .filter(Boolean)
+    if (!entries.length) return
+    setManualEntries((current) => [...entries, ...current])
+    setGoalAnswers({})
+  }
 
   return (
     <section className="panel wiki-page wiki-shell-panel">
@@ -136,7 +191,6 @@ export function WikiPage({
           <button type="button" className="button wiki-add-button" onClick={openAddMemory}>
             Add about me
           </button>
-          <button type="button" className="ghost" onClick={onManageConsent}>Settings</button>
         </div>
       </div>
 
@@ -155,23 +209,52 @@ export function WikiPage({
         </div>
       ) : null}
 
-      <section className="wiki-overview-grid" aria-label="Yourself overview">
-        <div className="wiki-overview-card">
-          <span>Saved</span>
-          <strong>{visibleEntries.length}</strong>
-          <small>things you added or approved</small>
-        </div>
-        <div className="wiki-overview-card">
-          <span>Review</span>
-          <strong>{visibleProposals.length}</strong>
-          <small>app suggestions waiting</small>
-        </div>
-        <div className="wiki-overview-card">
-          <span>Sharing</span>
-          <strong>Private</strong>
-          <small>only shared when you choose</small>
-        </div>
-      </section>
+      {!app?.id ? (
+        <section className="wiki-goal-panel" ref={goalRef}>
+          <form className="wiki-goal-form" onSubmit={findGoalContext}>
+            <div>
+              <h3>Start with what you are trying to do</h3>
+              <p className="muted">Memact will find the useful details and ask only what is missing</p>
+            </div>
+            <div className="wiki-goal-input-row">
+              <input value={goalText} placeholder="Example: I am looking for a laptop" onChange={(event) => setGoalText(event.target.value)} />
+              <button type="submit" className="ghost">Find details</button>
+            </div>
+          </form>
+          {goalTemplate ? (
+            <div className="wiki-goal-result">
+              <div className="wiki-section-head">
+                <div>
+                  <h3>{goalTemplate.label}</h3>
+                  <p className="muted">{goalTemplate.intro}</p>
+                </div>
+                <span className="wiki-count-badge" aria-label={`${missingGoalFields.length} missing details`}>{missingGoalFields.length}</span>
+              </div>
+              <div className="wiki-goal-field-grid">
+                {goalFields.map((field) => {
+                  const savedValue = findContextValue(visibleEntries, field.field_path)
+                  return (
+                    <label className={savedValue ? "wiki-goal-field is-saved" : "wiki-goal-field"} key={field.field_path}>
+                      <span>{field.label}</span>
+                      <small>{field.subgroup}</small>
+                      {savedValue ? (
+                        <strong>{savedValue}</strong>
+                      ) : (
+                        <input
+                          value={goalAnswers[field.field_path] || ""}
+                          placeholder={field.placeholder}
+                          onChange={(event) => setGoalAnswers((current) => ({ ...current, [field.field_path]: event.target.value }))}
+                        />
+                      )}
+                    </label>
+                  )
+                })}
+              </div>
+              {missingGoalFields.length ? <button type="button" onClick={saveGoalAnswers}>Save missing details</button> : <p className="notice notice-success">You already saved the details Memact found for this goal</p>}
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       {showAddMemory ? (
         <form className="wiki-add-form" ref={addMemoryRef} onSubmit={submitManualEntry}>
@@ -288,21 +371,26 @@ export function WikiPage({
         </label>
         <div className="wiki-index">
           {groupedEntries.map((group) => (
-            <section className="wiki-category-section" key={group.category}>
+            <section className="wiki-category-section" key={group.group}>
               <div className="wiki-category-head">
-                <h4>{group.category}</h4>
-                <span className="wiki-count-badge wiki-count-badge-small" aria-label={`${group.entries.length} entries in ${group.category}`}>{group.entries.length}</span>
+                <h4>{group.group}</h4>
+                <span className="wiki-count-badge wiki-count-badge-small" aria-label={`${group.entries.length} things in ${group.group}`}>{group.entries.length}</span>
               </div>
-              <div className="wiki-entry-list">
-                {group.entries.map((entry) => (
-                  <WikiEntryCard
-                    key={entry.id}
-                    entry={entry}
-                    onDelete={() => deleteEntry(entry.id)}
-                    onVisibility={(visibility) => changeEntryVisibility(entry.id, visibility)}
-                  />
-                ))}
-              </div>
+              {group.subgroups.map((subgroup) => (
+                <div className="wiki-subgroup" key={`${group.group}-${subgroup.name}`}>
+                  <h5>{subgroup.name}</h5>
+                  <div className="wiki-entry-list">
+                    {subgroup.entries.map((entry) => (
+                      <WikiEntryCard
+                        key={entry.id}
+                        entry={entry}
+                        onDelete={() => deleteEntry(entry.id)}
+                        onVisibility={(visibility) => changeEntryVisibility(entry.id, visibility)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
             </section>
           ))}
           {!visibleEntries.length ? (
@@ -315,6 +403,32 @@ export function WikiPage({
           {visibleEntries.length > 0 && !filteredEntries.length ? <p className="muted">Nothing saved matches that search.</p> : null}
         </div>
       </section>
+
+      <section className="wiki-overview-grid" aria-label="Yourself overview">
+        <div className="wiki-overview-card">
+          <span>Saved</span>
+          <strong>{visibleEntries.length}</strong>
+          <small>things you added or approved</small>
+        </div>
+        <div className="wiki-overview-card">
+          <span>Review</span>
+          <strong>{visibleProposals.length}</strong>
+          <small>app suggestions waiting</small>
+        </div>
+        <div className="wiki-overview-card">
+          <span>Sharing</span>
+          <strong>Private</strong>
+          <small>only shared when you choose</small>
+        </div>
+      </section>
+
+      {!app?.id ? (
+        <section className="wiki-portable-panel">
+          <h3>Portable user context</h3>
+          <p className="muted">Not just name, email, and profile photo. Memact can hold preferences, settings, AI memory, permissions, reputation, workflow habits, accessibility needs, and personalization history.</p>
+          <p className="muted">Connect Memact, choose what an app can know, revoke anytime. Your identity stays under your control.</p>
+        </section>
+      ) : null}
 
       {visibleProposals.length ? (
         <section className="wiki-entry-panel wiki-main-panel">
@@ -741,16 +855,23 @@ function filterWikiEntries(entries, query) {
   })
 }
 
-function groupEntriesByCategory(entries) {
+function groupEntriesByContext(entries) {
   const groups = new Map()
   for (const entry of entries) {
-    const category = entry.category || "Other"
-    if (!groups.has(category)) groups.set(category, [])
-    groups.get(category).push(entry)
+    const group = entry.group || entry.category || "Other"
+    const subgroup = entry.subgroup || "General"
+    if (!groups.has(group)) groups.set(group, new Map())
+    const subgroups = groups.get(group)
+    if (!subgroups.has(subgroup)) subgroups.set(subgroup, [])
+    subgroups.get(subgroup).push(entry)
   }
-  return Array.from(groups.entries()).map(([category, groupEntries]) => ({
-    category,
-    entries: groupEntries
+  return Array.from(groups.entries()).map(([group, subgroups]) => ({
+    group,
+    subgroups: Array.from(subgroups.entries()).map(([name, subgroupEntries]) => ({
+      name,
+      entries: subgroupEntries
+    })),
+    entries: Array.from(subgroups.values()).flat()
   }))
 }
 
@@ -795,4 +916,8 @@ function getFaviconUrl(value) {
 
 function appInitial(name) {
   return String(name || "A").trim().charAt(0).toUpperCase() || "A"
+}
+
+function slugFieldPath(value) {
+  return String(value || "field").toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "field"
 }
