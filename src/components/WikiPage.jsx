@@ -12,6 +12,13 @@ const WIKI_CATEGORIES = [
   "Creator profile",
   "Project notes",
   "Personal preferences",
+  "Settings",
+  "AI memory",
+  "Permissions",
+  "Reputation",
+  "Workflow habits",
+  "Accessibility needs",
+  "Personalization history",
   "Other"
 ]
 
@@ -422,13 +429,7 @@ export function WikiPage({
         </div>
       </section>
 
-      {!app?.id ? (
-        <section className="wiki-portable-panel">
-          <h3>Portable user context</h3>
-          <p className="muted">Not just name, email, and profile photo. Memact can hold preferences, settings, AI memory, permissions, reputation, workflow habits, accessibility needs, and personalization history.</p>
-          <p className="muted">Connect Memact, choose what an app can know, revoke anytime. Your identity stays under your control.</p>
-        </section>
-      ) : null}
+
 
       {visibleProposals.length ? (
         <section className="wiki-entry-panel wiki-main-panel">
@@ -490,7 +491,13 @@ function WikiEntryCard({ entry, onDelete, onVisibility }) {
           <h4>{entry.title}</h4>
           <p className="muted">{typeof entry.value === "string" ? entry.value : entry.value?.note || JSON.stringify(entry.value)}</p>
         </div>
-        <span className="badge">{entry.visibility}</span>
+        <MemactSelect
+          label={`Change visibility for ${entry.title}`}
+          value={entry.visibility}
+          options={VISIBILITY_OPTIONS}
+          onChange={onVisibility}
+          compact
+        />
       </div>
       <div className="wiki-entry-meta">
         <span>{entry.source_label}</span>
@@ -504,13 +511,6 @@ function WikiEntryCard({ entry, onDelete, onVisibility }) {
       <WikiSignals entry={entry} />
       <div className="wiki-entry-actions">
         <button type="button" className="ghost">Edit</button>
-        <MemactSelect
-          label={`Change visibility for ${entry.title}`}
-          value={entry.visibility}
-          options={VISIBILITY_OPTIONS}
-          onChange={onVisibility}
-          compact
-        />
         <button type="button" className="ghost danger" onClick={onDelete}>Delete</button>
       </div>
     </article>
