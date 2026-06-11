@@ -97,7 +97,7 @@ function App() {
   const [status, setStatus] = useState("Checking Access.")
   const [error, setError] = useState("")
   const [canRetryDashboard, setCanRetryDashboard] = useState(false)
-  const [policy, setPolicy] = useState(null)
+  const [policy, setPolicy] = useState(DEFAULT_POLICY)
   const [apps, setApps] = useState([])
   const [apiKeys, setApiKeys] = useState([])
   const [consents, setConsents] = useState([])
