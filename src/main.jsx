@@ -1222,20 +1222,22 @@ function Dashboard({
               </div>
             </section>
 
-            <section id="api-keys-panel" className="panel">
-              <p className="eyebrow">API keys</p>
-              <div className="stack">
-                {selectedKeys.length ? selectedKeys.map((key) => (
-                  <div className="list-card" key={key.id}>
-                    <span>
-                      <strong>{key.name}</strong>
-                      <small>{key.key_prefix}... | {key.revoked_at ? "revoked" : "active"}</small>
-                    </span>
-                    {!key.revoked_at ? <button type="button" className="ghost" onClick={() => onRevokeKey(key.id)}>Revoke</button> : null}
-                  </div>
-                )) : <p className="muted">{selectedAppId ? "No API keys for this app yet." : "Select an app to view API keys."}</p>}
-              </div>
-            </section>
+            {selectedKeys.length > 0 && (
+              <section id="api-keys-panel" className="panel">
+                <p className="eyebrow">API keys</p>
+                <div className="stack">
+                  {selectedKeys.map((key) => (
+                    <div className="list-card" key={key.id}>
+                      <span>
+                        <strong>{key.name}</strong>
+                        <small>{key.key_prefix}... | {key.revoked_at ? "revoked" : "active"}</small>
+                      </span>
+                      {!key.revoked_at ? <button type="button" className="ghost" onClick={() => onRevokeKey(key.id)}>Revoke</button> : null}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
         </>
       )}
