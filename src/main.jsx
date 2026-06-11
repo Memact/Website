@@ -304,10 +304,6 @@ function App() {
   }, [client, session])
 
   useEffect(() => {
-    setNewAppCategories(defaultCategoriesForPolicy(policy))
-  }, [policy])
-
-  useEffect(() => {
     if (apps.length === 1 && selectedAppId !== apps[0].id) {
       setSelectedAppId(apps[0].id)
       return
