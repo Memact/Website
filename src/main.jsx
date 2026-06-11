@@ -105,7 +105,6 @@ function App() {
   const [newAppDescription, setNewAppDescription] = useState("")
   const [newAppDeveloperUrl, setNewAppDeveloperUrl] = useState("")
   const [newAppRedirectUrl, setNewAppRedirectUrl] = useState("")
-  const [newAppCategories, setNewAppCategories] = useState(() => defaultCategoriesForPolicy(null))
   const [selectedAppId, setSelectedAppId] = useState("")
   const [selectedScopes, setSelectedScopes] = useState(() => defaultScopesForPolicy(null))
   const [selectedCategories, setSelectedCategories] = useState(() => defaultCategoriesForPolicy(null))
@@ -333,10 +332,9 @@ function App() {
 
   useEffect(() => {
     if (!selectedAppId) return
-    const selectedApp = apps.find((app) => app.id === selectedAppId)
     const appConsent = consents.find((consent) => consent.app_id === selectedAppId && !consent.revoked_at)
     const nextScopes = appConsent?.scopes?.length ? appConsent.scopes : defaultScopesForPolicy(policy)
-    const nextCategories = selectedApp?.default_categories?.length ? selectedApp.default_categories : defaultCategoriesForPolicy(policy)
+    const nextCategories = appConsent?.categories?.length ? appConsent.categories : defaultCategoriesForPolicy(policy)
     setSelectedScopes(normalizeSelectedScopes(nextScopes, policy))
     setSelectedCategories(normalizeSelectedCategories(nextCategories, policy))
   }, [apps, consents, policy, selectedAppId])
@@ -541,7 +539,7 @@ function App() {
         description: newAppDescription.trim(),
         developer_url: newAppDeveloperUrl.trim(),
         redirect_urls: newAppRedirectUrl.trim() ? [newAppRedirectUrl.trim()] : [],
-        categories: normalizeSelectedCategories(newAppCategories, policy)
+        categories: []
       })
       await refreshDashboard(client, session, setUser, setApps, setApiKeys, setConsents, setStatus, setError, setCanRetryDashboard)
       setSelectedAppId(result.app.id)
@@ -550,7 +548,6 @@ function App() {
       setNewAppDescription("")
       setNewAppDeveloperUrl("")
       setNewAppRedirectUrl("")
-      setNewAppCategories(defaultCategoriesForPolicy(policy))
       setOneTimeKey("")
       setOneTimeKeyId("")
       setOneTimeKeyScopes([])
@@ -810,7 +807,6 @@ function App() {
           newAppDescription={newAppDescription}
           newAppDeveloperUrl={newAppDeveloperUrl}
           newAppRedirectUrl={newAppRedirectUrl}
-          newAppCategories={newAppCategories}
           oneTimeKey={oneTimeKey}
           oneTimeKeyScopes={oneTimeKeyScopes}
           oneTimeKeyCategories={oneTimeKeyCategories}
@@ -822,7 +818,6 @@ function App() {
           setNewAppDescription={setNewAppDescription}
           setNewAppDeveloperUrl={setNewAppDeveloperUrl}
           setNewAppRedirectUrl={setNewAppRedirectUrl}
-          setNewAppCategories={setNewAppCategories}
           setShowAppForm={setShowAppForm}
           onCreateApp={handleCreateApp}
           onDeleteApp={handleDeleteApp}
@@ -938,7 +933,6 @@ function Dashboard({
   newAppDescription,
   newAppDeveloperUrl,
   newAppRedirectUrl,
-  newAppCategories,
   oneTimeKey,
   oneTimeKeyScopes,
   oneTimeKeyCategories,
@@ -950,7 +944,6 @@ function Dashboard({
   setNewAppDescription,
   setNewAppDeveloperUrl,
   setNewAppRedirectUrl,
-  setNewAppCategories,
   setShowAppForm,
   onCreateApp,
   onDeleteApp,
@@ -1174,15 +1167,7 @@ function Dashboard({
                   Purpose
                   <textarea value={newAppDescription} placeholder="Optional: What will this app use Memact for?" onChange={(event) => setNewAppDescription(event.target.value)} />
                 </label>
-                <div>
-                  <p className="eyebrow">Activity categories</p>
-                  <p className="muted">Pick the kinds of activity this app is allowed to work with. This keeps apps narrow by design.</p>
-                  <CategoryGrid
-                    categories={categories}
-                    selected={newAppCategories}
-                    onToggle={(category) => toggleValue(setNewAppCategories, category)}
-                  />
-                </div>
+
                 <button type="submit">Create app</button>
               </form>
             ) : null}
@@ -1208,7 +1193,7 @@ function Dashboard({
               <div className="section-head">
                 <div className="section-copy">
                   <p className="eyebrow">Permissions</p>
-                  <h2>Choose what this app can ask Memact to do.</h2>
+                  <h2>Choose what this app can request</h2>
                   <p className="muted">
                     {selectedConsent
                       ? consentChanged ? "Permissions changed. Save them before creating the next key." : "Permissions are saved for this app. Change scopes any time."
@@ -1224,24 +1209,38 @@ function Dashboard({
                   </span>
                 </div>
               </div>
-              <div className="scope-grid">
-                {Object.entries(scopes).map(([scope, definition]) => (
-                  <label key={scope} className="scope-card">
-                    <input
-                      type="checkbox"
-                      checked={selectedScopes.includes(scope)}
-                      onChange={() => {
-                        setSelectedScopes((current) => current.includes(scope)
-                          ? current.filter((item) => item !== scope)
-                          : [...current, scope])
-                      }}
-                    />
-                    <span>
-                      <strong>{scope}</strong>
-                      <small>{definition.description}</small>
-                    </span>
-                  </label>
-                ))}
+              <div className="permissions-sections stack" style={{ gap: "20px" }}>
+                <div className="permissions-section stack" style={{ gap: "10px" }}>
+                  <h3 className="form-subheader">Memact-native capabilities</h3>
+                  <div className="scope-grid">
+                    {Object.entries(scopes).map(([scope, definition]) => (
+                      <label key={scope} className="scope-card">
+                        <input
+                          type="checkbox"
+                          checked={selectedScopes.includes(scope)}
+                          onChange={() => {
+                            setSelectedScopes((current) => current.includes(scope)
+                              ? current.filter((item) => item !== scope)
+                              : [...current, scope])
+                          }}
+                        />
+                        <span>
+                          <strong>{scope}</strong>
+                          <small>{definition.description}</small>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="permissions-section stack" style={{ gap: "10px" }}>
+                  <h3 className="form-subheader">Activity categories</h3>
+                  <CategoryGrid
+                    categories={categories}
+                    selected={selectedCategories}
+                    onToggle={(category) => toggleValue(setSelectedCategories, category)}
+                  />
+                </div>
               </div>
             </section>
 
@@ -1293,7 +1292,7 @@ function Dashboard({
 
 function CategoryGrid({ categories, selected, onToggle }) {
   const entries = Object.entries(categories || {})
-  if (!entries.length) return <p className="muted">Activity category policy is loading.</p>
+  if (!entries.length) return <p className="muted">Loading activity categories…</p>
   return (
     <div className="category-grid">
       {entries.map(([category, definition]) => (
