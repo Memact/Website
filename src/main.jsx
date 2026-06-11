@@ -40,6 +40,24 @@ const INVITE_FUNCTION_NAME = import.meta.env.VITE_SUPABASE_INVITE_FUNCTION || "i
 const SIGNIN_RISK_FUNCTION_NAME = import.meta.env.VITE_SUPABASE_SIGNIN_RISK_FUNCTION || ""
 const DELETE_ACCOUNT_FUNCTION_NAME = import.meta.env.VITE_SUPABASE_DELETE_ACCOUNT_FUNCTION || ""
 
+const DEFAULT_POLICY = {
+  scopes: {
+    "context:write": { description: "Write app-proposed context to access gate" },
+    "context:read": { description: "Read app-proposed context and field/category hints" },
+    "memory:write": { description: "Write accepted memory context" },
+    "memory:read_summary": { description: "Read user-approved memory summaries" },
+    "memory:read_evidence": { description: "Read user-approved memory evidence cards" }
+  },
+  activity_categories: {
+    "preferences": { label: "Preferences", description: "General user choices, likes, and dislikes" },
+    "fitness": { label: "Fitness", description: "Workouts, activity levels, and athletic goals" },
+    "dietary_preferences": { label: "Dietary preferences", description: "Diets, allergies, and food choices" },
+    "shopping": { label: "Shopping", description: "Purchase intents, product criteria, and budgets" },
+    "learning": { label: "Learning", description: "Study goals, topics of interest, and courses" },
+    "productivity": { label: "Productivity", description: "Task lists, calendar flows, and work habits" }
+  }
+}
+
 function App() {
   const client = useMemo(() => new AccessClient(ACCESS_URL), [])
   const initialPage = pageFromLocation()
@@ -220,7 +238,12 @@ function App() {
     client.health()
       .then(() => setStatus(ACCESS_MODE === "supabase" ? "Dashboard is running through Supabase." : "Memact is online."))
       .catch(() => setStatus(ACCESS_MODE === "supabase" ? "Apply the Dashboard Supabase migration to use the portal." : "Start Memact locally to use the portal."))
-    client.policy().then(setPolicy).catch(() => {})
+    client.policy()
+      .then(setPolicy)
+      .catch((err) => {
+        console.warn("Could not fetch policy from Access service, using client-side fallback:", err)
+        setPolicy(DEFAULT_POLICY)
+      })
   }, [client])
 
   useEffect(() => {
