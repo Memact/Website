@@ -16,13 +16,13 @@ test("defaultScopesForPolicy keeps existing defaults when policy is unavailable"
 test("defaultScopesForPolicy filters defaults to scopes published by Access", () => {
   const policy = {
     scopes: {
-      "capture:webpage": {},
+      "context:write": {},
       "memory:read_summary": {},
       "experimental:only": {}
     }
   }
 
-  assert.deepEqual(defaultScopesForPolicy(policy), ["capture:webpage", "memory:read_summary"])
+  assert.deepEqual(defaultScopesForPolicy(policy), ["context:write", "memory:read_summary"])
 })
 
 test("defaultScopesForPolicy falls back to Access scopes when no default is available", () => {
@@ -39,14 +39,14 @@ test("defaultScopesForPolicy falls back to Access scopes when no default is avai
 test("normalizeSelectedScopes removes duplicates and unknown policy scopes", () => {
   const policy = {
     scopes: {
-      "capture:webpage": {},
+      "context:write": {},
       "memory:write": {}
     }
   }
 
   assert.deepEqual(
-    normalizeSelectedScopes(["capture:webpage", "unknown:scope", "memory:write", "capture:webpage"], policy),
-    ["capture:webpage", "memory:write"]
+    normalizeSelectedScopes(["context:write", "unknown:scope", "memory:write", "context:write"], policy),
+    ["context:write", "memory:write"]
   )
 })
 
@@ -57,26 +57,27 @@ test("defaultCategoriesForPolicy keeps category defaults when policy is unavaila
 test("defaultCategoriesForPolicy respects Access category defaults", () => {
   const policy = {
     activity_categories: {
-      "web:news": {},
-      "ai:assistant": {},
-      "work:docs": {}
+      "fitness": {},
+      "preferences": {},
+      "dietary_preferences": {}
     },
-    default_app_categories: ["ai:assistant", "work:docs"]
+    default_app_categories: ["preferences", "dietary_preferences"]
   }
 
-  assert.deepEqual(defaultCategoriesForPolicy(policy), ["ai:assistant", "work:docs"])
+  assert.deepEqual(defaultCategoriesForPolicy(policy), ["preferences", "dietary_preferences"])
 })
 
 test("normalizeSelectedCategories removes duplicates and unknown categories", () => {
   const policy = {
     activity_categories: {
-      "web:news": {},
-      "ai:assistant": {}
+      "fitness": {},
+      "preferences": {}
     }
   }
 
   assert.deepEqual(
-    normalizeSelectedCategories(["web:news", "unknown", "ai:assistant", "web:news"], policy),
-    ["web:news", "ai:assistant"]
+    normalizeSelectedCategories(["fitness", "unknown", "preferences", "fitness"], policy),
+    ["fitness", "preferences"]
   )
 })
+

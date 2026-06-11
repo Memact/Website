@@ -1,18 +1,19 @@
 export const DEFAULT_SCOPES = [
-  "capture:webpage",
-  "schema:write",
-  "graph:write",
+  "context:write",
+  "context:read",
   "memory:write",
   "memory:read_summary"
 ]
 
 export const DEFAULT_CATEGORIES = [
-  "web:news",
-  "web:research",
-  "media:video",
-  "ai:assistant",
-  "dev:code"
+  "preferences",
+  "fitness",
+  "dietary_preferences",
+  "shopping",
+  "learning",
+  "productivity"
 ]
+
 
 export function availablePolicyScopes(policy) {
   return Object.keys(policy?.scopes || {})

@@ -10,6 +10,7 @@ import {
 import { getAuthRedirectUrl, isSupabaseConfigured, requireSupabase, supabase, SUPABASE_ANON_KEY, SUPABASE_URL } from "./supabase-client.js"
 import { hasDuplicateAppName } from "./app-name.js"
 import { defaultCategoriesForPolicy, defaultScopesForPolicy, normalizeSelectedCategories, normalizeSelectedScopes } from "./access-policy.js"
+import { detectAuthFlowFromUrl } from "./auth-flow-utils.js"
 
 const ACCESS_ROUTE = "/Access"
 const ACCOUNT_ROUTE = "/Account"
@@ -1481,13 +1482,6 @@ function shouldOfferPasswordSetup(user) {
 
 function shouldOpenAccountTab(user, isRecoveryFlow) {
   return isRecoveryFlow || shouldOfferPasswordSetup(user)
-}
-
-function detectAuthFlowFromUrl() {
-  if (typeof window === "undefined") return "default"
-  const query = `${window.location.search || ""}${window.location.hash || ""}`.toLowerCase()
-  if (query.includes("type=recovery")) return "recovery"
-  return "default"
 }
 
 function isConnectPath() {
