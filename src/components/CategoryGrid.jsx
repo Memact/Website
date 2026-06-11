@@ -2,7 +2,7 @@ import React from "react"
 
 export function CategoryGrid({ categories, selected, onToggle }) {
   const entries = Object.entries(categories || {})
-  if (!entries.length) return <p className="muted">Loading activity categories…</p>
+  if (!entries.length) return <p className="muted">No activity categories available.</p>
   return (
     <div className="category-grid">
       {entries.map(([category, definition]) => {

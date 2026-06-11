@@ -114,7 +114,7 @@ function App() {
   const [lastAuthMethod, setLastAuthMethod] = useState(() => readLastAuthMethod())
   const [dashboard, dashboardActions] = useDashboardState()
   const [portalLoading, setPortalLoading] = useState(true)
-  const [policy, setPolicy] = useState(null)
+  const [policy, setPolicy] = useState(DEFAULT_POLICY)
   const [newAppName, setNewAppName] = useState("")
   const [newAppDescription, setNewAppDescription] = useState("")
   const [newAppDeveloperUrl, setNewAppDeveloperUrl] = useState("")
