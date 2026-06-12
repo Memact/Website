@@ -1,0 +1,165 @@
+{
+  "meta": {
+    "activity_count": 3,
+    "candidate_transition_count": 0,
+    "reported_chain_count": 0,
+    "window_minutes": 45,
+    "min_count": 3,
+    "min_source_count": 5,
+    "min_trajectory_count": 2,
+    "top_n": 3,
+    "top_themes": 5,
+    "top_trajectories": 3,
+    "top_drift": 3,
+    "top_formations": 3,
+    "activity_field": "key",
+    "normalization_rule_count": 3,
+    "timeline": {
+      "started_at": "2026-04-05T10:41:56.899Z",
+      "ended_at": "2026-04-05T14:42:27.231Z",
+      "days_spanned": 1
+    }
+  },
+  "transitions": [],
+  "valid_chains": [],
+  "insights": [],
+  "themes": [
+    {
+      "key": "coding",
+      "label": "Coding",
+      "human_label": "coding work",
+      "count": 1,
+      "total_duration_minutes": 74.7,
+      "active_days": 1,
+      "first_seen_at": "2026-04-05T10:41:56.899Z",
+      "last_seen_at": "2026-04-05T11:56:38.519Z",
+      "share": 0.3333,
+      "persistence_score": 0.3333,
+      "example_labels": [
+        "Reading about Google Gemini"
+      ],
+      "source_domains": [
+        {
+          "key": "auth.openai.com",
+          "label": "auth.openai.com",
+          "count": 1
+        },
+        {
+          "key": "bsky.app",
+          "label": "bsky.app",
+          "count": 1
+        },
+        {
+          "key": "gemini.google.com",
+          "label": "gemini.google.com",
+          "count": 1
+        }
+      ],
+      "source_titles": [
+        {
+          "title": "@memact.com — Bluesky",
+          "domain": "bsky.app",
+          "url": "https://bsky.app/profile/memact.com",
+          "count": 1
+        },
+        {
+          "title": "Google Gemini",
+          "domain": "gemini.google.com",
+          "url": "https://gemini.google.com/app/9acf8fb0a6432683",
+          "count": 1
+        },
+        {
+          "title": "New tab",
+          "domain": "newtab",
+          "url": "edge://newtab/",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "key": "post by memact com bluesky",
+      "label": "Post By Memact Com Bluesky",
+      "human_label": "post by memact com bluesky-related content",
+      "count": 1,
+      "total_duration_minutes": 42.6,
+      "active_days": 1,
+      "first_seen_at": "2026-04-05T13:59:53.724Z",
+      "last_seen_at": "2026-04-05T14:42:27.231Z",
+      "share": 0.3333,
+      "persistence_score": 0.3333,
+      "example_labels": [
+        "Reading about Post by @memact.com — Bluesky"
+      ],
+      "source_domains": [
+        {
+          "key": "youtube.com",
+          "label": "youtube.com",
+          "count": 5
+        },
+        {
+          "key": "bsky.app",
+          "label": "bsky.app",
+          "count": 2
+        },
+        {
+          "key": "gemini.google.com",
+          "label": "gemini.google.com",
+          "count": 1
+        }
+      ],
+      "source_titles": [
+        {
+          "title": "@memact.com — Bluesky",
+          "domain": "bsky.app",
+          "url": "https://bsky.app/profile/memact.com",
+          "count": 1
+        },
+        {
+          "title": "Google Gemini",
+          "domain": "gemini.google.com",
+          "url": "https://gemini.google.com/app/9acf8fb0a6432683",
+          "count": 1
+        },
+        {
+          "title": "New tab",
+          "domain": "newtab",
+          "url": "edge://newtab/",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "key": "google gemini",
+      "label": "Google Gemini",
+      "human_label": "google gemini-related content",
+      "count": 1,
+      "total_duration_minutes": 1.6,
+      "active_days": 1,
+      "first_seen_at": "2026-04-05T12:49:13.960Z",
+      "last_seen_at": "2026-04-05T12:50:52.072Z",
+      "share": 0.3333,
+      "persistence_score": 0.3333,
+      "example_labels": [
+        "Reading about Google Gemini"
+      ],
+      "source_domains": [
+        {
+          "key": "gemini.google.com",
+          "label": "gemini.google.com",
+          "count": 1
+        }
+      ],
+      "source_titles": [
+        {
+          "title": "Google Gemini",
+          "domain": "gemini.google.com",
+          "url": "https://gemini.google.com/app/9acf8fb0a6432683",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "trajectories": [],
+  "drift_signals": [],
+  "formation_signals": []
+}

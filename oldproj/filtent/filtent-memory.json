@@ -1,0 +1,26 @@
+[
+  {
+    "id": "5e52e2d0-0705-4a26-8875-ed0aeae962ea",
+    "type": "intent_memory",
+    "label": "Choosing a backpack",
+    "stage": "comparison before decision",
+    "status": "in_progress",
+    "confidence": 0.82,
+    "summary": "User is comparing 2 backpack models using product pages, specs, reviews, prices, revisits, cart activity.",
+    "evidence": [
+      "Viewed product pages",
+      "Opened product specs",
+      "Read product reviews",
+      "Compared prices across options",
+      "Revisited a product page",
+      "Added product to cart"
+    ],
+    "alternatives": [
+      "Helping someone else choose a backpack",
+      "Comparing specifications without purchase intent"
+    ],
+    "source_app": "Filtent",
+    "category": "web:commerce",
+    "created_at": "2026-06-12T08:24:08.867Z"
+  }
+]

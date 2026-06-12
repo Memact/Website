@@ -1,0 +1,122 @@
+[
+  {
+    "id": "3ed0bdff-f627-4166-ba4a-cdc7953c4c54",
+    "app": "Filtent",
+    "category": "web:commerce",
+    "type": "category_browse",
+    "label": "Browsed backpacks",
+    "product": null,
+    "timestamp": "2026-06-12T08:24:08.627Z",
+    "text": "User browsed backpacks."
+  },
+  {
+    "id": "06212a42-4439-4adf-bff6-9f1625fc9c6d",
+    "app": "Filtent",
+    "category": "web:commerce",
+    "type": "product_page_view",
+    "label": "Viewed Backpack B1",
+    "product": "Backpack B1",
+    "timestamp": "2026-06-12T08:24:08.636Z",
+    "text": "User viewed the product page for Backpack B1."
+  },
+  {
+    "id": "5b3f34d3-3ef5-4aa5-9ffa-67cf0f4fb523",
+    "app": "Filtent",
+    "category": "web:commerce",
+    "type": "spec_view",
+    "label": "Viewed specs for Backpack B1",
+    "product": "Backpack B1",
+    "timestamp": "2026-06-12T08:24:08.640Z",
+    "text": "User viewed the specs of Backpack B1."
+  },
+  {
+    "id": "7008c90b-8893-4a14-8ce0-79d0d6dd62d9",
+    "app": "Filtent",
+    "category": "web:commerce",
+    "type": "review_view",
+    "label": "Read reviews for Backpack B1",
+    "product": "Backpack B1",
+    "timestamp": "2026-06-12T08:24:08.670Z",
+    "text": "User read reviews for Backpack B1."
+  },
+  {
+    "id": "e6d654fe-9c77-4861-88aa-191570eef696",
+    "app": "Filtent",
+    "category": "web:commerce",
+    "type": "price_compare",
+    "label": "Compared price of Backpack B1",
+    "product": "Backpack B1",
+    "timestamp": "2026-06-12T08:24:08.691Z",
+    "text": "User compared the price of Backpack B1 ($89) against other options."
+  },
+  {
+    "id": "17c2ab2f-8eed-41c1-addf-9e27364f2c49",
+    "app": "Filtent",
+    "category": "web:commerce",
+    "type": "cart_add",
+    "label": "Added Backpack B1 to cart",
+    "product": "Backpack B1",
+    "timestamp": "2026-06-12T08:24:08.709Z",
+    "text": "User added Backpack B1 to cart."
+  },
+  {
+    "id": "ae636e00-670a-4f50-803a-943cd192ed84",
+    "app": "Filtent",
+    "category": "web:commerce",
+    "type": "category_browse",
+    "label": "Browsed backpacks",
+    "product": null,
+    "timestamp": "2026-06-12T08:24:08.732Z",
+    "text": "User browsed backpacks."
+  },
+  {
+    "id": "a10cab4e-0a88-445f-a7cf-8f93ce800e90",
+    "app": "Filtent",
+    "category": "web:commerce",
+    "type": "product_page_view",
+    "label": "Viewed Backpack B2",
+    "product": "Backpack B2",
+    "timestamp": "2026-06-12T08:24:08.752Z",
+    "text": "User viewed the product page for Backpack B2."
+  },
+  {
+    "id": "4b8595e6-226f-4741-b044-5ac435b19de5",
+    "app": "Filtent",
+    "category": "web:commerce",
+    "type": "review_view",
+    "label": "Read reviews for Backpack B2",
+    "product": "Backpack B2",
+    "timestamp": "2026-06-12T08:24:08.756Z",
+    "text": "User read reviews for Backpack B2."
+  },
+  {
+    "id": "054290a6-6682-472b-b9bd-50885623e157",
+    "app": "Filtent",
+    "category": "web:commerce",
+    "type": "category_browse",
+    "label": "Browsed backpacks",
+    "product": null,
+    "timestamp": "2026-06-12T08:24:08.776Z",
+    "text": "User browsed backpacks."
+  },
+  {
+    "id": "036299f6-e8f2-46a6-b0d6-d8e3361a45fd",
+    "app": "Filtent",
+    "category": "web:commerce",
+    "type": "product_revisit",
+    "label": "Revisited Backpack B1",
+    "product": "Backpack B1",
+    "timestamp": "2026-06-12T08:24:08.793Z",
+    "text": "User revisited product page for Backpack B1."
+  },
+  {
+    "id": "cae2e27f-59b1-4440-8e9a-cdf6864731a4",
+    "app": "Filtent",
+    "category": "web:commerce",
+    "type": "category_browse",
+    "label": "Browsed backpacks",
+    "product": null,
+    "timestamp": "2026-06-12T08:24:08.816Z",
+    "text": "User browsed backpacks."
+  }
+]

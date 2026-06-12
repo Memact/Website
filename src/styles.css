@@ -735,12 +735,58 @@ textarea:focus {
   padding: 0.78rem 1rem;
   color: var(--muted);
   background: var(--glass-inner);
+  transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
+}
+
+.app-chip:hover {
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--text) !important;
 }
 
 .app-chip.is-active {
-  border-color: #ffffff;
-  color: #00011b;
-  background: #ffffff;
+  border-color: #ffffff !important;
+  color: #00011b !important;
+  background: #ffffff !important;
+}
+
+.app-chip.is-active:hover {
+  border-color: #ffffff !important;
+  color: #00011b !important;
+  background: #ffffff !important;
+}
+
+.scope-card:hover,
+.category-card:hover {
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.scope-card.is-active,
+.scope-card:has(input:checked),
+.category-card.is-active,
+.category-card:has(input:checked) {
+  border-color: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.105);
+}
+
+.scope-card.is-active:hover,
+.scope-card:has(input:checked):hover,
+.category-card.is-active:hover,
+.category-card:has(input:checked):hover {
+  border-color: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.card-category-label,
+.card-source-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .list-card {

@@ -1,0 +1,43 @@
+{
+  "schema_version": "memact.uipm.v0",
+  "app": "Filtent",
+  "allowed": true,
+  "interpreted_intent": {
+    "label": "Choosing a backpack",
+    "stage": "comparison before decision",
+    "status": "in_progress",
+    "confidence": 0.82
+  },
+  "based_on": [
+    "Viewed product pages",
+    "Opened product specs",
+    "Read product reviews",
+    "Compared prices across options",
+    "Revisited a product page",
+    "Added product to cart"
+  ],
+  "alternative_interpretations": [
+    "Helping someone else choose a backpack",
+    "Comparing specifications without purchase intent"
+  ],
+  "memory": {
+    "store": true,
+    "type": "intent_memory",
+    "future_agent_context": true,
+    "summary": "User is comparing 2 backpack models using product pages, specs, reviews, prices, revisits, cart activity."
+  },
+  "access": {
+    "category": "web:commerce",
+    "raw_activity_exposed": false,
+    "approved_activity_count": 12
+  },
+  "feedback": {
+    "prompt_required_now": true,
+    "available_actions": [
+      "confirm",
+      "correct",
+      "dismiss",
+      "forget"
+    ]
+  }
+}

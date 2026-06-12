@@ -1,0 +1,67 @@
+.ourselves-page {
+  display: grid;
+  gap: 16px;
+}
+
+.ourselves-hero,
+.ourselves-compose,
+.ourselves-feed {
+  display: grid;
+  gap: 14px;
+}
+
+.ourselves-hero h2,
+.ourselves-compose h3,
+.ourselves-feed h3 {
+  margin: 0;
+}
+
+.ourselves-form {
+  grid-template-columns: minmax(180px, 0.35fr) minmax(0, 1fr);
+}
+
+.ourselves-post-list {
+  display: grid;
+  gap: 10px;
+}
+
+.ourselves-post {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+}
+
+.ourselves-post h4 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.ourselves-post-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ourselves-post-metrics span {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 9px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.025);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.ourselves-empty-post {
+  border-style: dashed;
+}
+
+@media (max-width: 900px) {
+  .ourselves-form {
+    grid-template-columns: 1fr;
+  }
+}

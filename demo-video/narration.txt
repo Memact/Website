@@ -1,0 +1,20 @@
+Scene 1:
+Memact lets users see what apps remember, change it, and remove access.
+
+Scene 2:
+Without Memact, every app can build its own little picture of the user, and the user may never see it.
+
+Scene 3:
+The user has a Wiki. It shows what apps remember, and the user can change it.
+
+Scene 4:
+Flopkart can share shopping activity after permission. Memact turns it into readable Wiki memory the user can accept, edit, or remove.
+
+Scene 5:
+Memact Wiki is not a hidden profile. It is memory the user can add to, check, edit, or delete.
+
+Scene 6:
+Communication goes both ways: apps can add useful memory, and apps can read back only the memory the user allowed.
+
+Scene 7:
+Memact is where users control what apps know, and apps personalize around what users choose.

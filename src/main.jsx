@@ -878,7 +878,6 @@ function Landing({ connectRequest, showAuth, portalNavigate, email, password, au
 
       {showAuth ? (
         <section id="sign-in" className="panel auth-panel" aria-label="Memact login">
-          <p className="eyebrow">Login</p>
           <h2>Login.</h2>
           <p className="muted">
             Use your email and password, or start with a secure email link and set a password right after.
@@ -1006,7 +1005,6 @@ function Dashboard({
     <section className="dashboard">
       <div className="dashboard-head panel slim-panel">
         <div>
-          <p className="eyebrow">{dashboardLabel}</p>
           <h2>{displayEmail}</h2>
           <p className="muted">{dashboardSubtitle}</p>
         </div>
@@ -1015,7 +1013,6 @@ function Dashboard({
 
       {activeTab === "account" ? (
         <section className="panel account-panel">
-          <p className="eyebrow">Account</p>
           <div className="identity-card">
             {avatar ? <img src={avatar} alt="" /> : <span aria-hidden="true">{displayEmail.slice(0, 1).toUpperCase()}</span>}
             <div>
@@ -1043,7 +1040,6 @@ function Dashboard({
           {provider === "email" ? (
             <section className="password-panel">
               <div>
-                <p className="eyebrow">Password</p>
                 <h2>{authFlow === "recovery" ? "Reset your password." : needsPasswordSetup ? "Set a password." : "Update your password."}</h2>
                 <p className="muted">
                   {authFlow === "recovery"
@@ -1097,7 +1093,6 @@ function Dashboard({
           {provider === "email" ? (
             <section className="password-panel">
               <div>
-                <p className="eyebrow">Email</p>
                 <h2>Change your email.</h2>
                 <p className="muted">
                   Start an email change here. Supabase will send verification based on your project email settings.
@@ -1129,8 +1124,7 @@ function Dashboard({
           <section id="app-panel" className="panel app-workspace">
             <div className="section-head">
               <div className="section-copy">
-                <p className="eyebrow">{hasApps ? "Start by selecting or creating an app" : "Start by creating an app"}</p>
-                <h2>{appHeading}</h2>
+                <h2>{isCreatingApp ? appHeading : (hasApps ? "Start by selecting or creating an app" : "Start by creating an app")}</h2>
                 {appDescription ? <p className="muted">{appDescription}</p> : null}
               </div>
               {hasApps ? (
@@ -1188,8 +1182,7 @@ function Dashboard({
             <section id="permissions-panel" className="panel">
               <div className="section-head">
                 <div className="section-copy">
-                  <p className="eyebrow">Next, choose what this app can request</p>
-                  <h2>Choose what this app can request</h2>
+                  <h2>Next, choose what this app can request</h2>
                   <p className="muted">
                     {selectedConsent
                       ? consentChanged ? "Permissions changed. Save them before creating the next key." : "Permissions are saved for this app. Change scopes any time."
@@ -1212,7 +1205,7 @@ function Dashboard({
                   </div>
                   <div className="scope-grid">
                     {Object.entries(scopes).map(([scope, definition]) => (
-                      <label key={scope} className="scope-card">
+                      <label key={scope} className={`scope-card ${selectedScopes.includes(scope) ? "is-active" : ""}`}>
                         <input
                           type="checkbox"
                           checked={selectedScopes.includes(scope)}
@@ -1248,8 +1241,7 @@ function Dashboard({
               <section id="api-keys-panel" className="panel">
                 <div className="section-head">
                   <div className="section-copy">
-                    <p className="eyebrow">Now, API keys</p>
-                    <h2>API keys</h2>
+                    <h2>Now, API keys</h2>
                   </div>
                 </div>
                 <div className="stack">
@@ -1272,7 +1264,6 @@ function Dashboard({
       {oneTimeKey ? (
         <section id="one-time-key-panel" className="panel key-panel">
           <div>
-            <p className="eyebrow">Copy now</p>
             <h2>One-time API key</h2>
           </div>
           <div className="key-box">
@@ -1284,7 +1275,7 @@ function Dashboard({
           </div>
           {apiTestResult ? <p className="success" role="status">{apiTestResult}</p> : null}
           <div className="embed-code">
-            <p className="eyebrow">Embed</p>
+            <h3>Embed</h3>
             <pre><code>{buildEmbedCode(oneTimeKey, oneTimeKeyScopes, oneTimeKeyCategories, selectedApp)}</code></pre>
           </div>
           <p className="muted">Memact stores only a hash. This raw key cannot be shown again.</p>
@@ -1301,7 +1292,7 @@ function CategoryGrid({ categories, selected, onToggle }) {
   return (
     <div className="category-grid">
       {entries.map(([category, definition]) => (
-        <label key={category} className="scope-card category-card">
+        <label key={category} className={`scope-card category-card ${selected.includes(category) ? "is-active" : ""}`}>
           <input
             type="checkbox"
             checked={selected.includes(category)}
@@ -1328,7 +1319,6 @@ function ConnectPage({ connectRequest, connectDetails, loading, notice, onApprov
   return (
     <section className="connect-shell">
       <article className="panel connect-card">
-        <p className="eyebrow">Connect app</p>
         <h1>Connect {appName} to Memact.</h1>
         {app?.developer_url ? (
           <p className="muted">Developer website: <a href={app.developer_url} target="_blank" rel="noreferrer">{app.developer_url}</a></p>
@@ -1342,7 +1332,7 @@ function ConnectPage({ connectRequest, connectDetails, loading, notice, onApprov
 
         <div className="connect-grid">
           <section className="permission-list">
-            <p className="eyebrow">Permissions</p>
+            <h3>Permissions</h3>
             {requestedScopes.length ? requestedScopes.map((scope) => (
               <div className="mini-row" key={scope}>
                 <strong>{scopeLabel(scopes, scope)}</strong>
@@ -1351,7 +1341,7 @@ function ConnectPage({ connectRequest, connectDetails, loading, notice, onApprov
             )) : <p className="muted">No permissions requested.</p>}
           </section>
           <section className="permission-list">
-            <p className="eyebrow">Activity categories</p>
+            <h3>Activity categories</h3>
             {requestedCategories.length ? requestedCategories.map((category) => (
               <div className="mini-row" key={category}>
                 <strong>{categoryLabel(categories, category)}</strong>
@@ -1362,7 +1352,7 @@ function ConnectPage({ connectRequest, connectDetails, loading, notice, onApprov
         </div>
 
         <section className="permission-list">
-          <p className="eyebrow">Safety boundary</p>
+          <h3>Safety boundary</h3>
           <div className="mini-row">
             <strong>No raw memory dump by default.</strong>
             <small>Memact verifies the app, user permission, requested scopes, and selected categories before allowing access.</small>
@@ -1414,7 +1404,6 @@ function HelpPanel() {
 
   return (
     <section className="panel help-panel">
-      <p className="eyebrow">Help</p>
       <h2>Memact in plain words.</h2>
       <p className="muted">
         Memact gives apps a permissioned way to create useful memory from activity. The user stays in control of what the app can ask Memact to do.

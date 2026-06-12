@@ -1,0 +1,20 @@
+{
+  "name": "memact-demo-video",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "preview": "remotion preview src/Root.jsx",
+    "bgm": "node scripts/create-bgm.mjs",
+    "render": "remotion render src/Root.jsx MemactDemo out/memact-demo.mp4 --codec=h264 --pixel-format=yuv420p",
+    "render:webm": "remotion render src/Root.jsx MemactDemo out/memact-demo.webm --codec=vp8"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.366",
+    "@remotion/media-utils": "^4.0.366",
+    "remotion": "^4.0.366",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {}
+}

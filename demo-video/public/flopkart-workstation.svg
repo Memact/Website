@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180" role="img" aria-label="Workstation laptop illustration">
+  <rect width="360" height="180" rx="22" fill="#12142b"/>
+  <rect x="54" y="24" width="252" height="116" rx="16" fill="#03051f" stroke="rgba(255,255,255,0.24)" stroke-width="3"/>
+  <rect x="72" y="42" width="216" height="78" rx="10" fill="#20243d"/>
+  <path d="M94 102L132 66L164 92L198 54L266 104" fill="none" stroke="#9fc7d8" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.86"/>
+  <rect x="108" y="142" width="144" height="12" rx="6" fill="#c8d5de" opacity="0.74"/>
+  <rect x="36" y="154" width="288" height="12" rx="6" fill="#ffffff" opacity="0.18"/>
+</svg>

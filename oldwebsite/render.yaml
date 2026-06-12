@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: memact
+    runtime: node
+    branch: main
+    autoDeploy: true
+    buildCommand: npm ci && npm run build
+    startCommand: npm run serve
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: GEMINI_MAX_OUTPUT_TOKENS
+        value: "180"
+      - key: GEMINI_TEMPERATURE
+        value: "0.1"
+      - key: MEMACT_ALLOWED_ORIGINS
+        value: https://memact.com,https://www.memact.com
+      - key: MEMACT_RATE_LIMIT_WINDOW_MS
+        value: "60000"
+      - key: MEMACT_RATE_LIMIT_MAX_REQUESTS
+        value: "30"
+      - key: MEMACT_MAX_QUERY_LENGTH
+        value: "240"
+      - key: VITE_MEMACT_GEMINI_ENDPOINT
+        value: /api/gemini-answer

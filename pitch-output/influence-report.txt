@@ -1,0 +1,19 @@
+Influence Report
+Timeline: 2026-04-05T10:41:56.899Z -> 2026-04-05T14:42:27.231Z | days=1 | activities=3
+
+Strongest Chains
+No valid influence chains found.
+
+Repeated Trajectories
+No repeated trajectories found.
+
+Persistent Themes
+- coding: count=1, days=1, duration_minutes=74.7, sources=auth.openai.com (1), bsky.app (1), gemini.google.com (1)
+- post by memact com bluesky: count=1, days=1, duration_minutes=42.6, sources=youtube.com (5), bsky.app (2), gemini.google.com (1)
+- google gemini: count=1, days=1, duration_minutes=1.6, sources=gemini.google.com (1)
+
+Drift Signals
+No drift signals found.
+
+Formation Signals
+No formation signals found.
