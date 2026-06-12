@@ -343,7 +343,7 @@ export function Landing({
                     {authLoading === "google" ? "Opening Google..." : "Continue with Google"}
                   </button>
                   <button type="button" className="ghost" disabled={authLoading === "github"} onClick={onGithubLogin}>
-                    {authLoading === "github" ? "Opening GitHub..." : isSignIn ? "Sign in with GitHub" : "Sign up with GitHub"}
+                    {authLoading === "github" ? "Opening GitHub..." : "Continue with GitHub"}
                   </button>
                 </>
               ) : null}
