@@ -323,6 +323,28 @@ function App() {
       if (event === "PASSWORD_RECOVERY") {
         setAuthFlow("recovery")
       } else if (event === "SIGNED_IN") {
+        if (nextSession?.user) {
+          const user = nextSession.user
+          const hasRole = user.user_metadata?.account_type || user.user_metadata?.memact_account_type
+          if (!hasRole) {
+            const storedRole = window.localStorage.getItem("memact_signup_role")
+            const roleToSet = storedRole === "user" || storedRole === "developer" ? storedRole : "developer"
+            requireSupabase().auth.updateUser({
+              data: {
+                account_type: roleToSet,
+                memact_account_type: roleToSet,
+                account_state: "active"
+              }
+            }).then(({ data }) => {
+              if (data?.user) {
+                setAuthUser(data.user)
+              }
+            }).catch(err => {
+              console.error("Error updating OAuth account type:", err)
+            })
+            window.localStorage.removeItem("memact_signup_role")
+          }
+        }
         if (authEventGuardRef.current === "password-login" || authEventGuardRef.current === "signin-code") {
           return
         }
@@ -847,10 +869,45 @@ function App() {
     setStatus("Opening GitHub login.")
     try {
       rememberAuthMethod("GitHub")
+      if (signupAccountType) {
+        window.localStorage.setItem("memact_signup_role", signupAccountType)
+      } else {
+        window.localStorage.removeItem("memact_signup_role")
+      }
       const { error: oauthError } = await requireSupabase().auth.signInWithOAuth({
         provider: "github",
         options: {
           redirectTo: getAuthRedirectTarget()
+        }
+      })
+      if (oauthError) throw oauthError
+    } catch (authError) {
+      setError(formatAuthErrorMessage(authError))
+      setStatus(authStatusMessage(authError))
+      setAuthLoading("")
+    }
+  }
+
+  async function handleGoogleLogin() {
+    setError("")
+    setAuthNotice("")
+    setAuthLoading("google")
+    setStatus("Opening Google login.")
+    try {
+      rememberAuthMethod("Google")
+      if (signupAccountType) {
+        window.localStorage.setItem("memact_signup_role", signupAccountType)
+      } else {
+        window.localStorage.removeItem("memact_signup_role")
+      }
+      const { error: oauthError } = await requireSupabase().auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: getAuthRedirectTarget(),
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent"
+          }
         }
       })
       if (oauthError) throw oauthError
@@ -1753,6 +1810,7 @@ function App() {
           onClearPendingVerification={clearPendingVerification}
           onClearPendingSignInVerification={clearPendingSignInVerification}
           onGithubLogin={handleGithubLogin}
+          onGoogleLogin={handleGoogleLogin}
           onLearnMore={() => { navigateToPage("learn") }}
         />
       )}

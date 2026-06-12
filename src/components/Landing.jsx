@@ -40,6 +40,7 @@ export function Landing({
   onClearPendingVerification,
   onClearPendingSignInVerification,
   onGithubLogin,
+  onGoogleLogin,
   onLearnMore
 }) {
   const isSignIn = authMode === "sign-in"
@@ -335,10 +336,19 @@ export function Landing({
               {!isVerificationStep && !isSignInVerificationStep ? <button type="button" className="text-button" onClick={(event) => handleAuthScroll(event, isSignIn ? "sign-up" : "sign-in")}>
                 {isSignIn ? "New to Memact? Get started" : "Already have an account? Sign in"}
               </button> : null}
-              {!isVerificationStep && !isSignInVerificationStep && !isConsentAuth && signupAccountType !== "user" ? <div className="auth-divider" aria-hidden="true"><span>or</span></div> : null}
-              {!isVerificationStep && !isSignInVerificationStep && !isConsentAuth && signupAccountType !== "user" ? <button type="button" className="ghost" disabled={authLoading === "github"} onClick={onGithubLogin}>
-                {authLoading === "github" ? "Opening GitHub..." : isSignIn ? "Sign in with GitHub" : "Sign up with GitHub"}
-              </button> : null}
+              {!isVerificationStep && !isSignInVerificationStep && !isConsentAuth && (isSignIn || signupStep !== "account-type") ? (
+                <>
+                  <div className="auth-divider" aria-hidden="true"><span>or</span></div>
+                  <button type="button" className="ghost" disabled={authLoading === "google"} onClick={onGoogleLogin}>
+                    {authLoading === "google" ? "Opening Google..." : "Continue with Google"}
+                  </button>
+                  {signupAccountType !== "user" ? (
+                    <button type="button" className="ghost" disabled={authLoading === "github"} onClick={onGithubLogin}>
+                      {authLoading === "github" ? "Opening GitHub..." : isSignIn ? "Sign in with GitHub" : "Sign up with GitHub"}
+                    </button>
+                  ) : null}
+                </>
+              ) : null}
             </form>
           </section>
         ) : null}
