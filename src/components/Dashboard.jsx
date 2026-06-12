@@ -491,7 +491,7 @@ export function Dashboard({
               <div className="section-head">
                 <div className="section-copy">
                   <p className="eyebrow">Next, choose what this app can request</p>
-                  <h2>What this app can request</h2>
+                  <h2>Choose what this app can request</h2>
                 </div>
                 <div className="actions section-actions">
                   <span className="tooltip-wrap" title={permissionsHint || undefined}>
@@ -503,11 +503,9 @@ export function Dashboard({
                 </div>
               </div>
               <div className="stack">
-                <div>
-                  <div className="wiki-section-head">
-                    <div>
-                      <h3>Capabilities</h3>
-                    </div>
+                <section className="usage-overview" aria-label="Capabilities">
+                  <div className="usage-overview-head">
+                    <h3>Capabilities</h3>
                   </div>
                   <div className="scope-grid">
                     {Object.entries(filteredScopes).map(([scope, definition]) => {
@@ -532,20 +530,18 @@ export function Dashboard({
                       )
                     })}
                   </div>
-                </div>
+                </section>
 
-                <div>
-                  <div className="wiki-section-head">
-                    <div>
-                      <h3>Activity categories</h3>
-                    </div>
+                <section className="usage-overview" aria-label="Activity categories">
+                  <div className="usage-overview-head">
+                    <h3>Activity categories</h3>
                   </div>
                   <CategoryGrid
                     categories={filteredCategories}
                     selected={selectedCategories}
                     onToggle={(category) => toggleValue(setSelectedCategories, category)}
                   />
-                </div>
+                </section>
               </div>
             </section>
 
