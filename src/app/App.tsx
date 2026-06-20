@@ -100,12 +100,24 @@ export default function App() {
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
+        const provider = session.user.app_metadata.provider;
+        if (provider === 'email') {
+          localStorage.setItem('memact_last_auth', 'native');
+        } else if (provider) {
+          localStorage.setItem('memact_last_auth', provider);
+        }
         loadUserData(session.user.id);
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
+        const provider = session.user.app_metadata.provider;
+        if (provider === 'email') {
+          localStorage.setItem('memact_last_auth', 'native');
+        } else if (provider) {
+          localStorage.setItem('memact_last_auth', provider);
+        }
         loadUserData(session.user.id);
       } else {
         setUsername('alex');
