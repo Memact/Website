@@ -97,23 +97,6 @@ export function Auth({
     }
   };
 
-  const handleSkipPassword = () => {
-    setError('');
-    if (!username) {
-      setError('Please choose a personal address handle first.');
-      return;
-    }
-    if (usernameError) {
-      setError('Address handle is already taken.');
-      return;
-    }
-    if (!email) {
-      setError('Email address is required for a claimed identity.');
-      return;
-    }
-    onSuccess(true, email, username);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -344,16 +327,6 @@ export function Auth({
               )}
             </button>
 
-            {!isLogin && (
-              <button
-                type="button"
-                disabled={loading || !!usernameError || checkingUsername}
-                onClick={handleSkipPassword}
-                className="w-full mt-2.5 flex items-center justify-center gap-2 bg-secondary border border-border text-foreground hover:bg-muted py-2.5 text-xs font-bold rounded-sm transition-all disabled:opacity-40 cursor-pointer"
-              >
-                Skip password creation (Claimed Identity)
-              </button>
-            )}
           </form>
         </div>
       </main>

@@ -82,9 +82,10 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
   ];
 
   useEffect(() => {
+    const scrollContainer = document.getElementById('main-scroll-container');
     const observerOptions = {
-      root: null,
-      rootMargin: '-40% 0px -40% 0px',
+      root: window.innerWidth < 768 ? scrollContainer : null,
+      rootMargin: '-45% 0px -45% 0px',
       threshold: 0.1,
     };
 
@@ -109,7 +110,12 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
   }, []);
 
   const handleRestart = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const container = document.getElementById('main-scroll-container');
+    if (container && window.innerWidth < 768) {
+      container.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }, []);
 
   const renderVisualFrame = (sectionIndex?: number) => {
@@ -467,23 +473,31 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between" style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
 
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 h-[60px] bg-background/90 backdrop-blur-sm border-b border-border select-none">
-        <img src={isDark ? textLogoDark : textLogoLight} alt="memact" className="h-[50px] w-auto" />
-        <div className="flex items-center gap-6">
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-8 h-[60px] bg-background/90 backdrop-blur-sm border-b border-border select-none">
+        <img src={isDark ? textLogoDark : textLogoLight} alt="memact" className="h-[42px] md:h-[50px] w-auto -ml-1 md:ml-0" />
+        <div className="flex items-center gap-3.5 md:gap-6">
           <button onClick={onToggleDark} className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer" aria-label="Toggle dark mode">
-            {isDark ? <Sun size={15} /> : <Moon size={15} />}
+            {isDark ? <Sun size={14} /> : <Moon size={14} />}
           </button>
-          <button onClick={() => onNavigate('auth', 'login')} className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium cursor-pointer">
+          {/* Mobile Get Started button */}
+          <button
+            onClick={() => onNavigate('auth', 'signup')}
+            className="block md:hidden bg-foreground text-background text-xs px-3.5 py-1.5 font-bold hover:opacity-85 transition-opacity rounded-sm cursor-pointer"
+          >
+            Get started
+          </button>
+          {/* Desktop Auth Buttons */}
+          <button onClick={() => onNavigate('auth', 'login')} className="hidden md:block text-sm text-muted-foreground hover:text-foreground transition-colors font-medium cursor-pointer">
             Sign in
           </button>
-          <button onClick={() => onNavigate('auth', 'signup')} className="bg-foreground text-background text-sm px-4 py-2 font-semibold hover:opacity-85 transition-opacity rounded-sm cursor-pointer">
+          <button onClick={() => onNavigate('auth', 'signup')} className="hidden md:block bg-foreground text-background text-sm px-4 py-2 font-semibold hover:opacity-85 transition-opacity rounded-sm cursor-pointer">
             Create account
           </button>
         </div>
       </nav>
 
       {/* Split screen scrolling container */}
-      <main className="flex-1 flex flex-col md:flex-row relative pt-[60px]">
+      <main id="main-scroll-container" className="flex-1 flex flex-col md:flex-row relative pt-[60px] h-[calc(100vh-60px)] md:h-auto md:overflow-y-visible overflow-y-auto snap-y snap-mandatory scroll-smooth">
         
         {/* Left Visual Area (Sticky) - hidden on mobile */}
         <div className="hidden md:flex w-full md:w-1/2 h-[calc(100vh-60px)] sticky top-[60px] items-center justify-center p-12 border-r border-border/40 bg-background/50 backdrop-blur-sm z-30">
@@ -498,11 +512,11 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
             <section
               key={index}
               data-index={index}
-              className={`scroll-section min-h-[60vh] md:min-h-[calc(100vh-60px)] flex flex-col justify-center px-8 md:px-16 py-12 md:py-0 transition-opacity duration-300 border-b border-border/10 last:border-b-0 ${
+              className={`scroll-section h-[calc(100vh-60px)] md:min-h-[calc(100vh-60px)] md:h-auto flex flex-col justify-center items-center text-center md:text-left md:items-start px-6 md:px-16 py-0 transition-opacity duration-300 border-b border-border/10 last:border-b-0 snap-start snap-always ${
                 activeSection === index ? 'opacity-100' : 'opacity-25'
               }`}
             >
-              <div className="max-w-md space-y-4">
+              <div className="max-w-md space-y-3 w-full flex flex-col items-center md:items-start">
                 <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground leading-[1.15]">
                   {section.title}
                 </h2>
@@ -513,13 +527,13 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
                 )}
                 
                 {/* Inline Visual Frame for Mobile only */}
-                <div className="flex md:hidden my-6 w-full max-w-[280px] aspect-square bg-card border border-border rounded-sm shadow-[0_4px_16px_rgba(0,0,0,0.02)] flex-col justify-center items-center relative overflow-hidden">
+                <div className="flex md:hidden my-4 w-full max-w-[240px] sm:max-w-[260px] aspect-square bg-card border border-border rounded-sm shadow-[0_4px_16px_rgba(0,0,0,0.02)] flex-col justify-center items-center relative overflow-hidden">
                   {renderVisualFrame(index)}
                 </div>
 
                 {/* CTA on the final step */}
                 {index === sections.length - 1 && (
-                  <div className="pt-6 space-y-2.5 w-full">
+                  <div className="pt-4 space-y-2 w-full max-w-[240px]">
                     <button
                       onClick={() => onNavigate('auth', 'signup')}
                       className="w-full bg-foreground text-background py-3 text-xs font-bold hover:opacity-85 transition-opacity rounded-sm cursor-pointer shadow-xs"
