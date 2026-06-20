@@ -97,10 +97,8 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
   ];
 
   useEffect(() => {
-    const scrollContainer = document.getElementById('main-scroll-container');
-    const isMobilePortrait = dimensions.width < 768 && dimensions.height > dimensions.width;
     const observerOptions = {
-      root: isMobilePortrait ? scrollContainer : null,
+      root: null,
       rootMargin: '-45% 0px -45% 0px',
       threshold: 0.1,
     };
@@ -123,7 +121,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
     return () => {
       elements.forEach((el) => observer.unobserve(el));
     };
-  }, [dimensions]);
+  }, []);
 
   const handleRestart = useCallback(() => {
     const container = document.getElementById('main-scroll-container');
@@ -529,7 +527,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
             <section
               key={index}
               data-index={index}
-              className={`scroll-section h-[calc(100vh-60px)] landscape:h-auto landscape:min-h-[calc(100vh-60px)] landscape:py-14 md:min-h-[calc(100vh-60px)] md:h-auto flex flex-col justify-center items-center text-center md:text-left md:items-start px-6 md:px-16 py-0 transition-all duration-500 ease-out border-b border-border/10 last:border-b-0 snap-start snap-always landscape:snap-none ${
+              className={`scroll-section h-[calc(100vh-60px)] landscape:h-auto landscape:min-h-[calc(100vh-60px)] landscape:py-6 md:min-h-[calc(100vh-60px)] md:h-auto flex flex-col justify-center items-center text-center md:text-left md:items-start px-6 md:px-16 py-0 transition-all duration-500 ease-out border-b border-border/10 last:border-b-0 snap-start snap-always landscape:snap-none ${
                 activeSection === index ? 'opacity-100 scale-100 translate-y-0' : 'opacity-25 scale-95 translate-y-4 md:opacity-25 md:scale-100 md:translate-y-0'
               }`}
             >
@@ -564,8 +562,10 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
                 </div>
                 
                 {/* Inline Visual Frame for Mobile only */}
-                <div className="flex md:hidden my-4 landscape:my-0 w-full max-w-[280px] sm:max-w-[320px] landscape:max-w-[220px] aspect-square landscape:aspect-[1.4] bg-card border border-border rounded-sm shadow-[0_4px_16px_rgba(0,0,0,0.02)] flex-col justify-center items-center p-4 landscape:p-2.5 relative overflow-hidden shrink-0">
-                  {renderVisualFrame(index)}
+                <div className="flex md:hidden my-4 landscape:my-0 w-full max-w-[280px] sm:max-w-[320px] landscape:w-[230px] landscape:h-[185px] landscape:aspect-none bg-card border border-border rounded-sm shadow-[0_4px_16px_rgba(0,0,0,0.02)] flex-col justify-center items-center p-4 landscape:p-1 relative overflow-hidden shrink-0">
+                  <div className="w-full h-full flex items-center justify-center landscape:scale-[0.82] landscape:origin-center min-h-0 min-w-0">
+                    {renderVisualFrame(index)}
+                  </div>
                 </div>
               </div>
             </section>
