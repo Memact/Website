@@ -154,7 +154,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
       case 1: // Apps learn things
         return (
           <div className="relative w-full h-full flex flex-col justify-around p-4 animate-in fade-in duration-500">
-            <div className="transform translate-x-[-10px] md:translate-x-[-20px] translate-y-[-10px] md:translate-y-[-15px] -rotate-3 bg-card border border-border p-2.5 md:p-3 rounded-sm shadow-xs w-full max-w-[150px] md:max-w-[200px] self-start">
+            <div className="transform translate-x-[-10px] md:translate-x-[-20px] translate-y-[-10px] md:translate-y-[-15px] landscape:translate-y-0 -rotate-3 bg-card border border-border p-2.5 md:p-3 rounded-sm shadow-xs w-full max-w-[150px] md:max-w-[200px] self-start">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className={DESIGN_TOKENS.styles.appBadge}>FitLife</span>
               </div>
@@ -168,7 +168,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
               <p className="text-xs font-bold text-foreground">"Prefers short essays."</p>
             </div>
 
-            <div className="transform translate-x-[-5px] md:translate-x-[-10px] translate-y-[10px] md:translate-y-[15px] -rotate-3 bg-card border border-border p-2.5 md:p-3 rounded-sm shadow-xs w-full max-w-[130px] md:max-w-[180px] self-end">
+            <div className="transform translate-x-[-5px] md:translate-x-[-10px] translate-y-[10px] md:translate-y-[15px] landscape:translate-y-0 -rotate-3 bg-card border border-border p-2.5 md:p-3 rounded-sm shadow-xs w-full max-w-[130px] md:max-w-[180px] self-end">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className={DESIGN_TOKENS.styles.appBadge}>Friend</span>
               </div>
@@ -180,7 +180,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
       case 2: // None of it connects
         return (
           <div className="relative w-full h-full flex flex-col justify-around p-4 animate-in fade-in duration-500 opacity-40">
-            <div className="transform translate-x-[-10px] md:translate-x-[-20px] translate-y-[-10px] md:translate-y-[-15px] -rotate-3 bg-card border border-border p-2.5 md:p-3 rounded-sm shadow-xs w-full max-w-[150px] md:max-w-[200px] self-start relative">
+            <div className="transform translate-x-[-10px] md:translate-x-[-20px] translate-y-[-10px] md:translate-y-[-15px] landscape:translate-y-0 -rotate-3 bg-card border border-border p-2.5 md:p-3 rounded-sm shadow-xs w-full max-w-[150px] md:max-w-[200px] self-start relative">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className={DESIGN_TOKENS.styles.appBadge}>FitLife</span>
               </div>
@@ -200,7 +200,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
               </div>
             </div>
 
-            <div className="transform translate-x-[-5px] md:translate-x-[-10px] translate-y-[10px] md:translate-y-[15px] -rotate-3 bg-card border border-border p-2.5 md:p-3 rounded-sm shadow-xs w-full max-w-[130px] md:max-w-[180px] self-end relative">
+            <div className="transform translate-x-[-5px] md:translate-x-[-10px] translate-y-[10px] md:translate-y-[15px] landscape:translate-y-0 -rotate-3 bg-card border border-border p-2.5 md:p-3 rounded-sm shadow-xs w-full max-w-[130px] md:max-w-[180px] self-end relative">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className={DESIGN_TOKENS.styles.appBadge}>Friend</span>
               </div>
@@ -563,7 +563,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
                 
                 {/* Inline Visual Frame for Mobile only */}
                 <div className="flex md:hidden my-4 landscape:my-0 w-full max-w-[280px] sm:max-w-[320px] landscape:w-[230px] landscape:h-[185px] landscape:aspect-none bg-card border border-border rounded-sm shadow-[0_4px_16px_rgba(0,0,0,0.02)] flex-col justify-center items-center p-4 landscape:p-1 relative overflow-hidden shrink-0">
-                  <div className="w-full h-full flex items-center justify-center landscape:scale-[0.82] landscape:origin-center min-h-0 min-w-0">
+                  <div className="w-full h-full flex items-center justify-center landscape:scale-75 landscape:origin-center min-h-0 min-w-0">
                     {renderVisualFrame(index)}
                   </div>
                 </div>
@@ -574,9 +574,9 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
       </main>
 
       {/* Footer */}
-      <footer className="px-8 py-6 border-t border-border flex items-center justify-between text-xs select-none bg-background shrink-0">
+      <footer className="px-8 py-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0 text-xs select-none bg-background shrink-0">
         <img src={isDark ? textLogoDark : textLogoLight} alt="memact" className="h-[36px] w-auto opacity-35" />
-        <div className="flex gap-6">
+        <div className="flex gap-6 justify-center">
           {['Privacy', 'Terms', 'Contact'].map((item) => (
             <button key={item} className="text-muted-foreground hover:text-foreground transition-colors font-medium cursor-pointer">{item}</button>
           ))}
