@@ -33,4 +33,4 @@ Your identity compounds naturally as you use apps, agents, and services.
 
 6. **Context Access Protocol (CAP)**
    - Task-specific, granular matching filters.
-   - Restricts raw profile queries. If a Music App asks "What should I play?", Memact matches only the "works out regularly" trait and hides unrelated data (e.g., "prefers long-form essays").
+   - Restricts raw profile queries. If a Music App asks "What should I play?", Memact matches only the "works out regularly" trait and hides unrelated data (e.g., "prefers short essays").
