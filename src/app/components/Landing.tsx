@@ -513,7 +513,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
               key={index}
               data-index={index}
               className={`scroll-section h-[calc(100vh-60px)] md:min-h-[calc(100vh-60px)] md:h-auto flex flex-col justify-center items-center text-center md:text-left md:items-start px-6 md:px-16 py-0 transition-opacity duration-300 border-b border-border/10 last:border-b-0 snap-start snap-always ${
-                activeSection === index ? 'opacity-100' : 'opacity-25'
+                activeSection === index ? 'opacity-100' : 'opacity-100 md:opacity-25'
               }`}
             >
               <div className="max-w-md space-y-3 w-full flex flex-col items-center md:items-start">
