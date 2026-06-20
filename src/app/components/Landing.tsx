@@ -562,8 +562,8 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
                 </div>
                 
                 {/* Inline Visual Frame for Mobile only */}
-                <div className="flex md:hidden my-4 landscape:my-0 w-full max-w-[280px] sm:max-w-[320px] landscape:w-[230px] landscape:h-[185px] landscape:aspect-none bg-card border border-border rounded-sm shadow-[0_4px_16px_rgba(0,0,0,0.02)] flex-col justify-center items-center p-4 landscape:p-1 relative overflow-hidden shrink-0">
-                  <div className="w-full h-full flex items-center justify-center landscape:scale-75 landscape:origin-center min-h-0 min-w-0">
+                <div className="flex md:hidden my-4 landscape:my-0 w-full max-w-[280px] sm:max-w-[320px] h-[235px] landscape:w-[230px] landscape:h-[185px] landscape:aspect-none bg-card border border-border rounded-sm shadow-[0_4px_16px_rgba(0,0,0,0.02)] flex-col justify-center items-center p-4 landscape:p-1 relative overflow-hidden shrink-0">
+                  <div className="w-full h-[235px] landscape:w-[306px] landscape:h-[246px] flex items-center justify-center scale-95 landscape:scale-75 origin-center landscape:origin-center min-h-0 min-w-0 shrink-0">
                     {renderVisualFrame(index)}
                   </div>
                 </div>
