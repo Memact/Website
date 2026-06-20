@@ -124,7 +124,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
       case 0: // Let your identity live in one place
         return (
           <div className="flex flex-col items-center justify-center h-full w-full space-y-4 animate-in fade-in duration-500">
-            <div className="w-60 bg-card border border-accent/25 p-5 rounded-sm flex flex-col justify-center items-center shadow-xs relative">
+            <div className="w-full max-w-[210px] md:max-w-[240px] bg-card border border-accent/25 p-5 rounded-sm flex flex-col justify-center items-center shadow-xs relative">
               <span className="text-[9px] font-bold text-accent uppercase tracking-wider mb-1">
                 Active Address
               </span>
@@ -139,21 +139,21 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
       case 1: // Apps learn things
         return (
           <div className="relative w-full h-full flex flex-col justify-around p-4 animate-in fade-in duration-500">
-            <div className="transform translate-y-[-10px] -rotate-1 bg-card border border-border p-3 rounded-sm shadow-xs max-w-[200px] self-start">
+            <div className="transform translate-y-[-5px] md:translate-y-[-10px] -rotate-1 bg-card border border-border p-2.5 md:p-3 rounded-sm shadow-xs w-full max-w-[150px] md:max-w-[200px] self-start">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className={DESIGN_TOKENS.styles.appBadge}>FitLife</span>
               </div>
               <p className="text-xs font-bold text-foreground">"John works out regularly."</p>
             </div>
 
-            <div className="transform translate-x-[45px] rotate-2 bg-card border border-border p-3 rounded-sm shadow-xs max-w-[200px] self-center">
+            <div className="transform translate-x-[15px] md:translate-x-[45px] rotate-2 bg-card border border-border p-2.5 md:p-3 rounded-sm shadow-xs w-full max-w-[150px] md:max-w-[200px] self-center">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className={DESIGN_TOKENS.styles.appBadge}>Reader</span>
               </div>
               <p className="text-xs font-bold text-foreground">"Prefers long-form essays."</p>
             </div>
 
-            <div className="transform translate-y-[10px] -rotate-2 bg-card border border-border p-3 rounded-sm shadow-xs max-w-[180px] self-end">
+            <div className="transform translate-y-[5px] md:translate-y-[10px] -rotate-2 bg-card border border-border p-2.5 md:p-3 rounded-sm shadow-xs w-full max-w-[130px] md:max-w-[180px] self-end">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className={DESIGN_TOKENS.styles.appBadge}>Friend</span>
               </div>
@@ -165,7 +165,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
       case 2: // None of it connects
         return (
           <div className="relative w-full h-full flex flex-col justify-around p-4 animate-in fade-in duration-500 opacity-40">
-            <div className="transform translate-x-[-20px] translate-y-[-15px] -rotate-3 bg-card border border-border p-3 rounded-sm shadow-xs max-w-[200px] self-start relative">
+            <div className="transform translate-x-[-10px] md:translate-x-[-20px] translate-y-[-10px] md:translate-y-[-15px] -rotate-3 bg-card border border-border p-2.5 md:p-3 rounded-sm shadow-xs w-full max-w-[150px] md:max-w-[200px] self-start relative">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className={DESIGN_TOKENS.styles.appBadge}>FitLife</span>
               </div>
@@ -175,7 +175,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
               </div>
             </div>
 
-            <div className="transform translate-x-[55px] rotate-3 bg-card border border-border p-3 rounded-sm shadow-xs max-w-[200px] self-center relative">
+            <div className="transform translate-x-[25px] md:translate-x-[55px] rotate-3 bg-card border border-border p-2.5 md:p-3 rounded-sm shadow-xs w-full max-w-[150px] md:max-w-[200px] self-center relative">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className={DESIGN_TOKENS.styles.appBadge}>Reader</span>
               </div>
@@ -185,7 +185,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
               </div>
             </div>
 
-            <div className="transform translate-x-[-10px] translate-y-[15px] -rotate-3 bg-card border border-border p-3 rounded-sm shadow-xs max-w-[180px] self-end relative">
+            <div className="transform translate-x-[-5px] md:translate-x-[-10px] translate-y-[10px] md:translate-y-[15px] -rotate-3 bg-card border border-border p-2.5 md:p-3 rounded-sm shadow-xs w-full max-w-[130px] md:max-w-[180px] self-end relative">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className={DESIGN_TOKENS.styles.appBadge}>Friend</span>
               </div>
@@ -200,7 +200,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
       case 3: // Keep it here instead
         return (
           <div className="w-full h-full flex flex-col justify-center items-center p-4 space-y-6 animate-in slide-in-from-bottom duration-500">
-            <div className="w-full max-w-[280px] bg-card border border-border p-5 rounded-sm flex flex-col justify-center items-center shadow-md relative">
+            <div className="w-full max-w-[220px] md:max-w-[280px] bg-card border border-border p-4 md:p-5 rounded-sm flex flex-col justify-center items-center shadow-md relative">
               <span className="text-[10px] font-bold text-accent uppercase tracking-wider mb-1">
                 Domain
               </span>
@@ -222,7 +222,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
       case 4: // Apps propose suggestions
         return (
           <div className="w-full h-full flex flex-col justify-center items-center p-4 animate-in fade-in duration-500">
-            <div className="w-full max-w-[280px] bg-card border border-border p-4 rounded-sm space-y-3">
+            <div className="w-full max-w-[220px] md:max-w-[280px] bg-card border border-border p-3 md:p-4 rounded-sm space-y-2.5 md:space-y-3">
               <div className="flex justify-between items-center border-b border-border/40 pb-2">
                 <span className="text-xs font-mono font-bold text-foreground">john.memact.com</span>
                 <span className="text-[8px] font-bold bg-amber-500/10 border border-amber-500/20 text-amber-500 px-2 py-0.5 rounded-full uppercase">
@@ -251,7 +251,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
       case 5: // You approve on the spot
         return (
           <div className="w-full h-full flex flex-col justify-center items-center p-4 animate-in fade-in duration-500">
-            <div className="w-full max-w-[280px] bg-card border border-accent/20 bg-accent/5 p-4 rounded-sm space-y-3 shadow-sm relative">
+            <div className="w-full max-w-[220px] md:max-w-[280px] bg-card border border-accent/20 bg-accent/5 p-3 md:p-4 rounded-sm space-y-2.5 md:space-y-3 shadow-sm relative">
               <div className="flex justify-between items-center border-b border-border/40 pb-2">
                 <span className="text-[8px] font-bold bg-accent text-background px-1.5 py-0.5 rounded-sm uppercase tracking-wider">
                   Fitness App
@@ -306,7 +306,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
       case 6: // Now it belongs to you
         return (
           <div className="w-full h-full flex flex-col justify-center items-center p-4 animate-in fade-in duration-500">
-            <div className="w-full max-w-[280px] bg-card border border-border p-4 rounded-sm space-y-3">
+            <div className="w-full max-w-[220px] md:max-w-[280px] bg-card border border-border p-3 md:p-4 rounded-sm space-y-2.5 md:space-y-3">
               <div className="flex items-center gap-1.5 border-b border-border/40 pb-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-xs font-mono font-bold text-foreground">john.memact.com</span>
@@ -327,7 +327,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
       case 7: // Choose who sees what
         return (
           <div className="w-full h-full flex flex-col justify-center items-center p-4 animate-in fade-in duration-500">
-            <div className="w-full max-w-[280px] bg-card border border-border p-4 rounded-sm space-y-3">
+            <div className="w-full max-w-[220px] md:max-w-[280px] bg-card border border-border p-3 md:p-4 rounded-sm space-y-2.5 md:space-y-3">
               <div className="flex justify-between items-center border-b border-border/40 pb-2">
                 <span className="text-xs font-mono font-bold text-foreground">john.memact.com</span>
                 <span className="text-[8px] font-bold text-muted-foreground uppercase">Access Rules</span>
@@ -354,14 +354,14 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
       case 8: // Another app arrives
         return (
           <div className="w-full h-full flex flex-col justify-center items-center p-4 space-y-3 animate-in fade-in duration-500">
-            <div className="w-full max-w-[260px] bg-card border border-border p-3.5 rounded-sm opacity-60">
+            <div className="w-full max-w-[210px] md:max-w-[260px] bg-card border border-border p-3 rounded-sm opacity-60">
               <div className="text-[9px] font-mono font-bold text-muted-foreground mb-0.5">john.memact.com</div>
               <div className="text-[11px] font-bold text-foreground">2 Approved Traits</div>
             </div>
 
             <div className="text-muted-foreground/30 font-bold text-sm">↓</div>
 
-            <div className="w-full max-w-[260px] bg-card border border-accent/20 bg-accent/5 p-3.5 rounded-sm space-y-2 shadow-xs">
+            <div className="w-full max-w-[210px] md:max-w-[260px] bg-card border border-accent/20 bg-accent/5 p-3 rounded-sm space-y-2 shadow-xs">
               <div className="flex items-center justify-between">
                 <span className="text-[8px] font-bold bg-accent text-background px-1.5 py-0.5 rounded-sm uppercase tracking-wider">
                   Music App
@@ -381,7 +381,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
       case 9: // Memact checks approved stuff
         return (
           <div className="w-full h-full flex flex-col justify-center items-center p-4 space-y-3 animate-in fade-in duration-500">
-            <div className="w-full max-w-[260px] bg-card border border-border p-3 rounded-sm space-y-2">
+            <div className="w-full max-w-[210px] md:max-w-[260px] bg-card border border-border p-2.5 md:p-3 rounded-sm space-y-1.5 md:space-y-2">
               <div className="text-[8px] font-mono font-bold text-muted-foreground">john.memact.com</div>
               
               <div className="space-y-1">
@@ -400,7 +400,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
               Filtering matching trait only
             </div>
 
-            <div className="w-full max-w-[260px] bg-accent/5 border border-accent/20 p-2.5 rounded-sm flex justify-between items-center">
+            <div className="w-full max-w-[210px] md:max-w-[260px] bg-accent/5 border border-accent/20 p-2 rounded-sm flex justify-between items-center">
               <span className="text-[8px] font-bold bg-accent text-background px-1.5 py-0.5 rounded-sm uppercase">Music App</span>
               <span className="text-[10px] font-bold text-foreground font-mono">Received: Works out regularly</span>
             </div>
@@ -410,7 +410,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
       case 10: // The music app adapts
         return (
           <div className="w-full h-full flex flex-col justify-center items-center p-4 animate-in scale-in duration-500">
-            <div className="w-full max-w-[260px] bg-card border border-border p-4 rounded-sm space-y-3.5 shadow-md">
+            <div className="w-full max-w-[210px] md:max-w-[260px] bg-card border border-border p-3 md:p-4 rounded-sm space-y-2.5 md:space-y-3.5 shadow-md">
               <div className="flex items-center justify-between border-b border-border/40 pb-1.5">
                 <span className="text-[8px] font-bold bg-accent text-background px-1.5 py-0.5 rounded-sm uppercase">
                   Music App
@@ -452,7 +452,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
       default:
         return (
           <div className="w-full h-full flex flex-col justify-center items-center p-4 animate-in fade-in duration-500">
-            <div className="w-full max-w-[260px] bg-card border border-accent p-5 rounded-sm shadow-[0_8px_32px_rgba(66,85,255,0.06)] flex flex-col justify-center items-center relative overflow-hidden">
+            <div className="w-full max-w-[210px] md:max-w-[260px] bg-card border border-accent p-4 md:p-5 rounded-sm shadow-[0_8px_32px_rgba(66,85,255,0.06)] flex flex-col justify-center items-center relative overflow-hidden">
               <div className="absolute top-0 right-0 w-20 h-20 bg-accent/5 rounded-full blur-xl pointer-events-none" />
               <span className="text-[9px] font-bold text-accent uppercase tracking-wider mb-2 select-none">
                 Verified Address
@@ -527,7 +527,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
                 )}
                 
                 {/* Inline Visual Frame for Mobile only */}
-                <div className="flex md:hidden my-4 w-full max-w-[240px] sm:max-w-[260px] aspect-square bg-card border border-border rounded-sm shadow-[0_4px_16px_rgba(0,0,0,0.02)] flex-col justify-center items-center relative overflow-hidden">
+                <div className="flex md:hidden my-4 w-full max-w-[280px] sm:max-w-[320px] aspect-square bg-card border border-border rounded-sm shadow-[0_4px_16px_rgba(0,0,0,0.02)] flex-col justify-center items-center p-4 relative overflow-hidden">
                   {renderVisualFrame(index)}
                 </div>
 
