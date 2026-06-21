@@ -265,9 +265,8 @@ export function IdentityView({
             <div className="flex items-center gap-4 select-none overflow-x-auto whitespace-nowrap scrollbar-none h-[40px] md:h-[65px] border-t border-border/30 md:border-t-0 pt-1.5 md:pt-0">
               {[
                 { id: 'inbox', label: 'Inbox', badge: inbox.length },
-                { id: 'junk', label: 'Junk', badge: junk.length },
-                { id: 'you', label: 'You' },
-                { id: 'privacy', label: 'Privacy' },
+                { id: 'record', label: 'You' },
+                { id: 'access', label: 'Privacy' },
                 { id: 'settings', label: 'Settings' },
               ].map((tab) => (
                 <button

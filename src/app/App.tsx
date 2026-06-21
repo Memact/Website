@@ -50,7 +50,7 @@ export default function App() {
     { id: 'e1', content: 'Learning how memory agents connect.', contributor: 'You', visibility: 'Private', starred: false, time: 'Just now' },
     { id: 'e2', content: 'Building Memact address protocol beta.', contributor: 'You', visibility: 'Public', starred: true, time: '2h ago' },
     { id: 'e3', content: 'Tokyo subway architecture research & essay.', contributor: 'Claude', visibility: 'Private', starred: false, time: '3h ago' },
-    { id: 'e4', content: 'Sofia says I am funny.', contributor: 'Sofia M.', visibility: 'Friends', starred: true, time: 'Yesterday' },
+    { id: 'e4', content: 'Prefers quiet workspaces with natural lighting.', contributor: 'You', visibility: 'Private', starred: true, time: 'Yesterday' },
     { id: 'e5', content: 'Minimalist typography and industrial brutalism.', contributor: 'You', visibility: 'Public', starred: false, time: '3 days ago' },
     { id: 'e6', content: 'Run the Golden Gate trail.', contributor: 'You', visibility: 'Public', starred: false, time: '4 days ago' }
   ]);
@@ -79,14 +79,16 @@ export default function App() {
 
           if (dbContributions) {
             setEntries(
-              dbContributions.map((c: any) => ({
-                id: c.id,
-                content: c.content,
-                contributor: c.contributor_name,
-                visibility: toUiVisibility(c.visibility),
-                starred: c.is_starred,
-                time: formatTimeAgo(c.created_at)
-              }))
+              dbContributions
+                .filter((c: any) => c.content && c.content.trim())
+                .map((c: any) => ({
+                  id: c.id,
+                  content: c.content,
+                  contributor: c.contributor_name,
+                  visibility: toUiVisibility(c.visibility),
+                  starred: c.is_starred,
+                  time: formatTimeAgo(c.created_at)
+                }))
             );
           }
           setPage('identity');
@@ -127,7 +129,7 @@ export default function App() {
           { id: 'e1', content: 'Learning how memory agents connect.', contributor: 'You', visibility: 'Private', starred: false, time: 'Just now' },
           { id: 'e2', content: 'Building Memact address protocol beta.', contributor: 'You', visibility: 'Public', starred: true, time: '2h ago' },
           { id: 'e3', content: 'Tokyo subway architecture research & essay.', contributor: 'Claude', visibility: 'Private', starred: false, time: '3h ago' },
-          { id: 'e4', content: 'Sofia says I am funny.', contributor: 'Sofia M.', visibility: 'Friends', starred: true, time: 'Yesterday' },
+          { id: 'e4', content: 'Prefers quiet workspaces with natural lighting.', contributor: 'You', visibility: 'Private', starred: true, time: 'Yesterday' },
           { id: 'e5', content: 'Minimalist typography and industrial brutalism.', contributor: 'You', visibility: 'Public', starred: false, time: '3 days ago' },
           { id: 'e6', content: 'Run the Golden Gate trail.', contributor: 'You', visibility: 'Public', starred: false, time: '4 days ago' }
         ]);
@@ -234,36 +236,46 @@ export default function App() {
                     full_name: name
                   });
 
-                  await supabase.from('memact_contributions').insert([
-                    {
+                  const contributionsToInsert = [];
+                  if (focus.trim()) {
+                    contributionsToInsert.push({
                       user_id: authUser.id,
-                      content: focus,
+                      content: focus.trim(),
                       contributor_type: 'user',
                       contributor_name: name,
                       status: 'approved',
                       visibility: toDbVisibility(focusVis),
                       is_starred: true
-                    },
-                    {
+                    });
+                  }
+                  if (prefs.trim()) {
+                    contributionsToInsert.push({
                       user_id: authUser.id,
-                      content: prefs,
+                      content: prefs.trim(),
                       contributor_type: 'user',
                       contributor_name: name,
                       status: 'approved',
                       visibility: toDbVisibility(prefsVis),
                       is_starred: false
-                    }
-                  ]);
+                    });
+                  }
+                  if (contributionsToInsert.length > 0) {
+                    await supabase.from('memact_contributions').insert(contributionsToInsert);
+                  }
                 }
               } catch (err) {
                 console.error("Error completing onboarding in Supabase:", err);
               }
             }
 
-            setEntries([
-              { id: 'e1', content: focus, contributor: 'You', visibility: focusVis, starred: true, time: 'Just now' },
-              { id: 'e2', content: prefs, contributor: 'You', visibility: prefsVis, starred: false, time: 'Just now' }
-            ]);
+            const initialEntries = [];
+            if (focus.trim()) {
+              initialEntries.push({ id: 'e1', content: focus.trim(), contributor: 'You', visibility: focusVis, starred: true, time: 'Just now' });
+            }
+            if (prefs.trim()) {
+              initialEntries.push({ id: 'e2', content: prefs.trim(), contributor: 'You', visibility: prefsVis, starred: false, time: 'Just now' });
+            }
+            setEntries(initialEntries);
             setPage('identity');
           }}
           isDark={isDark}

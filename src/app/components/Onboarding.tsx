@@ -43,11 +43,10 @@ export function Onboarding({ onBack, onComplete, isDark, onToggleDark, initialEm
   }, [step]);
 
   const handleNext = () => {
-    if (step === 1 && (!username || !fullName)) return;
-    if (step === 2) {
-      setStep(3);
-    } else if (step === 3) {
-      onComplete(username, fullName, nowFocus, focusVisibility, preferences, prefsVisibility);
+    if (step === 1 && (!username.trim() || !fullName.trim())) return;
+    if (step === 2 && (!nowFocus.trim() || !preferences.trim())) return;
+    if (step === 3) {
+      onComplete(username.trim(), fullName.trim(), nowFocus.trim(), focusVisibility, preferences.trim(), prefsVisibility);
     } else {
       setStep((step + 1) as any);
     }
@@ -234,7 +233,7 @@ export function Onboarding({ onBack, onComplete, isDark, onToggleDark, initialEm
                       rows={2}
                       value={preferences}
                       onChange={(e) => setPreferences(e.target.value)}
-                      placeholder="e.g., Sofia says I'm funny."
+                      placeholder="e.g., Prefers listening to lofi music when focusing."
                       className="w-full bg-secondary border border-border focus:border-foreground/45 transition-colors px-3 py-2.5 text-xs outline-none rounded-sm text-foreground placeholder:text-muted-foreground/30 font-medium resize-none leading-relaxed"
                     />
                     
@@ -344,7 +343,11 @@ export function Onboarding({ onBack, onComplete, isDark, onToggleDark, initialEm
             {/* Stepped controls button */}
             <button
               onClick={handleNext}
-              disabled={(step === 1 && (!username || !fullName)) || (step === 3 && simState !== 'success')}
+              disabled={
+                (step === 1 && (!username.trim() || !fullName.trim())) ||
+                (step === 2 && (!nowFocus.trim() || !preferences.trim())) ||
+                (step === 3 && simState !== 'success')
+              }
               className="w-full mt-6 flex items-center justify-center gap-2 bg-foreground text-background py-3 text-sm font-semibold hover:opacity-85 transition-opacity disabled:opacity-40"
             >
               {step === 3 ? (
