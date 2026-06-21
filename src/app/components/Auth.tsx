@@ -37,14 +37,16 @@ export function Auth({
 
   // Supabase Auth and username states
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [usernameError, setUsernameError] = useState('');
   const [checkingUsername, setCheckingUsername] = useState(false);
 
-  // Sync state if props change, clearing errors
+  // Sync state if props change, clearing errors and success messages
   useEffect(() => {
     setIsLogin(initialTab === 'login');
     setError('');
+    setSuccessMessage('');
     setUsernameError('');
   }, [initialTab]);
 
@@ -133,7 +135,7 @@ export function Auth({
         if (!agree) {
           throw new Error('You must agree to the terms of service.');
         }
-        const { error: signUpErr } = await supabase.auth.signUp({
+        const { data, error: signUpErr } = await supabase.auth.signUp({
           email,
           password
         });
@@ -141,6 +143,13 @@ export function Auth({
         if (typeof window !== 'undefined') {
           localStorage.setItem('memact_last_auth', 'native');
         }
+
+        if (data?.user && !data.session) {
+          setSuccessMessage('Registration successful! Please check your email to confirm your account, then sign in.');
+          setLoading(false);
+          return;
+        }
+
         onSuccess(false, email, username);
       }
     } catch (err: any) {
@@ -245,6 +254,13 @@ export function Auth({
           {error && (
             <div className="mb-4 p-3 bg-red-950/20 border border-red-900/40 text-red-400 text-xs rounded-sm font-medium">
               {error}
+            </div>
+          )}
+
+          {/* Success Banner */}
+          {successMessage && (
+            <div className="mb-4 p-3 bg-emerald-950/20 border border-emerald-900/40 text-emerald-400 text-xs rounded-sm font-medium">
+              {successMessage}
             </div>
           )}
 
