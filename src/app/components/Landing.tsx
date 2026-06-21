@@ -92,7 +92,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
     },
     {
       title: "Your profile grows on its own.",
-      subtitle: "john.memact.com compiles things over time as you use apps. No setup, no chores."
+      subtitle: "Approved observations are added automatically over time as you use apps. No setup, no chores."
     }
   ];
 
