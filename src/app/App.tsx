@@ -10,7 +10,7 @@ export interface Entry {
   id: string;
   content: string;
   contributor: string;
-  visibility: 'Public' | 'Friends' | 'Private';
+  visibility: 'Public' | 'Private';
   starred: boolean;
   time: string;
 }
@@ -46,10 +46,7 @@ export default function App() {
   // Global Record States
   const [username, setUsername] = useState('sujay');
   const [fullName, setFullName] = useState('Sujay Sudhir');
-  const [entries, setEntries] = useState<Entry[]>([
-    { id: 'e1', content: 'I am building Memact', contributor: 'You', visibility: 'Private', starred: true, time: 'Just now' },
-    { id: 'e2', content: 'I love Vibe Coding', contributor: 'You', visibility: 'Private', starred: false, time: 'Just now' }
-  ]);
+  const [entries, setEntries] = useState<Entry[]>([]);
 
   // Auth session listener
   useEffect(() => {
@@ -120,11 +117,8 @@ export default function App() {
       } else {
         setUsername('sujay');
         setFullName('Sujay Sudhir');
-        // Reset to mock entries when logged out
-        setEntries([
-          { id: 'e1', content: 'I am building Memact', contributor: 'You', visibility: 'Private', starred: true, time: 'Just now' },
-          { id: 'e2', content: 'I love Vibe Coding', contributor: 'You', visibility: 'Private', starred: false, time: 'Just now' }
-        ]);
+        // Reset to empty entries when logged out
+        setEntries([]);
         setPage('landing');
       }
     });
