@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Moon, Sun, X, Check, Plus, Globe, Eye, EyeOff, Trash2, Star, Sparkles, User, Settings, Lock, Users } from 'lucide-react';
+import { Moon, Sun, X, Check, Plus, Globe, Eye, EyeOff, Trash2, Star, Sparkles, User, Settings, Lock, Users, ChevronDown, CornerDownLeft } from 'lucide-react';
 import textLogoLight from '../../imports/text_logo_nobg_light.png';
 import textLogoDark  from '../../imports/text_logo_nobg_dark.png';
 import { Entry } from '../App';
@@ -68,7 +68,7 @@ export function IdentityView({
   const [newEntryVisibility, setNewEntryVisibility] = useState<'Public' | 'Friends' | 'Private'>('Private');
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(`${username}.memact.me`);
+    navigator.clipboard.writeText(`${username}.memact.com`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -97,12 +97,12 @@ export function IdentityView({
     {
       id: 's3',
       type: 'suggestion',
-      from: 'Sofia M.',
+      from: 'Spotify',
       avatarColor: 'bg-chart-3/10 text-chart-3 border-chart-3/20',
-      title: 'Sofia says I\'m funny',
-      reason: 'Mentioned in text conversation yesterday.',
-      visibility: 'Friends',
-      value: 'Sofia says I\'m funny.'
+      title: 'Focus habits',
+      reason: 'Observed active session listening to focus tracks.',
+      visibility: 'Private',
+      value: 'Prefers listening to lofi music when focusing.'
     },
     {
       id: 's4',
@@ -126,7 +126,7 @@ export function IdentityView({
   // History timeline
   const [history, setHistory] = useState<HistoryItem[]>([
     { id: 'h1', action: 'Approved: Added "Japan urban planning" (Claude)', time: '2h ago', status: 'approved' },
-    { id: 'h2', action: 'Approved: Added "Typography systems" (Sofia M.)', time: '1d ago', status: 'approved' },
+    { id: 'h2', action: 'Approved: Added "Typography systems" (Spotify)', time: '1d ago', status: 'approved' },
     { id: 'h3', action: 'Rejected: Added "Cryptocurrency trading" (SpamBot)', time: '3d ago', status: 'rejected' }
   ]);
 
@@ -146,7 +146,7 @@ export function IdentityView({
         id: Math.random().toString(),
         content: item.value,
         contributor: item.from,
-        visibility: item.visibility,
+        visibility: 'Private',
         starred: false,
         time: 'Just now'
       };
@@ -243,12 +243,6 @@ export function IdentityView({
               
               {/* Mobile top-right actions */}
               <div className="flex items-center gap-3 md:hidden">
-                <button
-                  onClick={handleCopy}
-                  className="text-[10px] text-muted-foreground border border-border px-2.5 py-1 rounded-sm bg-secondary/20 hover:bg-secondary/40 font-semibold"
-                >
-                  {copied ? 'Copied' : `${username}.com`}
-                </button>
                 <button onClick={onToggleDark} className="text-muted-foreground hover:text-foreground p-1 transition-colors" aria-label="Toggle theme">
                   {isDark ? <Sun size={13} /> : <Moon size={13} />}
                 </button>
@@ -291,13 +285,6 @@ export function IdentityView({
 
           {/* Desktop-only right actions */}
           <div className="hidden md:flex items-center gap-4">
-            <button
-              onClick={handleCopy}
-              className="text-xs text-muted-foreground hover:text-foreground border border-border px-3 py-1.5 rounded-sm hover:bg-secondary/40 font-semibold"
-            >
-              {copied ? 'Copied link' : `${username}.memact.com`}
-            </button>
-
             <button onClick={onToggleDark} className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Toggle theme">
               {isDark ? <Sun size={14} /> : <Moon size={14} />}
             </button>
@@ -352,57 +339,7 @@ export function IdentityView({
                         <span>{item.reason}</span>
                       </p>
 
-                      {item.type === 'suggestion' && (
-                        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/20">
-                          <span className="text-[10px] text-muted-foreground font-semibold">Proposed visibility:</span>
-                          <div className="relative inline-block">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveDropdownId(activeDropdownId === item.id ? null : item.id);
-                              }}
-                              className="flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold border border-border rounded-full hover:bg-secondary transition-all cursor-pointer text-muted-foreground hover:text-foreground"
-                            >
-                              {item.visibility === 'Public' && <Globe size={10} className="text-chart-2" />}
-                              {item.visibility === 'Friends' && <Users size={10} className="text-chart-3" />}
-                              {item.visibility === 'Private' && <Lock size={10} className="text-muted-foreground/60" />}
-                              <span>{item.visibility}</span>
-                            </button>
 
-                            {activeDropdownId === item.id && (
-                              <>
-                                <div 
-                                  className="fixed inset-0 z-40" 
-                                  onClick={() => setActiveDropdownId(null)}
-                                />
-                                <div className="absolute left-0 mt-1 w-44 bg-popover text-popover-foreground border border-border rounded-sm shadow-[0_4px_12px_rgba(0,0,0,0.05)] py-1 z-50 animate-[fadeIn_0.15s_ease-out] select-none animate-[fadeIn_0.15s_ease-out]">
-                                  {[
-                                    { value: 'Public', label: 'Public (Everyone)', icon: <Globe size={11} className="text-chart-2" /> },
-                                    { value: 'Friends', label: 'Friends (Connections)', icon: <Users size={11} className="text-chart-3" /> },
-                                    { value: 'Private', label: 'Private (Just me)', icon: <Lock size={11} className="text-muted-foreground/60" /> }
-                                  ].map((opt) => (
-                                    <button
-                                      key={opt.value}
-                                      type="button"
-                                      onClick={() => {
-                                        setInbox(prev => prev.map(x => x.id === item.id ? { ...x, visibility: opt.value as any } : x));
-                                        setActiveDropdownId(null);
-                                      }}
-                                      className={`w-full text-left px-2.5 py-1.5 text-[10px] font-bold flex items-center gap-2 hover:bg-secondary transition-colors ${
-                                        item.visibility === opt.value ? 'bg-secondary text-foreground font-extrabold' : 'text-muted-foreground font-medium'
-                                      }`}
-                                    >
-                                      {opt.icon}
-                                      <span>{opt.label}</span>
-                                    </button>
-                                  ))}
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      )}
                     </div>
 
                     <div className="flex gap-2 pt-2 border-t border-border/40">
@@ -431,70 +368,87 @@ export function IdentityView({
           <section className="space-y-8 animate-[fadeIn_0.3s_ease-out]">
             <div className="pb-3 border-b border-border">
               <h1 className="text-xl font-bold tracking-tight text-foreground">Myself</h1>
-              <span className="text-xs text-muted-foreground font-semibold font-mono">{username}.memact.me</span>
+              <span className="text-xs text-muted-foreground font-semibold font-mono">{username}.memact.com</span>
             </div>
 
             {/* Input to add entries directly */}
-            <form onSubmit={handleAddCustomEntry} className="flex gap-2 bg-card border border-border p-2.5 rounded-sm shadow-[0_4px_12px_rgba(0,0,0,0.015)] items-center">
-              <input
-                type="text"
-                value={newEntryText}
-                onChange={(e) => setNewEntryText(e.target.value)}
-                placeholder="Write something..."
-                className="flex-1 bg-secondary border border-border px-3.5 py-2.5 text-xs outline-none rounded-sm text-foreground placeholder:text-muted-foreground/35 font-medium"
-              />
-
-              {/* Form visibility selector */}
-              <div className="relative inline-block shrink-0">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveDropdownId(activeDropdownId === 'form-add' ? null : 'form-add');
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold border border-border bg-secondary hover:bg-secondary/60 rounded-sm text-muted-foreground hover:text-foreground transition-all cursor-pointer"
-                >
-                  {newEntryVisibility === 'Public' && <Globe size={12} className="text-chart-2" />}
-                  {newEntryVisibility === 'Friends' && <Users size={12} className="text-chart-3" />}
-                  {newEntryVisibility === 'Private' && <Lock size={12} className="text-muted-foreground/60" />}
-                  <span>{newEntryVisibility}</span>
-                </button>
-
-                {activeDropdownId === 'form-add' && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setActiveDropdownId(null)} />
-                    <div className="absolute right-0 mt-1.5 w-44 bg-popover text-popover-foreground border border-border rounded-sm shadow-[0_4px_12px_rgba(0,0,0,0.05)] py-1 z-50 animate-[fadeIn_0.15s_ease-out] select-none">
-                      {[
-                        { value: 'Public', label: 'Public (Everyone)', icon: <Globe size={11} className="text-chart-2" /> },
-                        { value: 'Friends', label: 'Friends (Connections)', icon: <Users size={11} className="text-chart-3" /> },
-                        { value: 'Private', label: 'Private (Just me)', icon: <Lock size={11} className="text-muted-foreground/60" /> }
-                      ].map((opt) => (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          onClick={() => {
-                            setNewEntryVisibility(opt.value as any);
-                            setActiveDropdownId(null);
-                          }}
-                          className={`w-full text-left px-2.5 py-1.5 text-[10px] font-bold flex items-center gap-2 hover:bg-secondary transition-colors ${
-                            newEntryVisibility === opt.value ? 'bg-secondary text-foreground font-extrabold' : 'text-muted-foreground font-medium'
-                          }`}
-                        >
-                          {opt.icon}
-                          <span>{opt.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </>
+            <form onSubmit={handleAddCustomEntry} className="flex flex-col sm:flex-row gap-2.5 bg-card border border-border p-2 rounded-sm shadow-[0_4px_16px_rgba(0,0,0,0.01)] items-stretch sm:items-center w-full">
+              <div className="relative flex-1 w-full">
+                <input
+                  type="text"
+                  value={newEntryText}
+                  onChange={(e) => setNewEntryText(e.target.value)}
+                  placeholder="Write something..."
+                  className="w-full bg-secondary border border-border pl-3.5 pr-9 py-2.5 text-xs outline-none rounded-sm text-foreground placeholder:text-muted-foreground/35 font-medium transition-all"
+                />
+                {newEntryText.trim().length > 0 && (
+                  <button
+                    type="submit"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 hover:bg-foreground/5 text-muted-foreground hover:text-foreground rounded-sm transition-all animate-[fadeIn_0.15s_ease-out]"
+                    aria-label="Submit entry"
+                  >
+                    <CornerDownLeft size={11} className="stroke-[2.5]" />
+                  </button>
                 )}
               </div>
 
-              <button
-                type="submit"
-                className="bg-foreground text-background text-xs font-bold px-4 py-2.5 rounded-sm hover:opacity-85 transition-opacity flex items-center gap-1 shrink-0"
-              >
-                <Plus size={12} /> Add
-              </button>
+              <div className="flex items-center gap-2 justify-end sm:justify-start w-full sm:w-auto shrink-0 relative">
+                {/* Form visibility selector */}
+                <div className="relative inline-block w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveDropdownId(activeDropdownId === 'form-add' ? null : 'form-add');
+                    }}
+                    className="flex items-center justify-between gap-1.5 px-3.5 py-2.5 text-xs font-bold border border-border bg-secondary hover:bg-secondary/60 rounded-sm text-muted-foreground hover:text-foreground transition-all cursor-pointer w-full sm:w-44 shrink-0"
+                  >
+                    <span className="flex items-center gap-2">
+                      {newEntryVisibility === 'Public' && <Globe size={12} className="text-chart-2" />}
+                      {newEntryVisibility === 'Friends' && <Users size={12} className="text-chart-3" />}
+                      {newEntryVisibility === 'Private' && <Lock size={12} className="text-muted-foreground/60" />}
+                      <span>{newEntryVisibility}</span>
+                    </span>
+                    <ChevronDown
+                      size={14}
+                      className={`transition-transform duration-200 ${
+                        activeDropdownId === 'form-add' ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {activeDropdownId === 'form-add' && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setActiveDropdownId(null)} />
+                      <div className="absolute right-0 sm:left-0 mt-1.5 w-full sm:w-44 bg-popover text-popover-foreground border border-border rounded-sm shadow-[0_4px_12px_rgba(0,0,0,0.05)] py-1 z-50 animate-[fadeIn_0.15s_ease-out] select-none">
+                        {[
+                          { value: 'Public', label: 'Public (Everyone)', icon: <Globe size={11} className="text-chart-2" /> },
+                          { value: 'Friends', label: 'Friends (Connections)', icon: <Users size={11} className="text-chart-3" /> },
+                          { value: 'Private', label: 'Private (Just me)', icon: <Lock size={11} className="text-muted-foreground/60" /> }
+                        ].map((opt) => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => {
+                              setNewEntryVisibility(opt.value as any);
+                              setActiveDropdownId(null);
+                            }}
+                            className={`w-full text-left px-2.5 py-1.5 text-[10px] font-bold flex items-center gap-2 hover:bg-secondary transition-colors ${
+                              newEntryVisibility === opt.value ? 'bg-secondary text-foreground font-extrabold' : 'text-muted-foreground font-medium'
+                            }`}
+                          >
+                            {opt.icon}
+                            <span>{opt.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Hidden submit button to allow submitting by hitting Enter key */}
+                <button type="submit" className="hidden" />
+              </div>
             </form>
 
             {/* The Notebook Stream */}
@@ -603,7 +557,7 @@ export function IdentityView({
         {view === 'access' && (
           <section className="space-y-8 animate-[fadeIn_0.3s_ease-out]">
             <div className="pb-2 border-b border-border flex items-center justify-between">
-              <h1 className="text-xl font-bold tracking-tight text-foreground">Access</h1>
+              <h1 className="text-xl font-bold tracking-tight text-foreground">Privacy</h1>
               
               <button
                 onClick={() => setIsPublic(!isPublic)}
@@ -634,7 +588,7 @@ export function IdentityView({
                         </span>
                       </div>
                       <p className="text-muted-foreground mt-1 leading-relaxed">
-                        Anyone visiting <span className="font-mono text-foreground font-semibold">{username}.memact.me</span> can read these.
+                        Anyone visiting <span className="font-mono text-foreground font-semibold">{username}.memact.com</span> can read these.
                       </p>
                     </div>
                   </div>
@@ -649,7 +603,7 @@ export function IdentityView({
                         </span>
                       </div>
                       <p className="text-muted-foreground mt-1 leading-relaxed">
-                        Only verified connections (like Sofia M.) can view these when they authenticate.
+                        Only verified connections (like Spotify) can view these when they authenticate.
                       </p>
                     </div>
                   </div>
@@ -705,6 +659,37 @@ export function IdentityView({
                     ))
                   )}
                 </div>
+
+              {/* Contributor List summary */}
+              <div className="space-y-3 pt-6 border-t border-border/40">
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Active Contributors</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.entries(contributorStats).map(([name, count]) => (
+                    <div key={name} className="p-3 bg-secondary/15 border border-border/45 rounded-sm flex justify-between items-center text-xs">
+                      <span className="font-semibold text-foreground">{name === 'You' ? 'you' : name}</span>
+                      <span className="text-muted-foreground font-mono text-[10px]">{count} entries</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Contributions Timeline */}
+              <div className="space-y-3 pt-6 border-t border-border/40">
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider font-semibold">Activity History</h3>
+                <div className="space-y-2.5">
+                  {history.map((h) => (
+                    <div key={h.id} className="p-3 bg-secondary/10 border border-border/30 rounded-sm text-[11px] flex justify-between items-start gap-4">
+                      <span className={`leading-relaxed font-semibold ${
+                        h.status === 'rejected' ? 'text-muted-foreground/80 line-through' : h.status === 'revoked' ? 'text-chart-3/80' : 'text-foreground/90'
+                      }`}>
+                        {h.action}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground/50 shrink-0 mt-0.5 tabular-nums">{h.time}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               </div>
             </div>
           </section>
@@ -733,7 +718,7 @@ export function IdentityView({
                   <div>
                     <label className="text-[11px] font-semibold text-muted-foreground block mb-1">Personal Address</label>
                     <div className="text-xs font-mono text-foreground bg-secondary px-3 py-2.5 border border-border rounded-sm">
-                      {username}.memact.me
+                      {username}.memact.com
                     </div>
                   </div>
                 </div>
@@ -767,6 +752,37 @@ export function IdentityView({
                     </div>
                   ))}
                 </div>
+
+              {/* Contributor List summary */}
+              <div className="space-y-3 pt-6 border-t border-border/40">
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Active Contributors</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.entries(contributorStats).map(([name, count]) => (
+                    <div key={name} className="p-3 bg-secondary/15 border border-border/45 rounded-sm flex justify-between items-center text-xs">
+                      <span className="font-semibold text-foreground">{name === 'You' ? 'you' : name}</span>
+                      <span className="text-muted-foreground font-mono text-[10px]">{count} entries</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Contributions Timeline */}
+              <div className="space-y-3 pt-6 border-t border-border/40">
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider font-semibold">Activity History</h3>
+                <div className="space-y-2.5">
+                  {history.map((h) => (
+                    <div key={h.id} className="p-3 bg-secondary/10 border border-border/30 rounded-sm text-[11px] flex justify-between items-start gap-4">
+                      <span className={`leading-relaxed font-semibold ${
+                        h.status === 'rejected' ? 'text-muted-foreground/80 line-through' : h.status === 'revoked' ? 'text-chart-3/80' : 'text-foreground/90'
+                      }`}>
+                        {h.action}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground/50 shrink-0 mt-0.5 tabular-nums">{h.time}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               </div>
             </div>
           </section>

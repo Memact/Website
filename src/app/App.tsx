@@ -44,15 +44,11 @@ export default function App() {
   }, [page, authMode]);
 
   // Global Record States
-  const [username, setUsername] = useState('alex');
-  const [fullName, setFullName] = useState('Alex Chen');
+  const [username, setUsername] = useState('sujay');
+  const [fullName, setFullName] = useState('Sujay Sudhir');
   const [entries, setEntries] = useState<Entry[]>([
-    { id: 'e1', content: 'Learning how memory agents connect.', contributor: 'You', visibility: 'Private', starred: false, time: 'Just now' },
-    { id: 'e2', content: 'Building Memact address protocol beta.', contributor: 'You', visibility: 'Public', starred: true, time: '2h ago' },
-    { id: 'e3', content: 'Tokyo subway architecture research & essay.', contributor: 'Claude', visibility: 'Private', starred: false, time: '3h ago' },
-    { id: 'e4', content: 'Prefers quiet workspaces with natural lighting.', contributor: 'You', visibility: 'Private', starred: true, time: 'Yesterday' },
-    { id: 'e5', content: 'Minimalist typography and industrial brutalism.', contributor: 'You', visibility: 'Public', starred: false, time: '3 days ago' },
-    { id: 'e6', content: 'Run the Golden Gate trail.', contributor: 'You', visibility: 'Public', starred: false, time: '4 days ago' }
+    { id: 'e1', content: 'I am building Memact', contributor: 'You', visibility: 'Private', starred: true, time: 'Just now' },
+    { id: 'e2', content: 'I love Vibe Coding', contributor: 'You', visibility: 'Private', starred: false, time: 'Just now' }
   ]);
 
   // Auth session listener
@@ -122,16 +118,12 @@ export default function App() {
         }
         loadUserData(session.user.id);
       } else {
-        setUsername('alex');
-        setFullName('Alex Chen');
+        setUsername('sujay');
+        setFullName('Sujay Sudhir');
         // Reset to mock entries when logged out
         setEntries([
-          { id: 'e1', content: 'Learning how memory agents connect.', contributor: 'You', visibility: 'Private', starred: false, time: 'Just now' },
-          { id: 'e2', content: 'Building Memact address protocol beta.', contributor: 'You', visibility: 'Public', starred: true, time: '2h ago' },
-          { id: 'e3', content: 'Tokyo subway architecture research & essay.', contributor: 'Claude', visibility: 'Private', starred: false, time: '3h ago' },
-          { id: 'e4', content: 'Prefers quiet workspaces with natural lighting.', contributor: 'You', visibility: 'Private', starred: true, time: 'Yesterday' },
-          { id: 'e5', content: 'Minimalist typography and industrial brutalism.', contributor: 'You', visibility: 'Public', starred: false, time: '3 days ago' },
-          { id: 'e6', content: 'Run the Golden Gate trail.', contributor: 'You', visibility: 'Public', starred: false, time: '4 days ago' }
+          { id: 'e1', content: 'I am building Memact', contributor: 'You', visibility: 'Private', starred: true, time: 'Just now' },
+          { id: 'e2', content: 'I love Vibe Coding', contributor: 'You', visibility: 'Private', starred: false, time: 'Just now' }
         ]);
         setPage('landing');
       }
