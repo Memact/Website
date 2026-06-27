@@ -60,7 +60,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
     },
     {
       title: "Bring it together.",
-      subtitle: "Get your own address like sujay.memact.com. Everything flows to one place."
+      subtitle: "Get your own address like john.memact.com. Everything flows to one place."
     },
     {
       title: "Apps suggest updates.",
@@ -144,7 +144,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
                 Active Address
               </span>
               <span className="text-base font-mono font-bold text-foreground">
-                sujay.memact.com
+                john.memact.com
               </span>
               <div className="absolute inset-0 bg-gradient-to-tr from-accent/5 via-transparent to-transparent pointer-events-none rounded-sm" />
             </div>
@@ -158,7 +158,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className={DESIGN_TOKENS.styles.appBadge}>FitLife</span>
               </div>
-              <p className="text-xs font-bold text-foreground">"Sujay works out regularly."</p>
+              <p className="text-xs font-bold text-foreground">"john works out regularly."</p>
             </div>
 
             <div className="transform translate-x-[25px] md:translate-x-[55px] rotate-3 bg-card border border-border p-2.5 md:p-3 rounded-sm shadow-xs w-full max-w-[150px] md:max-w-[200px] self-center">
@@ -184,7 +184,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className={DESIGN_TOKENS.styles.appBadge}>FitLife</span>
               </div>
-              <p className="text-xs font-bold text-foreground">"Sujay works out regularly."</p>
+              <p className="text-xs font-bold text-foreground">"john works out regularly."</p>
               <div className="absolute inset-0 flex items-center justify-center bg-background/20 backdrop-blur-[1px] rounded-sm">
                 <Lock size={12} className="text-muted-foreground/45" />
               </div>
@@ -220,7 +220,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
                 Domain
               </span>
               <span className="text-base font-mono font-bold text-foreground">
-                sujay.memact.com
+                john.memact.com
               </span>
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                 <span className="px-2 py-0.5 text-[8px] font-bold bg-accent text-background rounded-full uppercase">
@@ -229,7 +229,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
               </div>
             </div>
             <div className="text-[10px] text-muted-foreground font-mono flex items-center gap-2 animate-pulse">
-              <span>FitLife</span> → <span>sujay.memact.com</span> ← <span>Reader</span>
+              <span>FitLife</span> → <span>john.memact.com</span> ← <span>Reader</span>
             </div>
           </div>
         );
@@ -239,7 +239,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
           <div className="w-full h-full flex flex-col justify-center items-center p-4 animate-in fade-in duration-500">
             <div className="w-full max-w-[220px] md:max-w-[280px] bg-background border border-border/80 p-3 md:p-4 rounded-sm space-y-2.5 md:space-y-3">
               <div className="flex justify-between items-center border-b border-border/40 pb-2">
-                <span className="text-xs font-mono font-bold text-foreground">sujay.memact.com</span>
+                <span className="text-xs font-mono font-bold text-foreground">john.memact.com</span>
                 <span className="text-[8px] font-bold bg-amber-500/10 border border-amber-500/20 text-amber-500 px-2 py-0.5 rounded-full uppercase">
                   Suggestions
                 </span>
@@ -324,7 +324,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
             <div className="w-full max-w-[220px] md:max-w-[280px] bg-background border border-border/80 p-3 md:p-4 rounded-sm space-y-2.5 md:space-y-3">
               <div className="flex items-center gap-1.5 border-b border-border/40 pb-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-mono font-bold text-foreground">sujay.memact.com</span>
+                <span className="text-xs font-mono font-bold text-foreground">john.memact.com</span>
               </div>
 
               <div className="space-y-2">
@@ -344,7 +344,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
           <div className="w-full h-full flex flex-col justify-center items-center p-4 animate-in fade-in duration-500">
             <div className="w-full max-w-[220px] md:max-w-[280px] bg-background border border-border/80 p-3 md:p-4 rounded-sm space-y-2.5 md:space-y-3">
               <div className="flex justify-between items-center border-b border-border/40 pb-2">
-                <span className="text-xs font-mono font-bold text-foreground">sujay.memact.com</span>
+                <span className="text-xs font-mono font-bold text-foreground">john.memact.com</span>
                 <span className="text-[8px] font-bold text-muted-foreground uppercase">Access Rules</span>
               </div>
 
@@ -370,7 +370,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
         return (
           <div className="w-full h-full flex flex-col justify-center items-center p-4 space-y-3 animate-in fade-in duration-500">
             <div className="w-full max-w-[210px] md:max-w-[260px] bg-background border border-border/80 p-3 rounded-sm opacity-60">
-              <div className="text-[9px] font-mono font-bold text-muted-foreground mb-0.5">sujay.memact.com</div>
+              <div className="text-[9px] font-mono font-bold text-muted-foreground mb-0.5">john.memact.com</div>
               <div className="text-[11px] font-bold text-foreground">2 Approved Traits</div>
             </div>
 
@@ -397,7 +397,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
         return (
           <div className="w-full h-full flex flex-col justify-center items-center p-4 space-y-3 animate-in fade-in duration-500">
             <div className="w-full max-w-[210px] md:max-w-[260px] bg-background border border-border p-2.5 md:p-3 rounded-sm space-y-1.5 md:space-y-2">
-              <div className="text-[8px] font-mono font-bold text-muted-foreground">sujay.memact.com</div>
+              <div className="text-[8px] font-mono font-bold text-muted-foreground">john.memact.com</div>
               
               <div className="space-y-1">
                 <div className="border border-emerald-500/20 bg-emerald-500/5 p-2 rounded-sm flex justify-between items-center text-[11px] font-bold text-foreground">
@@ -473,7 +473,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
                 Verified Address
               </span>
               <span className="text-base font-mono font-bold text-foreground mb-4">
-                sujay.memact.com
+                john.memact.com
               </span>
               <div className="flex items-center gap-1 text-[9px] font-bold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase select-none">
                 <CheckCircle2 size={10} /> Active Domain

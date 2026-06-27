@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Check, Shield, Terminal, Settings, Globe, CheckCircle2, User, Lock, Users } from 'lucide-react';
 import textLogoLight from '../../imports/text_logo_nobg_light.png';
 import textLogoDark  from '../../imports/text_logo_nobg_dark.png';
+import { supabase } from '../supabaseClient';
 
 interface OnboardingProps {
   onBack: () => void;
@@ -32,6 +33,45 @@ export function Onboarding({ onBack, onComplete, isDark, onToggleDark, initialEm
   const [prefsVisibility, setPrefsVisibility] = useState<'Public' | 'Friends' | 'Private'>('Public');
   const [openDropdown, setOpenDropdown] = useState<'focus-vis' | 'prefs-vis' | null>(null);
 
+  const [checkingUsername, setCheckingUsername] = useState(false);
+  const [usernameError, setUsernameError] = useState('');
+
+  // Debounced username availability check
+  useEffect(() => {
+    if (!username || !supabase) {
+      setUsernameError('');
+      return;
+    }
+    const delayDebounceFn = setTimeout(async () => {
+      const reserved = ['john', 'admin', 'app', 'www', 'api', 'auth', 'support', 'docs', 'memact'];
+      if (reserved.includes(username.toLowerCase())) {
+        setUsernameError('Address is reserved');
+        return;
+      }
+      setCheckingUsername(true);
+      try {
+        const { data, error: queryErr } = await supabase
+          .from('memact_profiles')
+          .select('username')
+          .eq('username', username)
+          .maybeSingle();
+
+        if (queryErr) throw queryErr;
+        if (data) {
+          setUsernameError('Address is already taken');
+        } else {
+          setUsernameError('');
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setCheckingUsername(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [username]);
+
   useEffect(() => {
     if (step === 3) {
       setSimState('connecting');
@@ -43,7 +83,7 @@ export function Onboarding({ onBack, onComplete, isDark, onToggleDark, initialEm
   }, [step]);
 
   const handleNext = () => {
-    if (step === 1 && (!username.trim() || !fullName.trim())) return;
+    if (step === 1 && (!username.trim() || !fullName.trim() || usernameError || checkingUsername)) return;
     if (step === 2 && (!nowFocus.trim() || !preferences.trim())) return;
     if (step === 3) {
       onComplete(username.trim(), fullName.trim(), nowFocus.trim(), focusVisibility, preferences.trim(), prefsVisibility);
@@ -128,11 +168,19 @@ export function Onboarding({ onBack, onComplete, isDark, onToggleDark, initialEm
                       />
                       <span className="text-sm text-muted-foreground/50 font-mono select-none shrink-0">.memact.com</span>
                     </div>
-                    {username && (
+                    {checkingUsername ? (
+                      <span className="text-[10px] text-muted-foreground font-semibold mt-1 flex items-center gap-1 select-none">
+                        Checking availability...
+                      </span>
+                    ) : usernameError ? (
+                      <span className="text-[10px] text-red-500 font-semibold mt-1 flex items-center gap-1 select-none">
+                        {usernameError}
+                      </span>
+                    ) : username ? (
                       <span className="text-[10px] text-accent font-semibold mt-1 flex items-center gap-1 select-none">
                         <CheckCircle2 size={10} /> {username}.memact.com is available
                       </span>
-                    )}
+                    ) : null}
                   </div>
 
                   <div>

@@ -61,6 +61,11 @@ export function Auth({
       return;
     }
     const delayDebounceFn = setTimeout(async () => {
+      const reserved = ['john', 'admin', 'app', 'www', 'api', 'auth', 'support', 'docs', 'memact'];
+      if (reserved.includes(username.toLowerCase())) {
+        setUsernameError('Address is reserved');
+        return;
+      }
       setCheckingUsername(true);
       try {
         const { data, error: queryErr } = await supabase
