@@ -15,6 +15,15 @@ export interface Entry {
   time: string;
 }
 
+export interface PendingEntry {
+  id: string;
+  content: string;
+  contributor_name: string;
+  contributor_type: string;
+  visibility: string;
+  created_at: string;
+}
+
 type Page = 'landing' | 'identity' | 'public' | 'auth' | 'onboarding';
 
 export default function App() {
@@ -47,6 +56,7 @@ export default function App() {
   const [username, setUsername] = useState('sujay');
   const [fullName, setFullName] = useState('Sujay Sudhir');
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [pendingEntries, setPendingEntries] = useState<PendingEntry[]>([]);
 
   // Auth session listener
   useEffect(() => {
@@ -68,20 +78,33 @@ export default function App() {
             .from('memact_contributions')
             .select('*')
             .eq('user_id', userId)
-            .eq('status', 'approved');
+            .in('status', ['approved', 'pending'])
+            .order('created_at', { ascending: false });
 
           if (dbContributions) {
+            const approved = dbContributions.filter((c: any) => c.status === 'approved' && c.content?.trim());
+            const pending  = dbContributions.filter((c: any) => c.status === 'pending'  && c.content?.trim());
+
             setEntries(
-              dbContributions
-                .filter((c: any) => c.content && c.content.trim())
-                .map((c: any) => ({
-                  id: c.id,
-                  content: c.content,
-                  contributor: c.contributor_name,
-                  visibility: toUiVisibility(c.visibility),
-                  starred: c.is_starred,
-                  time: formatTimeAgo(c.created_at)
-                }))
+              approved.map((c: any) => ({
+                id: c.id,
+                content: c.content,
+                contributor: c.contributor_name,
+                visibility: toUiVisibility(c.visibility),
+                starred: c.is_starred,
+                time: formatTimeAgo(c.created_at)
+              }))
+            );
+
+            setPendingEntries(
+              pending.map((c: any) => ({
+                id: c.id,
+                content: c.content,
+                contributor_name: c.contributor_name,
+                contributor_type: c.contributor_type,
+                visibility: c.visibility,
+                created_at: c.created_at
+              }))
             );
           }
           setPage('identity');
@@ -162,6 +185,8 @@ export default function App() {
           fullName={fullName}
           entries={entries}
           onUpdateEntries={setEntries}
+          pendingEntries={pendingEntries}
+          onUpdatePendingEntries={setPendingEntries}
           isClaimed={isClaimed}
           onUpgradeToManaged={() => setIsClaimed(false)}
         />

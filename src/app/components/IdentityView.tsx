@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Moon, Sun, X, Check, Plus, Globe, Eye, EyeOff, Trash2, Star, Sparkles, User, Settings, Lock, Users, ChevronDown, CornerDownLeft } from 'lucide-react';
 import textLogoLight from '../../imports/text_logo_nobg_light.png';
 import textLogoDark  from '../../imports/text_logo_nobg_dark.png';
-import { Entry } from '../App';
+import { Entry, PendingEntry } from '../App';
+import { supabase, toUiVisibility, formatTimeAgo } from '../../supabase';
 
 interface IdentityViewProps {
   onBack: () => void;
@@ -13,6 +14,8 @@ interface IdentityViewProps {
   fullName: string;
   entries: Entry[];
   onUpdateEntries: (entries: Entry[]) => void;
+  pendingEntries: PendingEntry[];
+  onUpdatePendingEntries: (entries: PendingEntry[]) => void;
 }
 
 interface Suggestion {
@@ -51,6 +54,8 @@ export function IdentityView({
   fullName,
   entries,
   onUpdateEntries,
+  pendingEntries,
+  onUpdatePendingEntries,
 }: IdentityViewProps) {
   // Navigation / Views State
   const [view, setView] = useState<ViewMode>('inbox');
@@ -74,65 +79,26 @@ export function IdentityView({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const [inbox, setInbox] = useState<Suggestion[]>([
-    {
-      id: 's1',
-      type: 'suggestion',
-      from: 'Claude',
-      avatarColor: 'bg-chart-5/10 text-chart-5 border-chart-5/20',
-      title: 'Systems thinking',
-      reason: 'Extracted from Tokyo design outline edits.',
-      visibility: 'Private',
-      value: 'Systems thinking'
-    },
-    {
-      id: 's2',
-      type: 'suggestion',
-      from: 'GitHub',
-      avatarColor: 'bg-muted text-muted-foreground border-muted',
-      title: 'Open Source Contributor',
-      reason: 'Pushed 4 commits to cargo-lipo today.',
-      visibility: 'Public',
-      value: 'Open Source Contributor'
-    },
-    {
-      id: 's3',
-      type: 'suggestion',
-      from: 'Spotify',
-      avatarColor: 'bg-chart-3/10 text-chart-3 border-chart-3/20',
-      title: 'Focus habits',
-      reason: 'Observed active session listening to focus tracks.',
-      visibility: 'Private',
-      value: 'Prefers listening to lofi music when focusing.'
-    },
-    {
-      id: 's4',
-      type: 'request',
-      from: 'Linear',
-      avatarColor: 'bg-chart-4/10 text-chart-4 border-chart-4/20',
-      title: 'Linear requests access to read what you are working on',
-      reason: 'Wants to match ticket priority to your focus stream.',
-      visibility: 'Private',
-      value: 'Linear'
-    }
-  ]);
+  // Derive inbox from real pending contributions (no mock data)
+  const inbox: Suggestion[] = pendingEntries.map(p => ({
+    id: p.id,
+    type: 'suggestion' as const,
+    from: p.contributor_name || 'App',
+    avatarColor: 'bg-muted text-muted-foreground border-muted',
+    title: p.content,
+    reason: formatTimeAgo(p.created_at),
+    visibility: toUiVisibility(p.visibility) as 'Public' | 'Friends' | 'Private',
+    value: p.content
+  }));
 
-  // Permitted Apps
-  const [permittedApps, setPermittedApps] = useState<PermittedApp[]>([
-    { id: 'p1', name: 'Cursor IDE', scope: 'Private entries', time: 'Active 5m ago' },
-    { id: 'p2', name: 'Claude AI', scope: 'Public entries', time: 'Active 2h ago' },
-    { id: 'p3', name: 'Cal.com', scope: 'Public entries', time: 'Active yesterday' }
-  ]);
+  // Permitted Apps — loaded from consents when available
+  const [permittedApps, setPermittedApps] = useState<PermittedApp[]>([]);
 
-  // History timeline
-  const [history, setHistory] = useState<HistoryItem[]>([
-    { id: 'h1', action: 'Approved: Added "Japan urban planning" (Claude)', time: '2h ago', status: 'approved' },
-    { id: 'h2', action: 'Approved: Added "Typography systems" (Spotify)', time: '1d ago', status: 'approved' },
-    { id: 'h3', action: 'Rejected: Added "Cryptocurrency trading" (SpamBot)', time: '3d ago', status: 'rejected' }
-  ]);
+  // History timeline — derived from approve/reject actions this session
+  const [history, setHistory] = useState<HistoryItem[]>([]);
 
-  // Moderation Logic
-  const handleApprove = (item: Suggestion) => {
+  // Moderation Logic — calls real Supabase RPCs
+  const handleApprove = async (item: Suggestion) => {
     if (item.type === 'request') {
       setPermittedApps(prev => [
         { id: Math.random().toString(), name: item.from, scope: 'Public entries', time: 'Granted just now' },
@@ -143,8 +109,9 @@ export function IdentityView({
         ...prev
       ]);
     } else {
+      // Optimistically update UI
       const newEntry: Entry = {
-        id: Math.random().toString(),
+        id: item.id,
         content: item.value,
         contributor: item.from,
         visibility: 'Private',
@@ -152,20 +119,42 @@ export function IdentityView({
         time: 'Just now'
       };
       onUpdateEntries([newEntry, ...entries]);
+      onUpdatePendingEntries(pendingEntries.filter(p => p.id !== item.id));
       setHistory(prev => [
         { id: Math.random().toString(), action: `Approved: "${item.value}" (${item.from})`, time: 'Just now', status: 'approved' },
         ...prev
       ]);
+
+      // Persist to Supabase
+      if (supabase) {
+        try {
+          await supabase.rpc('memact_approve_contribution', {
+            contribution_id_input: item.id
+          });
+        } catch (err) {
+          console.error('Failed to approve contribution:', err);
+        }
+      }
     }
-    setInbox(prev => prev.filter(x => x.id !== item.id));
   };
 
-  const handleReject = (item: Suggestion) => {
+  const handleReject = async (item: Suggestion) => {
+    onUpdatePendingEntries(pendingEntries.filter(p => p.id !== item.id));
     setHistory(prev => [
       { id: Math.random().toString(), action: `Rejected suggestion from ${item.from}: "${item.value}"`, time: 'Just now', status: 'rejected' },
       ...prev
     ]);
-    setInbox(prev => prev.filter(x => x.id !== item.id));
+
+    // Persist to Supabase
+    if (supabase) {
+      try {
+        await supabase.rpc('memact_reject_contribution', {
+          contribution_id_input: item.id
+        });
+      } catch (err) {
+        console.error('Failed to reject contribution:', err);
+      }
+    }
   };
 
   // Notebook Streams Manipulation
