@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { X, MoreHorizontal, Plus, Moon, Sun } from "lucide-react";
+import { X, MoreHorizontal, Plus, Moon, Sun, Globe, Lock } from "lucide-react";
 import textLogoLight from "../../imports/text_logo_nobg_light.png";
 import textLogoDark  from "../../imports/text_logo_nobg_dark.png";
 import { supabase, formatTimeAgo } from "../../supabase";
@@ -57,7 +57,17 @@ function ApprovedCard({ claim, fullName, onClick }: { claim: Claim; fullName: st
         <p className="text-sm font-medium text-foreground leading-snug">{claim.content}</p>
         <MoreHorizontal size={14} className="text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5" />
       </div>
-      <p className="mt-3 text-xs text-muted-foreground">{timeLabel(claim, fullName)}</p>
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <p className="text-xs text-muted-foreground">{timeLabel(claim, fullName)}</p>
+        <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1 select-none shrink-0 border border-border/40 px-1.5 py-0.5 rounded-full bg-secondary/30">
+          {claim.visibility?.toLowerCase() === 'public' ? (
+            <Globe size={10} className="text-chart-2" />
+          ) : (
+            <Lock size={10} className="text-muted-foreground/50" />
+          )}
+          <span className="capitalize text-[8px] font-bold tracking-tight">{claim.visibility || 'private'}</span>
+        </span>
+      </div>
     </button>
   );
 }
@@ -225,7 +235,7 @@ function ClaimSheet({ claim, onClose, onUpdate, onDelete }: {
           </button>
         </div>
 
-        <div className="space-y-2 mb-6">
+        <div className="space-y-2.5 mb-6">
           {[
             { label: "Suggested by", value: sourceLabel(claim) },
             { label: "Added",        value: formatTimeAgo(claim.created_at) },
@@ -236,6 +246,34 @@ function ClaimSheet({ claim, onClose, onUpdate, onDelete }: {
               <span className="text-foreground font-medium">{row.value}</span>
             </div>
           ))}
+          <div className="flex items-center justify-between text-xs pt-1 border-t border-border/20">
+            <span className="text-muted-foreground font-medium">Visibility</span>
+            <button
+              type="button"
+              onClick={async () => {
+                const newVis = claim.visibility?.toLowerCase() === 'public' ? 'private' : 'public';
+                if (supabase) {
+                  try {
+                    await (supabase as any).from("memact_contributions").update({ visibility: newVis }).eq("id", claim.id);
+                    onUpdate({ visibility: newVis });
+                  } catch (e) { console.error(e); }
+                }
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold border border-border rounded-full hover:bg-secondary transition-all cursor-pointer text-muted-foreground hover:text-foreground bg-secondary/10"
+            >
+              {claim.visibility?.toLowerCase() === 'public' ? (
+                <>
+                  <Globe size={11} className="text-chart-2" />
+                  <span>Public</span>
+                </>
+              ) : (
+                <>
+                  <Lock size={11} className="text-muted-foreground/60" />
+                  <span>Private</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         <div className="border-t border-border pt-5 space-y-2">
@@ -376,7 +414,7 @@ export function AddressPage({ username, fullName, isDark, onToggleDark, onSignOu
     if (!session) return;
     const { data } = await (supabase as any)
       .from("memact_contributions")
-      .insert({ user_id: session.user.id, content, contributor_type: "user", contributor_name: "You", status: "approved", visibility: "private", is_starred: false })
+      .insert({ user_id: session.user.id, content, contributor_type: "user", contributor_name: "You", status: "approved", visibility: "public", is_starred: false })
       .select().single();
     if (data) setClaims(p => [data as Claim, ...p]);
   };

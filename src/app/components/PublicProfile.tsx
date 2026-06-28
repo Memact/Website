@@ -1,11 +1,13 @@
-import { useState } from 'react';
-import { ArrowLeft, ArrowRight, ShieldCheck, Globe, Star, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ShieldCheck, Globe, Sun, Moon } from 'lucide-react';
 import { Entry } from '../App';
+import textLogoLight from "../../imports/text_logo_nobg_light.png";
+import textLogoDark  from "../../imports/text_logo_nobg_dark.png";
 
 interface PublicProfileProps {
   onBack: () => void;
   onClaim: () => void;
   isDark: boolean;
+  onToggleDark: () => void;
   username: string;
   fullName: string;
   entries: Entry[];
@@ -15,132 +17,108 @@ export function PublicProfile({
   onBack,
   onClaim,
   isDark,
+  onToggleDark,
   username,
   fullName,
   entries,
 }: PublicProfileProps) {
-  // Filter entries based on visibility settings
+  // Filter entries based on visibility settings (only public)
   const visibleEntries = entries.filter((e) => e.visibility === 'Public');
-
-  // Initials for avatar
-  const initials = fullName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
 
   return (
     <div
       className="min-h-screen bg-background text-foreground flex flex-col justify-between"
       style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}
     >
-      {/* Top Navigation Strip */}
-      <div className="flex items-center justify-between px-8 h-[65px] border-b border-border bg-background/90 backdrop-blur-sm sticky top-0 z-50">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-semibold border border-border px-3 py-1.5 rounded-sm hover:bg-secondary/40"
-        >
-          <ArrowLeft size={13} /> Back to You
-        </button>
-        
-        <div className="text-xs font-bold text-muted-foreground select-none uppercase tracking-wider">
-          Public Profile
+      {/* Header */}
+      <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="max-w-4xl mx-auto px-4 md:px-6 h-[60px] flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onBack}
+              className="mr-2 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-semibold border border-border px-2.5 py-1 rounded-lg hover:bg-secondary/40"
+            >
+              <ArrowLeft size={12} /> Portal
+            </button>
+            <img src={isDark ? textLogoDark : textLogoLight} alt="memact" className="h-[42px] md:h-[50px] w-auto ml-[-8px]" />
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={onToggleDark} className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Toggle theme">
+              {isDark ? <Sun size={14} /> : <Moon size={14} />}
+            </button>
+            <button onClick={onClaim} className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors">
+              Claim yours
+            </button>
+          </div>
         </div>
-        
-        <a
-          href={`https://${username}.memact.com`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-[11px] font-mono text-muted-foreground hover:text-foreground font-semibold transition-colors"
-        >
-          <Globe size={11} className="text-chart-2" /> {username}.memact.com
-        </a>
+      </header>
+
+      {/* Address heading */}
+      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-8 pb-4 w-full">
+        <p className="text-2xl font-semibold tracking-tight">
+          {username}<span className="text-muted-foreground">.memact.com</span>
+        </p>
       </div>
 
-      {/* Address Profile Body */}
-      <main className="flex-1 max-w-xl w-full mx-auto px-6 py-12 space-y-8">
+      {/* Main Public Profile Body */}
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 md:px-6 py-6 space-y-8">
         
-        {/* Address Profile Header */}
-        <div className="text-center pb-8 border-b border-border/80">
-          <div className="w-14 h-14 rounded-full border border-border bg-secondary flex items-center justify-center mx-auto mb-4 text-sm font-bold text-foreground select-none">
-            {initials}
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1">
-            {fullName}
-          </h1>
-          <a
-            href={`https://${username}.memact.com`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1 bg-chart-2/10 hover:bg-chart-2/15 text-chart-2 text-[10px] font-mono font-semibold rounded-full transition-colors"
-          >
-            <span className="w-1.5 h-1.5 bg-chart-2 rounded-full animate-pulse" />
-            {username}.memact.com
-          </a>
-        </div>
-
-        {/* entries stream */}
-        <div className="space-y-5">
+        {/* entries stream (Grid matching ApprovedCard) */}
+        <div className="space-y-4">
           <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider select-none">
             Public Details
           </div>
 
-          <div className="space-y-4">
-            {visibleEntries.length === 0 ? (
-              <div className="p-8 border border-dashed border-border rounded-sm text-center bg-secondary/15 py-12 text-xs text-muted-foreground italic select-none">
-                No entries available in this view.
-              </div>
-            ) : (
-              visibleEntries.map((entry) => (
+          {visibleEntries.length === 0 ? (
+            <div className="p-8 border border-dashed border-border rounded-xl text-center bg-secondary/15 py-16 text-sm text-muted-foreground italic select-none">
+              No public entries available.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {visibleEntries.map((entry) => (
                 <div
                   key={entry.id}
-                  className="bg-card border border-border p-5 rounded-sm shadow-xs space-y-3 relative transition-all hover:shadow-sm"
+                  className="w-full text-left bg-card border border-border rounded-xl p-4 transition-all hover:border-foreground/10"
                 >
-                  <p className="text-sm font-medium text-foreground leading-relaxed pr-8">
+                  <p className="text-sm font-medium text-foreground leading-snug min-h-[40px]">
                     {entry.content}
                   </p>
-
-                  <div className="flex items-center justify-between text-[11px] text-muted-foreground/80 font-medium pt-2.5 border-t border-border/40 select-none">
-                    <div className="flex items-center gap-3">
-                      <span>By {entry.contributor === 'You' ? 'you' : entry.contributor}</span>
-                      <span>•</span>
-                      <span>{entry.time}</span>
-                    </div>
-
-                    {entry.starred && (
-                      <span className="text-chart-4 flex items-center gap-1">
-                        <Star size={11} fill="currentColor" />
-                      </span>
-                    )}
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    <p className="text-xs text-muted-foreground truncate">
+                      By {entry.contributor === 'You' ? fullName : (entry.contributor || 'App')} • {entry.time}
+                    </p>
+                    <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1 select-none shrink-0 border border-border/40 px-1.5 py-0.5 rounded-full bg-secondary/30">
+                      <Globe size={10} className="text-chart-2" />
+                      <span className="capitalize text-[8px] font-bold tracking-tight">Public</span>
+                    </span>
                   </div>
                 </div>
-              ))
-            )}
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Credentials / Metadata details card */}
+        <div className="bg-card border border-border p-5 rounded-xl shadow-xs space-y-2.5 max-w-sm">
+          <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 select-none">
+            Verified Profile
+          </div>
+          
+          <div className="flex justify-between items-center text-xs py-1.5 border-b border-border/40">
+            <span className="font-semibold text-muted-foreground">Owner</span>
+            <span className="font-medium text-foreground">{fullName}</span>
           </div>
 
-          {/* Credentials details card */}
-          <div className="bg-card border border-border p-5 rounded-sm shadow-xs space-y-2.5 mt-8">
-            <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 select-none">
-              Verified Profile
-            </div>
-            
-            <div className="flex justify-between items-center text-xs py-1.5 border-b border-border/40">
-              <span className="font-semibold text-muted-foreground">Owner</span>
-              <span className="font-medium text-foreground">{fullName}</span>
-            </div>
-
-            <div className="flex justify-between items-center text-xs py-1.5">
-              <span className="font-semibold text-muted-foreground">Address</span>
-              <a
-                href={`https://${username}.memact.com`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-chart-2 hover:underline font-semibold"
-              >
-                {username}.memact.com
-              </a>
-            </div>
+          <div className="flex justify-between items-center text-xs py-1.5">
+            <span className="font-semibold text-muted-foreground">Address</span>
+            <a
+              href={`https://${username}.memact.com`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-chart-2 hover:underline font-semibold"
+            >
+              {username}.memact.com
+            </a>
           </div>
         </div>
 
@@ -155,7 +133,7 @@ export function PublicProfile({
             <p className="text-xs text-muted-foreground font-medium">Tired of reintroducing yourself to the world?</p>
             <button
               onClick={onClaim}
-              className="flex items-center gap-2 text-xs bg-foreground text-background px-5 py-2.5 font-bold hover:opacity-85 transition-opacity rounded-sm shadow-xs animate-pulse"
+              className="flex items-center gap-2 text-xs bg-foreground text-background px-5 py-2.5 font-bold hover:opacity-85 transition-opacity rounded-lg shadow-xs animate-pulse"
             >
               Get your personal address <ArrowRight size={12} />
             </button>
@@ -165,7 +143,7 @@ export function PublicProfile({
       </main>
 
       {/* Footer */}
-      <footer className="px-8 py-6 border-t border-border flex items-center justify-between shrink-0 select-none">
+      <footer className="max-w-4xl w-full mx-auto px-4 md:px-6 py-6 border-t border-border flex items-center justify-between shrink-0 select-none">
         <span className="text-[10px] text-muted-foreground/50">© {new Date().getFullYear()} Memact. All rights reserved.</span>
         <div className="flex gap-4">
           <button className="text-[10px] text-muted-foreground hover:text-foreground transition-colors">Privacy</button>

@@ -283,6 +283,7 @@ export default function App() {
             setInitialEmail('');
           }}
           isDark={isDark}
+          onToggleDark={toggleDark}
           username={username}
           fullName={fullName}
           entries={entries}
