@@ -12,6 +12,7 @@ interface PublicProfileProps {
   fullName: string;
   entries: Entry[];
   isLoggedIn: boolean;
+  onLogoClick: () => void;
 }
 
 export function PublicProfile({
@@ -23,6 +24,7 @@ export function PublicProfile({
   fullName,
   entries,
   isLoggedIn,
+  onLogoClick,
 }: PublicProfileProps) {
   // Filter entries based on visibility settings (only public)
   const visibleEntries = entries.filter((e) => e.visibility === 'Public');
@@ -34,7 +36,7 @@ export function PublicProfile({
     >
       {/* Header */}
       <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 md:px-6 h-[60px] flex items-center justify-between gap-4">
+        <div className="max-w-4xl mx-auto px-6 h-[60px] flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             {/* Desktop-only back button */}
             <button
@@ -43,7 +45,7 @@ export function PublicProfile({
             >
               <ArrowLeft size={12} /> {isLoggedIn ? 'Back' : 'Home'}
             </button>
-            <img src={isDark ? textLogoDark : textLogoLight} alt="memact" className="h-[42px] md:h-[50px] w-auto" />
+            <img src={isDark ? textLogoDark : textLogoLight} alt="memact" className="h-[42px] md:h-[50px] w-auto cursor-pointer" onClick={onLogoClick} />
           </div>
           <div className="flex items-center gap-3">
             <button onClick={onToggleDark} className="text-muted-foreground hover:text-foreground transition-colors mr-1" aria-label="Toggle theme">
@@ -61,14 +63,14 @@ export function PublicProfile({
       </header>
 
       {/* Address heading */}
-      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-8 pb-4 w-full">
+      <div className="max-w-4xl mx-auto px-6 pt-8 pb-4 w-full">
         <p className="text-2xl font-semibold tracking-tight">
           {username}<span className="text-muted-foreground">.memact.com</span>
         </p>
       </div>
 
       {/* Main Public Profile Body */}
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 md:px-6 py-6 space-y-8">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-6 space-y-8">
         
         {/* entries stream (Grid matching ApprovedCard) */}
         <div className="space-y-4">
@@ -145,7 +147,7 @@ export function PublicProfile({
       </main>
 
       {/* Footer */}
-      <footer className="max-w-4xl w-full mx-auto px-4 md:px-6 py-6 border-t border-border flex items-center justify-between shrink-0 select-none">
+      <footer className="max-w-4xl w-full mx-auto px-6 py-6 border-t border-border flex items-center justify-between shrink-0 select-none">
         <span className="text-[10px] text-muted-foreground/50">© {new Date().getFullYear()} Memact. All rights reserved.</span>
         <div className="flex gap-4">
           <button className="text-[10px] text-muted-foreground hover:text-foreground transition-colors">Privacy</button>

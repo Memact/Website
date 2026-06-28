@@ -27,6 +27,7 @@ export interface AddressPageProps {
   isDark: boolean;
   onToggleDark: () => void;
   onSignOut: () => void;
+  onLogoClick: () => void;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -360,7 +361,7 @@ const TABS: { id: FilterTab; label: string }[] = [
   { id: "archived", label: "Archived"   },
 ];
 
-export function AddressPage({ username, fullName, isDark, onToggleDark, onSignOut }: AddressPageProps) {
+export function AddressPage({ username, fullName, isDark, onToggleDark, onSignOut, onLogoClick }: AddressPageProps) {
   const [claims, setClaims]     = useState<Claim[]>([]);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState<string | null>(null);
@@ -442,8 +443,8 @@ export function AddressPage({ username, fullName, isDark, onToggleDark, onSignOu
 
       {/* Header */}
       <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 md:px-6 h-[60px] flex items-center justify-between gap-4">
-          <img src={isDark ? textLogoDark : textLogoLight} alt="memact" className="h-[42px] md:h-[50px] w-auto" />
+        <div className="max-w-4xl mx-auto px-6 h-[60px] flex items-center justify-between gap-4">
+          <img src={isDark ? textLogoDark : textLogoLight} alt="memact" className="h-[42px] md:h-[50px] w-auto cursor-pointer" onClick={onLogoClick} />
           <div className="flex items-center gap-3">
             <button onClick={onToggleDark} className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Toggle theme">
               {isDark ? <Sun size={14} /> : <Moon size={14} />}
@@ -456,7 +457,7 @@ export function AddressPage({ username, fullName, isDark, onToggleDark, onSignOu
       </header>
 
       {/* Address heading */}
-      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-8 pb-4">
+      <div className="max-w-4xl mx-auto px-6 pt-8 pb-4">
         <p className="text-2xl font-semibold tracking-tight">
           {username}<span className="text-muted-foreground">.memact.com</span>
         </p>
@@ -464,7 +465,7 @@ export function AddressPage({ username, fullName, isDark, onToggleDark, onSignOu
 
       {/* Filter tabs */}
       <div className="sticky top-[60px] z-20 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 md:px-6">
+        <div className="max-w-4xl mx-auto px-6">
           <div className="flex items-center overflow-x-auto scrollbar-none h-11">
             {TABS.map(t => (
               <button
@@ -489,7 +490,7 @@ export function AddressPage({ username, fullName, isDark, onToggleDark, onSignOu
       </div>
 
       {/* Content */}
-      <main className="max-w-4xl mx-auto px-4 md:px-6 py-6">
+      <main className="max-w-4xl mx-auto px-6 py-6">
 
         {(tab === "approved" || tab === "self") && !loading && !error && (
           <div className="mb-5"><AddClaimInput onAdd={addSelf} /></div>

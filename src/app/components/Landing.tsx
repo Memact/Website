@@ -486,7 +486,7 @@ export function Landing({ onNavigate, isDark, onToggleDark }: LandingProps) {
 
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-16 h-[60px] bg-background/90 backdrop-blur-sm border-b border-border select-none">
-        <img src={isDark ? textLogoDark : textLogoLight} alt="memact" className="h-[42px] md:h-[50px] w-auto" />
+        <img src={isDark ? textLogoDark : textLogoLight} alt="memact" className="h-[42px] md:h-[50px] w-auto cursor-pointer" onClick={handleRestart} />
         <div className="flex items-center gap-3.5 md:gap-6">
           <button onClick={onToggleDark} className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer" aria-label="Toggle dark mode">
             {isDark ? <Sun size={14} /> : <Moon size={14} />}

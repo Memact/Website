@@ -237,19 +237,23 @@ export default function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setIsLoggedIn(!!session);
       if (session) {
-        const provider = session.user.app_metadata.provider;
-        if (provider === 'email') {
-          localStorage.setItem('memact_last_auth', 'native');
-        } else if (provider) {
-          localStorage.setItem('memact_last_auth', provider);
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          const provider = session.user.app_metadata.provider;
+          if (provider === 'email') {
+            localStorage.setItem('memact_last_auth', 'native');
+          } else if (provider) {
+            localStorage.setItem('memact_last_auth', provider);
+          }
+          loadUserData(session.user.id);
         }
-        loadUserData(session.user.id);
       } else {
-        setUsername('john');
-        setFullName('John Doe');
-        setEntries([]);
-        setPendingEntries([]);
-        setPage(prev => (prev === 'public' || prev === 'not-found') ? prev : 'landing');
+        if (event === 'SIGNED_OUT') {
+          setUsername('john');
+          setFullName('John Doe');
+          setEntries([]);
+          setPendingEntries([]);
+          setPage('landing');
+        }
       }
     });
 
@@ -306,6 +310,7 @@ export default function App() {
             if (supabase) await supabase.auth.signOut();
             setPage('landing');
           }}
+          onLogoClick={() => setPage('landing')}
         />
       )}
       {page === 'public'   && (
@@ -334,6 +339,10 @@ export default function App() {
           fullName={fullName}
           entries={entries}
           isLoggedIn={isLoggedIn}
+          onLogoClick={() => {
+            setDetectedSubdomain('');
+            setPage('landing');
+          }}
         />
       )}
       {page === 'auth'     && (
@@ -439,15 +448,15 @@ export default function App() {
           style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}
         >
           <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border">
-            <div className="max-w-4xl mx-auto px-4 md:px-6 h-[60px] flex items-center justify-between gap-4">
-              <img src={isDark ? textLogoDark : textLogoLight} alt="memact" className="h-[42px] md:h-[50px] w-auto" />
+            <div className="max-w-4xl mx-auto px-6 h-[60px] flex items-center justify-between gap-4">
+              <img src={isDark ? textLogoDark : textLogoLight} alt="memact" className="h-[42px] md:h-[50px] w-auto cursor-pointer" onClick={() => { setDetectedSubdomain(''); setPage('landing'); }} />
               <button onClick={toggleDark} className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Toggle theme">
                 {isDark ? <Sun size={14} /> : <Moon size={14} />}
               </button>
             </div>
           </header>
 
-          <main className="flex-1 flex flex-col items-center justify-center text-center px-4 max-w-md mx-auto space-y-6">
+          <main className="flex-1 flex flex-col items-center justify-center text-center px-6 max-w-md mx-auto space-y-6">
             <div className="space-y-2">
               <span className="text-[10px] font-bold text-accent uppercase tracking-widest bg-accent/15 border border-accent/25 px-2.5 py-1 rounded-full">
                 404 Not Found
@@ -488,7 +497,7 @@ export default function App() {
             </div>
           </main>
 
-          <footer className="max-w-4xl w-full mx-auto px-4 md:px-6 py-6 border-t border-border flex items-center justify-between shrink-0 select-none">
+          <footer className="max-w-4xl w-full mx-auto px-6 py-6 border-t border-border flex items-center justify-between shrink-0 select-none">
             <span className="text-[10px] text-muted-foreground/50">© {new Date().getFullYear()} Memact. All rights reserved.</span>
             <span className="text-[10px] text-muted-foreground/50 font-medium">Secured via Memact protocol</span>
           </footer>
