@@ -119,8 +119,8 @@ export default function App() {
   }, []);
 
   // Global Record States
-  const [username, setUsername] = useState('sujay');
-  const [fullName, setFullName] = useState('Sujay Sudhir');
+  const [username, setUsername] = useState('john');
+  const [fullName, setFullName] = useState('John Doe');
   const [entries, setEntries] = useState<Entry[]>([]);
   const [pendingEntries, setPendingEntries] = useState<PendingEntry[]>([]);
 
@@ -324,11 +324,15 @@ export default function App() {
                 const { data: { session } } = await supabase.auth.getSession();
                 const authUser = session?.user;
                 if (authUser) {
-                  await supabase.from('memact_profiles').insert({
+                  const { error: profileErr } = await supabase.from('memact_profiles').upsert({
                     id: authUser.id,
                     username: user,
                     full_name: name
                   });
+
+                  if (profileErr) {
+                    console.error("Error saving profile:", profileErr);
+                  }
 
                   const contributionsToInsert = [];
                   if (focus.trim()) {
@@ -353,8 +357,12 @@ export default function App() {
                       is_starred: false
                     });
                   }
+
                   if (contributionsToInsert.length > 0) {
-                    await supabase.from('memact_contributions').insert(contributionsToInsert);
+                    const { error: contribErr } = await supabase.from('memact_contributions').insert(contributionsToInsert);
+                    if (contribErr) {
+                      console.error("Error saving contributions:", contribErr);
+                    }
                   }
                 }
               } catch (err) {
