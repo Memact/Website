@@ -35,14 +35,24 @@ export function PublicProfile({
       {/* Header */}
       <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="max-w-4xl mx-auto px-4 md:px-6 h-[60px] flex items-center justify-between gap-4">
-          <img src={isDark ? textLogoDark : textLogoLight} alt="memact" className="h-[42px] md:h-[50px] w-auto" />
+          <div className="flex items-center gap-4">
+            {/* Desktop-only back button */}
+            <button
+              onClick={onBack}
+              className="hidden md:flex text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors border border-border px-3 py-1.5 rounded-lg hover:bg-secondary/40 items-center gap-1.5"
+            >
+              <ArrowLeft size={12} /> {isLoggedIn ? 'Back' : 'Home'}
+            </button>
+            <img src={isDark ? textLogoDark : textLogoLight} alt="memact" className="h-[42px] md:h-[50px] w-auto" />
+          </div>
           <div className="flex items-center gap-3">
             <button onClick={onToggleDark} className="text-muted-foreground hover:text-foreground transition-colors mr-1" aria-label="Toggle theme">
               {isDark ? <Sun size={14} /> : <Moon size={14} />}
             </button>
+            {/* Mobile-only back button */}
             <button
               onClick={onBack}
-              className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors border border-border px-3 py-1.5 rounded-lg hover:bg-secondary/40 flex items-center gap-1.5"
+              className="flex md:hidden text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors border border-border px-3 py-1.5 rounded-lg hover:bg-secondary/40 items-center gap-1.5"
             >
               <ArrowLeft size={12} /> {isLoggedIn ? 'Back' : 'Home'}
             </button>
@@ -120,8 +130,8 @@ export function PublicProfile({
         </div>
 
         {/* Claim yours CTA */}
-        <div className="py-8 border-t border-border/80 flex flex-col items-start gap-4">
-          <div className="space-y-3">
+        <div className="py-8 border-t border-border/80 flex flex-col items-center md:items-start gap-4 w-full">
+          <div className="space-y-3 text-center md:text-left flex flex-col items-center md:items-start w-full">
             <p className="text-xs text-muted-foreground font-semibold">Tired of reintroducing yourself to the world?</p>
             <button
               onClick={onClaim}
